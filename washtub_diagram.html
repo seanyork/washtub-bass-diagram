@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Washtub Bass String Map</title>
+<style>
+body{margin:0;padding:12px;font-family:system-ui,sans-serif;background:#fff;color:#1a1a1a;}
+@media(prefers-color-scheme:dark){body{background:#1a1a1a;color:#e0e0e0;}}
+#wt-wrap{font-family:system-ui,sans-serif;color:inherit;padding:4px 0;}
+#wt-controls{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;margin-bottom:12px;padding:10px 14px;background:rgba(128,128,128,0.08);border-radius:10px;border:1px solid rgba(128,128,128,0.2);}
+#wt-controls label{font-size:13px;color:#666;}
+@media(prefers-color-scheme:dark){#wt-controls label{color:#aaa;}}
+#tension-slider{width:200px;}
+#key-buttons{display:flex;flex-wrap:wrap;gap:4px;}
+.key-btn{padding:4px 9px;font-size:12px;font-weight:500;border:1.5px solid rgba(128,128,128,0.3);border-radius:5px;background:transparent;color:#666;cursor:pointer;transition:all 0.15s;}
+.key-btn:hover{border-color:rgba(128,128,128,0.6);color:#333;}
+.key-btn.active{background:#533AB7;color:#fff;border-color:#3C3489;box-shadow:0 0 0 2px #AFA9EC;}
+@media(prefers-color-scheme:dark){.key-btn{color:#aaa;}.key-btn:hover{color:#eee;}}
+#wt-info{font-size:12px;color:#666;min-width:220px;line-height:1.6;}
+@media(prefers-color-scheme:dark){#wt-info{color:#aaa;}}
+#canvas-wrap{overflow:hidden;width:100%;cursor:grab;user-select:none;border:1px solid rgba(128,128,128,0.2);border-radius:10px;position:relative;background:transparent;}
+#canvas-wrap.dragging{cursor:grabbing;}
+#zoom-controls{position:absolute;bottom:10px;right:10px;display:flex;flex-direction:column;gap:4px;z-index:10;}
+#zoom-controls button{width:28px;height:28px;border:1px solid rgba(128,128,128,0.3);background:rgba(255,255,255,0.9);color:#333;border-radius:6px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+@media(prefers-color-scheme:dark){#zoom-controls button{background:rgba(40,40,40,0.9);color:#eee;}}
+#zoom-label{font-size:10px;color:#888;text-align:center;}
+#svg-inner{transform-origin:top left;}
+.row-hit{cursor:pointer;}
+.row-hit:hover{opacity:0.85;}
+</style>
+</head>
+<body>
+<div id="wt-wrap">
+<div id="wt-controls">
+  <div>
+    <label style="display:block;margin-bottom:4px;">Home key:</label>
+    <div id="key-buttons"></div>
+  </div>
+  <div>
+    <label>Tension: <span id="tension-label">5.0 lbs</span></label><br>
+    <input type="range" id="tension-slider" min="10" max="150" value="50" step="1">
+    <div style="font-size:11px;color:#999;margin-top:2px;">1 lb – 15 lbs · click any row to hear pitch</div>
+  </div>
+  <div id="wt-info"></div>
+</div>
+
+<div id="canvas-wrap" style="height:680px;">
+  <div id="zoom-controls">
+    <button id="btn-zi">+</button>
+    <button id="btn-zo">−</button>
+    <button id="btn-zr" style="font-size:10px;">fit</button>
+    <div id="zoom-label">100%</div>
+  </div>
+  <div id="svg-inner">
+<svg id="main-svg" width="1100" height="1440" viewBox="0 0 1100 1440" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <marker id="wtarr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<!-- ── STATIC STRUCTURE ────────────────────────────────────────── -->
+
+<!-- Column headers -->
+<text x="180" y="22" text-anchor="middle" font-size="14" font-weight="500" fill="currentColor">relative pitch</text>
+<text x="320" y="22" text-anchor="middle" font-size="14" font-weight="500" fill="currentColor">string</text>
+<text x="345" y="22" text-anchor="start"  font-size="14" font-weight="500" fill="currentColor">deg</text>
+<text x="430" y="22" text-anchor="end"    font-size="14" font-weight="500" fill="currentColor">key°</text>
+<text x="458" y="22" text-anchor="start"  font-size="14" font-weight="500" fill="currentColor">note</text>
+<text x="580" y="22" text-anchor="start"  font-size="14" font-weight="500" fill="currentColor">fraction · ratio · interval</text>
+
+<!-- Pitch axis -->
+<line x1="60" y1="52" x2="300" y2="52" stroke="currentColor" stroke-width="0.5" opacity="0.3"/>
+<line x1="60"  y1="52" x2="60"  y2="1320" stroke="currentColor" stroke-width="0.3" stroke-dasharray="2 5" opacity="0.2"/>
+<line x1="120" y1="52" x2="120" y2="1320" stroke="currentColor" stroke-width="0.3" stroke-dasharray="2 5" opacity="0.2"/>
+<line x1="180" y1="52" x2="180" y2="1320" stroke="currentColor" stroke-width="0.3" stroke-dasharray="2 5" opacity="0.2"/>
+<line x1="240" y1="52" x2="240" y2="1320" stroke="currentColor" stroke-width="0.3" stroke-dasharray="2 5" opacity="0.2"/>
+<text x="60"  y="46" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.4">4F</text>
+<text x="120" y="46" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.4">3F</text>
+<text x="180" y="46" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.4">2F</text>
+<text x="240" y="46" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.4">F</text>
+<text x="300" y="46" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.4">0</text>
+
+<!-- Direction labels -->
+<text x="38" y="560" text-anchor="start" font-size="14" font-weight="500" fill="currentColor" opacity="0.4">upstring</text>
+<text x="38" y="574" text-anchor="start" font-size="12" fill="currentColor" opacity="0.4">lower pitch</text>
+<text x="38" y="765" text-anchor="start" font-size="14" font-weight="500" fill="currentColor" opacity="0.4">downstring</text>
+<text x="38" y="779" text-anchor="start" font-size="12" fill="currentColor" opacity="0.4">raise pitch</text>
+
+<!-- Nut -->
+<rect x="312" y="68" width="16" height="10" rx="2" fill="currentColor" opacity="0.5"/>
+<text x="320" y="60" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.5">nut</text>
+
+<!-- String -->
+<line x1="320" y1="78" x2="320" y2="1310" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+
+<!-- Washtub -->
+<path d="M238,1310 L196,1390 L444,1390 L402,1310 Z" fill="rgba(128,128,128,0.08)" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+<rect x="233" y="1304" width="174" height="10" rx="3" fill="currentColor" opacity="0.35"/>
+<rect x="208" y="1328" width="18" height="6" rx="2" fill="white" stroke="currentColor" stroke-width="0.5" opacity="0.5"/>
+<rect x="208" y="1342" width="18" height="6" rx="2" fill="white" stroke="currentColor" stroke-width="0.5" opacity="0.5"/>
+<rect x="208" y="1356" width="18" height="6" rx="2" fill="white" stroke="currentColor" stroke-width="0.5" opacity="0.5"/>
+<rect x="178" y="1388" width="284" height="8" rx="2" fill="currentColor" opacity="0.25"/>
+<circle cx="320" cy="1310" r="4" fill="currentColor" opacity="0.5"/>
+<text x="320" y="1418" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.5">tub (bridge)</text>
+
+<!-- Legend -->
+<rect x="660" y="1090" width="400" height="230" rx="6" fill="rgba(128,128,128,0.06)" stroke="rgba(128,128,128,0.2)" stroke-width="0.5"/>
+<text x="860" y="1112" text-anchor="middle" font-size="14" font-weight="500" fill="currentColor">legend</text>
+<circle cx="680" cy="1135" r="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="2"/><circle cx="680" cy="1135" r="3" fill="#0F6E56"/>
+<text x="696" y="1139" font-size="12" fill="currentColor">primary · in key (snapped)</text>
+<circle cx="680" cy="1158" r="8" fill="#FAECE7" stroke="#993C1D" stroke-width="2"/><circle cx="680" cy="1158" r="3" fill="#993C1D"/>
+<text x="696" y="1162" font-size="12" fill="currentColor">primary · chromatic (snapped)</text>
+<circle cx="680" cy="1181" r="5" fill="none" stroke="#1D9E75" stroke-width="1.5"/>
+<text x="696" y="1185" font-size="12" fill="currentColor" opacity="0.7">secondary · in key (snapped)</text>
+<circle cx="680" cy="1204" r="5" fill="none" stroke="#D85A30" stroke-width="1.5"/>
+<text x="696" y="1208" font-size="12" fill="currentColor" opacity="0.7">secondary · chromatic (snapped)</text>
+<circle cx="680" cy="1227" r="8" fill="#EEEDFE" stroke="#533AB7" stroke-width="2"/><circle cx="680" cy="1227" r="3" fill="#533AB7"/>
+<text x="696" y="1231" font-size="12" fill="currentColor" opacity="0.7">tonic (always purple)</text>
+<circle cx="680" cy="1250" r="5" fill="none" stroke="#B4B2A9" stroke-width="1.5" stroke-dasharray="3 2"/>
+<text x="696" y="1254" font-size="12" fill="currentColor" opacity="0.7">between named pitches</text>
+<text x="660" y="1278" font-size="11" fill="currentColor" opacity="0.4">click any row to hear pitch</text>
+
+<!-- Dynamic content populated by JS -->
+<g id="dyn-nut"></g>
+<g id="dyn-nodes"></g>
+</svg>
+  </div>
+</div>
+</div>
+
+<script>
+// ── TODO list ────────────────────────────────────────────────────
+// TODO: make STRING_LENGTH_M and MU_KG_M variable via UI inputs
+//       to allow exploration of different washtub configurations
+// TODO: add waveform selector option (currently sine)
+// TODO: add tone duration option (currently 1.0s)
+// TODO: add polyphony toggle option (currently always polyphonic)
+// TODO: add volume/gain control
+// ────────────────────────────────────────────────────────────────
+
+// ── Physics ──────────────────────────────────────────────────────
+// Calibrated: G1 (49 Hz) at 5 lbs, L = 69 inches
+// f = (1/2L) * sqrt(T/mu)  [SI]
+const STRING_LENGTH_M = 69 * 0.0254;  // 1.7526 m
+const MU_KG_M = 0.000754;             // kg/m — derived from calibration
+const LBS_TO_N = 4.44822;
+function tensionToFreq(lbs){
+  const T=lbs*LBS_TO_N;
+  return(1/(2*STRING_LENGTH_M))*Math.sqrt(T/MU_KG_M);
+}
+function sliderToLbs(v){return v/10;}
+
+// ── Music engine ─────────────────────────────────────────────────
+const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const REF_HZ=261.63, REF_MIDI=60, SNAP_CENTS=25;
+const CHROM=['1','♭2','2','♭3','3','4','♯4','5','♭6','6','♭7','7'];
+let tensionLbs=5.0, homeKey=7;
+const GRAY='#B4B2A9';
+
+function freqToMidi(f){return 12*Math.log2(f/REF_HZ)+REF_MIDI;}
+function noteInfo(f){
+  const midi=freqToMidi(f),r=Math.round(midi),cents=Math.round((midi-r)*100);
+  return{midi:r,cents,name:NOTES[((r%12)+12)%12],octave:Math.floor(r/12)-1,snapped:Math.abs(cents)<=SNAP_CENTS};
+}
+function chromDeg(midi,kr){
+  return CHROM[((midi%12+12)%12-(kr%12+12)%12+12)%12];
+}
+function isInKey(midi,kr){
+  const d=chromDeg(midi,kr);return!d.includes('♭')&&!d.includes('♯');
+}
+function fundFreq(){return tensionToFreq(tensionLbs);}
+
+// ── Audio ─────────────────────────────────────────────────────────
+let audioCtx=null;
+function getCtx(){
+  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  return audioCtx;
+}
+function playTone(freq){
+  // TODO: waveform option (sine/triangle/sawtooth)
+  // TODO: duration option (currently 1.0s)
+  // TODO: polyphony toggle (currently always polyphonic)
+  if(!freq||freq<16||freq>20000)return;
+  // Always create a completely fresh audio graph so each click
+  // gets a clean attack regardless of any currently playing note
+  const ctx=getCtx();
+  if(ctx.state==='suspended') ctx.resume();
+  const osc=ctx.createOscillator();
+  const gain=ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.type='sine';
+  osc.frequency.value=freq;
+  const t=ctx.currentTime;
+  gain.gain.setValueAtTime(0,t);
+  gain.gain.linearRampToValueAtTime(0.45,t+0.015);
+  gain.gain.setValueAtTime(0.45,t+0.80);
+  gain.gain.linearRampToValueAtTime(0,t+1.0);
+  osc.start(t);
+  osc.stop(t+1.05);
+}
+
+// ── Node data ─────────────────────────────────────────────────────
+const NODES=[
+  {label:'2',frac:8/9,  ratio:9/8,  primary:false,desc:'maj 2nd below tonic', fs:'8/9', rs:'9:8', tonic:false},
+  {label:'3',frac:4/5,  ratio:5/4,  primary:false,desc:'maj 3rd below tonic', fs:'4/5', rs:'5:4', tonic:false},
+  {label:'4',frac:3/4,  ratio:4/3,  primary:true, desc:'perf 4th below tonic',fs:'3/4', rs:'4:3', tonic:false},
+  {label:'5',frac:2/3,  ratio:3/2,  primary:true, desc:'perf 5th below tonic',fs:'2/3', rs:'3:2', tonic:false},
+  {label:'6',frac:3/5,  ratio:5/3,  primary:false,desc:'maj 6th below tonic', fs:'3/5', rs:'5:3', tonic:false},
+  {label:'7',frac:8/15, ratio:15/8, primary:false,desc:'maj 7th below tonic', fs:'8/15',rs:'15:8',tonic:false},
+  {label:'1',frac:1/2,  ratio:2,    primary:true, desc:'TONIC · midpoint',    fs:'1/2', rs:'2:1', tonic:true},
+  {label:'2',frac:4/9,  ratio:9/4,  primary:false,desc:'maj 2nd above tonic', fs:'4/9', rs:'9:4', tonic:false},
+  {label:'3',frac:2/5,  ratio:5/2,  primary:false,desc:'maj 3rd above tonic', fs:'2/5', rs:'5:2', tonic:false},
+  {label:'4',frac:3/8,  ratio:8/3,  primary:true, desc:'perf 4th above tonic',fs:'3/8', rs:'8:3', tonic:false},
+  {label:'5',frac:1/3,  ratio:3,    primary:true, desc:'perf 5th above tonic',fs:'1/3', rs:'3:1', tonic:false},
+  {label:'6',frac:3/10, ratio:10/3, primary:false,desc:'maj 6th above tonic', fs:'3/10',rs:'10:3',tonic:false},
+  {label:'7',frac:4/15, ratio:15/4, primary:false,desc:'maj 7th above tonic', fs:'4/15',rs:'15:4',tonic:false},
+  {label:'1',frac:1/4,  ratio:4,    primary:true, desc:'tonic 2 octaves up',  fs:'1/4', rs:'4:1', tonic:true},
+];
+
+// ── Layout constants ──────────────────────────────────────────────
+const SX=320, TY=1310, NY=78, SPX=1232;
+const BR=300, BMW=240, BMR=4;
+const DEG_X=345, KD_RX=430, NOTE_X=458, INFO_X=580;
+const SVG_W=1100;
+
+function nY(frac){return TY-frac*SPX;}
+function barW(ratio){return Math.min((ratio/BMR)*BMW,BMW);}
+const NODE_YS=NODES.map(n=>nY(n.frac));
+
+function fontSize(i){
+  const y=NODE_YS[i];
+  const above=i>0?NODE_YS[i-1]:NY;
+  const below=i<NODE_YS.length-1?NODE_YS[i+1]:TY;
+  const space=Math.min(y-above,below-y);
+  return Math.round(Math.max(14,Math.min(36,space*1.4)));
+}
+const FSIZES=NODES.map((_,i)=>fontSize(i));
+
+function resolveColor(node,snapped,inKey){
+  if(node.tonic) return{fill:'#EEEDFE',stroke:'#533AB7',dot:'#533AB7',text:'#533AB7',bar:'#533AB7',dash:false};
+  if(!snapped)   return{fill:'none',stroke:GRAY,dot:GRAY,text:GRAY,bar:GRAY,dash:true};
+  if(node.primary) return inKey
+    ?{fill:'#E1F5EE',stroke:'#0F6E56',dot:'#0F6E56',text:'#0F6E56',bar:'#1D9E75',dash:false}
+    :{fill:'#FAECE7',stroke:'#993C1D',dot:'#993C1D',text:'#993C1D',bar:'#D85A30',dash:false};
+  return inKey
+    ?{fill:'none',stroke:'#1D9E75',dot:'#1D9E75',text:'#1D9E75',bar:'#1D9E75',dash:false}
+    :{fill:'none',stroke:'#D85A30',dot:'#D85A30',text:'#D85A30',bar:'#D85A30',dash:false};
+}
+
+function mk(tag,attrs,txt){
+  const el=document.createElementNS('http://www.w3.org/2000/svg',tag);
+  for(const[k,v]of Object.entries(attrs))el.setAttribute(k,v);
+  if(txt!==undefined)el.textContent=txt;
+  return el;
+}
+
+// ── Render ────────────────────────────────────────────────────────
+function render(){
+  document.getElementById('dyn-nodes').innerHTML='';
+  document.getElementById('dyn-nut').innerHTML='';
+  const g=document.getElementById('dyn-nodes');
+  const nutG=document.getElementById('dyn-nut');
+
+  const fund=fundFreq();
+  const fi=noteInfo(fund);
+  const fl=fi.snapped?fi.name+fi.octave:'~'+fi.name+fi.octave;
+
+  document.getElementById('wt-info').innerHTML=
+    `Fundamental: <strong>${fl}</strong> (${fund.toFixed(2)} Hz)<br>`+
+    `Tension: <strong>${tensionLbs.toFixed(1)} lbs</strong>&nbsp;&nbsp;`+
+    `Home key: <strong>${NOTES[homeKey]} major</strong>`;
+  document.getElementById('tension-label').textContent=tensionLbs.toFixed(1)+' lbs';
+
+  // ── NUT ROW ──
+  const nutFS=32, nutInfoFS=14, nutY=73;
+  const nutRowH=nutFS+10;
+  // full-width click target
+  const nutHit=mk('rect',{x:0,y:nutY-nutFS*0.65,width:SVG_W,height:nutRowH,fill:'transparent',class:'row-hit'});
+  nutHit.addEventListener('click',()=>playTone(fund));
+  nutG.appendChild(nutHit);
+
+  // tone bar — purple
+  const nutBW=barW(1);
+  nutG.appendChild(mk('rect',{x:BR-nutBW,y:nutY-5,width:nutBW,height:10,rx:2,fill:'#533AB7',opacity:0.55}));
+
+  // deg
+  nutG.appendChild(mk('text',{x:DEG_X,y:nutY+6,'font-size':nutFS,'font-weight':'500',fill:'#533AB7'},'1'));
+
+  // key degree + note
+  if(fi.snapped){
+    const kd=chromDeg(fi.midi,homeKey);
+    const col=isInKey(fi.midi,homeKey)?'#0F6E56':'#993C1D';
+    nutG.appendChild(mk('text',{x:KD_RX,y:nutY+6,'font-size':nutFS,'font-weight':'500','text-anchor':'end',fill:col},kd));
+    nutG.appendChild(mk('text',{x:NOTE_X,y:nutY+6,'font-size':nutFS,'font-weight':'500',fill:col},fi.name+fi.octave));
+  } else {
+    nutG.appendChild(mk('text',{x:KD_RX, y:nutY+6,'font-size':nutInfoFS,'text-anchor':'end',fill:GRAY,opacity:0.4},'—'));
+    nutG.appendChild(mk('text',{x:NOTE_X,y:nutY+6,'font-size':nutInfoFS,fill:GRAY,opacity:0.4},'—'));
+  }
+  nutG.appendChild(mk('text',{x:INFO_X,y:nutY+6,'font-size':nutInfoFS,'font-weight':'400',fill:'#533AB7',opacity:0.8},'1/1  ·  1:1  ·  fundamental'));
+
+  // ── NODE ROWS ──
+  NODES.forEach((node,i)=>{
+    const y=NODE_YS[i];
+    const freq=fund*node.ratio;
+    const ni=noteInfo(freq);
+    const inKey=ni.snapped?isInKey(ni.midi,homeKey):false;
+    const c=resolveColor(node,ni.snapped,inKey);
+    const isT=node.tonic, isPri=node.primary;
+    const bw=barW(node.ratio);
+    const fs=FSIZES[i];
+    const infoFS=Math.max(11,Math.round(fs*0.5));
+    const yOff=fs*0.38;
+
+    // ── Full-width click target for entire row ──
+    const rowH=fs+10;
+    const hitRect=mk('rect',{
+      x:0, y:y-rowH/2,
+      width:SVG_W, height:rowH,
+      fill:'transparent',
+      class:'row-hit'
+    });
+    hitRect.addEventListener('click',()=>playTone(freq));
+    g.appendChild(hitRect);
+
+    // Tone bar (left side)
+    g.appendChild(mk('rect',{x:BR-bw,y:y-(isT||isPri?7:5),width:bw,height:isT||isPri?14:10,rx:2,fill:c.bar,opacity:isT?0.65:isPri?0.55:0.35}));
+
+    // Tick on string
+    const hw=isT?18:isPri?14:10;
+    g.appendChild(mk('line',{x1:SX-hw,x2:SX+hw,y1:y,y2:y,stroke:c.stroke,'stroke-width':isT?2.5:isPri?2:1}));
+
+    // Node circle
+    const r=isT?10:isPri?8:5;
+    const ca={cx:SX,cy:y,r,fill:isT||isPri?c.fill:'none',stroke:c.stroke,'stroke-width':isT||isPri?2:1.5};
+    if(c.dash) ca['stroke-dasharray']='3 2';
+    g.appendChild(mk('circle',ca));
+    if(isT||isPri) g.appendChild(mk('circle',{cx:SX,cy:y,r:isT?4:3,fill:c.dot}));
+
+    // Degree number
+    g.appendChild(mk('text',{x:DEG_X,y:y+yOff,'font-size':fs,'font-weight':'500',fill:c.text},node.label));
+
+    // Key degree (right-aligned) + note name
+    if(ni.snapped){
+      const kd=chromDeg(ni.midi,homeKey);
+      g.appendChild(mk('text',{x:KD_RX,y:y+yOff,'font-size':fs,'font-weight':'500','text-anchor':'end',fill:c.text},kd));
+      g.appendChild(mk('text',{x:NOTE_X,y:y+yOff,'font-size':fs,'font-weight':'500',fill:c.text},ni.name+ni.octave));
+    } else {
+      g.appendChild(mk('text',{x:KD_RX, y:y+yOff,'font-size':infoFS,'text-anchor':'end',fill:GRAY,opacity:0.3},'—'));
+      g.appendChild(mk('text',{x:NOTE_X,y:y+yOff,'font-size':infoFS,fill:GRAY,opacity:0.3},'—'));
+    }
+
+    // Fraction · ratio · interval
+    g.appendChild(mk('text',{x:INFO_X,y:y+yOff,'font-size':infoFS,'font-weight':'400',fill:c.text,opacity:0.8},
+      `${node.fs}  ·  ${node.rs}  ·  ${node.desc}`));
+  });
+}
+
+// ── Key buttons ───────────────────────────────────────────────────
+const kbc=document.getElementById('key-buttons');
+NOTES.forEach((n,i)=>{
+  const b=document.createElement('button');
+  b.className='key-btn'+(i===7?' active':'');
+  b.textContent=n;
+  b.onclick=()=>{homeKey=i;document.querySelectorAll('.key-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');render();};
+  kbc.appendChild(b);
+});
+
+// ── Tension slider ────────────────────────────────────────────────
+document.getElementById('tension-slider').addEventListener('input',e=>{
+  tensionLbs=sliderToLbs(parseInt(e.target.value));
+  render();
+});
+
+// ── Pan / zoom ────────────────────────────────────────────────────
+const canvas=document.getElementById('canvas-wrap');
+const inner=document.getElementById('svg-inner');
+let sc=0.43,mn=0.25,mx=3,tx=0,ty=0,drag=false,sx,sy,stx,sty;
+function applyT(){inner.style.transform=`translate(${tx}px,${ty}px) scale(${sc})`;document.getElementById('zoom-label').textContent=Math.round(sc*100)+'%';}
+function clamp(){const sw=1100*sc,sh=1440*sc,ww=canvas.clientWidth,wh=canvas.clientHeight;tx=Math.min(0,Math.max(tx,ww-sw));ty=Math.min(0,Math.max(ty,wh-sh));}
+document.getElementById('btn-zi').onclick=()=>{sc=Math.min(mx,sc*1.3);clamp();applyT();};
+document.getElementById('btn-zo').onclick=()=>{sc=Math.max(mn,sc/1.3);clamp();applyT();};
+document.getElementById('btn-zr').onclick=()=>{sc=canvas.clientWidth/1100;tx=0;ty=0;applyT();};
+canvas.addEventListener('mousedown',e=>{if(e.target.classList.contains('row-hit'))return;drag=true;canvas.classList.add('dragging');sx=e.clientX;sy=e.clientY;stx=tx;sty=ty;});
+window.addEventListener('mousemove',e=>{if(!drag)return;tx=stx+(e.clientX-sx);ty=sty+(e.clientY-sy);clamp();applyT();});
+window.addEventListener('mouseup',()=>{drag=false;canvas.classList.remove('dragging');});
+canvas.addEventListener('wheel',e=>{e.preventDefault();const r=canvas.getBoundingClientRect(),mx2=e.clientX-r.left,my2=e.clientY-r.top,d=e.deltaY>0?0.85:1.18,ns=Math.min(mx,Math.max(mn,sc*d));tx=mx2-(mx2-tx)*(ns/sc);ty=my2-(my2-ty)*(ns/sc);sc=ns;clamp();applyT();},{passive:false});
+canvas.addEventListener('touchstart',e=>{if(e.touches.length===1){drag=true;sx=e.touches[0].clientX;sy=e.touches[0].clientY;stx=tx;sty=ty;}},{passive:true});
+canvas.addEventListener('touchmove',e=>{if(drag&&e.touches.length===1){tx=stx+(e.touches[0].clientX-sx);ty=sty+(e.touches[0].clientY-sy);clamp();applyT();}},{passive:true});
+canvas.addEventListener('touchend',()=>{drag=false;});
+
+applyT();
+render();
+</script>
+</body>
+</html>
