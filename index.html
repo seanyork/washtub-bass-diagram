@@ -44,9 +44,19 @@ input[type=range]{width:110px;cursor:pointer;}
 #canvas-wrap{overflow:hidden;flex:1;height:calc(100vh - 420px);min-height:300px;cursor:grab;user-select:none;border:0.5px solid rgba(128,128,128,0.2);border-radius:10px;position:relative;}
 #canvas-wrap.dragging{cursor:grabbing;}
 #zoom-label{font-size:10px;color:#888;text-align:center;}
+.capo-snap-btn{height:22px;font-size:11px;background:transparent;border:0.5px solid rgba(200,130,26,0.35);border-radius:3px;color:#C8821A;cursor:pointer;padding:0 8px;white-space:nowrap;display:flex;align-items:center;}
+.capo-snap-btn:hover{border-color:#C8821A;}
+.capo-snap-btn.on{background:#C8821A;color:#fff;border-color:#C8821A;}
 #svg-inner{transform-origin:top left;}
 .row-hit{cursor:pointer;}
 #tone-strip{background:rgba(128,128,128,0.07);border:0.5px solid rgba(128,128,128,0.2);border-radius:8px;padding:5px 14px;margin-bottom:8px;height:68px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;}
+#tone-strip.two-voice{justify-content:flex-start;gap:2px;}
+#tone-strip.two-voice .strip-label{margin-bottom:1px;}
+#tone-strip.two-voice .strip-main{flex:0 0 auto;}
+#tone-strip.two-voice .strip-large{gap:8px;}
+#tone-strip.two-voice .strip-deg,#tone-strip.two-voice .strip-keydeg,#tone-strip.two-voice .strip-note,#tone-strip.two-voice .strip-freq{font-size:16px;}
+#tone-row2{display:none;}
+#tone-row2.visible{display:flex;align-items:center;gap:8px;}
 #tone-strip .strip-label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:0.05em;line-height:1;}
 #tone-strip .strip-main{display:flex;align-items:stretch;flex:1;margin-top:4px;}
 #tone-strip .strip-large{display:flex;align-items:center;gap:14px;}
@@ -59,7 +69,7 @@ input[type=range]{width:110px;cursor:pointer;}
 #tone-strip .strip-seg-row{font-size:11px;color:#888;white-space:nowrap;line-height:1.2;}
 #tone-strip .strip-seg-row strong{font-weight:500;color:inherit;}
 #tone-strip .strip-idle{font-size:12px;color:#aaa;font-style:italic;display:flex;align-items:center;}
-#tone-row2{display:none;}
+
 @media(prefers-color-scheme:dark){#tone-strip .strip-label{color:#666;}#tone-strip .strip-seg-row{color:#666;}#tone-strip .strip-idle{color:#555;}}
 </style>
 </head>
@@ -73,8 +83,8 @@ input[type=range]{width:110px;cursor:pointer;}
       <div class="sec-lbl">waveform</div>
       <div class="tog-grp">
         <button class="tog" id="wav-sine" onclick="setWaveform('sine',this)">sine</button>
-        <button class="tog on" id="wav-warm" onclick="setWaveform('warm',this)">warm</button>
-        <button class="tog" id="wav-string" onclick="setWaveform('string',this)">string</button>
+        <button class="tog" id="wav-warm" onclick="setWaveform('warm',this)">warm</button>
+        <button class="tog on" id="wav-string" onclick="setWaveform('string',this)">string</button>
       </div>
     </div>
     <div class="ctrl-col">
@@ -87,8 +97,8 @@ input[type=range]{width:110px;cursor:pointer;}
     <div class="ctrl-col">
       <div class="sec-lbl">duration</div>
       <div class="sl-row">
-        <input type="range" id="dur-sl" min="0.2" max="4" step="0.1" value="1.0" oninput="syncSlider('dur',this.value)">
-        <input class="readout" id="dur-ro" value="1.0 s" onchange="syncReadout('dur',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
+        <input type="range" id="dur-sl" min="0.2" max="4" step="0.1" value="0.5" oninput="syncSlider('dur',this.value)">
+        <input class="readout" id="dur-ro" value="0.5 s" onchange="syncReadout('dur',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
       </div>
     </div>
     <div class="ctrl-col">
@@ -143,18 +153,18 @@ input[type=range]{width:110px;cursor:pointer;}
   </div>
   <div class="ctrl-sep"></div>
 
-  <!-- Row 3: node view + nut height (always visible, dimmed when inactive) -->
+  <!-- Row 3: node view + context cluster (only active one shown) -->
   <div class="ctrl-row" style="margin-bottom:4px;align-items:flex-start;">
     <div class="ctrl-col">
       <div class="sec-lbl">node view</div>
       <div style="display:flex;flex-direction:column;gap:2px;">
         <button class="tog on" id="view-full" onclick="setNodeView('full',this)">full string</button>
         <button class="tog" id="view-nut" onclick="setNodeView('nut',this)">nut height</button>
-        <button class="tog" disabled style="opacity:0.4;">capo</button>
+        <button class="tog" id="view-capo" onclick="setNodeView('capo',this)">capo</button>
       </div>
     </div>
     <div class="ctrl-vsep"></div>
-    <div class="ctrl-col" id="nut-preset-cluster" style="opacity:0.35;pointer-events:none;">
+    <div class="ctrl-col" id="nut-preset-cluster" style="display:none;">
       <div class="sec-lbl">nut height <span style="text-transform:none;letter-spacing:0;font-size:10px;color:#aaa;">(drag nut to adjust)</span></div>
       <div style="display:flex;gap:10px;align-items:flex-start;">
         <div>
@@ -186,6 +196,26 @@ input[type=range]{width:110px;cursor:pointer;}
             <input class="readout" id="nut-speaking-ro" value='69.0"' readonly style="width:54px;background:rgba(83,58,183,0.04);color:#533AB7;font-weight:500;border-color:rgba(83,58,183,0.3);">
             <button class="tog" style="grid-column:1/-1;font-size:10px;height:20px;padding:0 8px;margin-top:2px;" onclick="applyNutOffset(0);render()">set to full string</button>
           </div>
+        </div>
+      </div>
+    </div>
+    <div class="ctrl-col" id="capo-cluster" style="display:none;">
+      <div class="sec-lbl">capo <span style="text-transform:none;letter-spacing:0;font-size:10px;color:#aaa;">(drag to adjust · snaps to interval)</span></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div>
+          <div style="font-size:10px;color:#aaa;margin-bottom:3px;">snap to interval</div>
+          <div style="display:grid;grid-template-columns:repeat(4,auto);gap:2px;" id="capo-snap-btns"></div>
+        </div>
+        <div class="ctrl-vsep"></div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <div style="font-size:10px;color:#aaa;">segment lengths</div>
+          <div style="display:flex;gap:4px;align-items:center;">
+            <span style="font-size:11px;color:#888;">↑</span>
+            <input class="readout" id="capo-upper-ro" value="—" readonly style="width:60px;background:rgba(200,130,26,0.06);color:#C8821A;font-weight:500;border-color:rgba(200,130,26,0.3);">
+            <span style="font-size:11px;color:#888;">↓</span>
+            <input class="readout" id="capo-lower-ro" value="—" readonly style="width:60px;background:rgba(200,130,26,0.06);color:#C8821A;font-weight:500;border-color:rgba(200,130,26,0.3);">
+          </div>
+          <button class="tog" onclick="playCapoBoth()" style="background:rgba(200,130,26,0.12);border-color:rgba(200,130,26,0.4);color:#C8821A;font-size:11px;height:24px;padding:0 10px;">play both</button>
         </div>
       </div>
     </div>
@@ -309,13 +339,13 @@ input[type=range]{width:110px;cursor:pointer;}
 <text x="460" y="46" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.3">F</text>
 
 <!-- Column headers -->
-<text x="438" y="22" text-anchor="middle" font-size="13" font-weight="500" fill="currentColor">str°</text>
+<text id="col-strdeg" x="438" y="22" text-anchor="middle" font-size="13" font-weight="500" fill="currentColor">str°</text>
 <text x="480" y="22" text-anchor="middle" font-size="14" font-weight="500" fill="currentColor">string</text>
-<text x="502" y="22" text-anchor="start" font-size="13" font-weight="500" fill="currentColor">home°</text>
-<text x="592" y="22" text-anchor="end" font-size="13" font-weight="500" fill="currentColor">key°</text>
-<text x="618" y="22" text-anchor="start" font-size="13" font-weight="500" fill="currentColor">note</text>
-<text x="680" y="22" text-anchor="start" font-size="13" font-weight="500" fill="currentColor">fraction · ratio · interval</text>
-<text x="1060" y="22" text-anchor="start" font-size="13" font-weight="500" fill="currentColor">upper | lower</text>
+<text id="col-homedeg" x="502" y="22" text-anchor="start" font-size="13" font-weight="500" fill="currentColor">home°</text>
+<text id="col-keydeg" x="592" y="22" text-anchor="end" font-size="13" font-weight="500" fill="currentColor">key°</text>
+<text id="col-note" x="618" y="22" text-anchor="start" font-size="13" font-weight="500" fill="currentColor">note</text>
+<text id="col-info" x="680" y="22" text-anchor="start" font-size="13" font-weight="500" fill="currentColor">fraction · ratio · interval</text>
+<text id="col-segs" x="1060" y="22" text-anchor="start" font-size="13" font-weight="500" fill="currentColor">upper | lower</text>
 
 
 <!-- Nut -->
@@ -379,17 +409,27 @@ input[type=range]{width:110px;cursor:pointer;}
   <g id="nut-drag-ann"></g>
 </g>
 
-</svg>
+<!-- Capo view elements -->
+<g id="capo-layer" display="none">
+  <g id="capo-ticks"></g>
+  <g id="capo-zones"></g>
+  <g id="capo-ann"></g>
+  <g id="capo-drag-marker" style="cursor:ns-resize;">
+    <rect id="capo-drag-rect" x="440" y="78" width="80" height="12" rx="3" fill="#C8821A" opacity="0.85"/>
+    <line id="capo-drag-line1" x1="452" y1="82" x2="508" y2="82" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+    <line id="capo-drag-line2" x1="452" y1="86" x2="508" y2="86" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+</g>
   </div>
   </div>
 </div>
 
 <script>
-// ══════════════════════════════════════════════════════════════════
-// TODO: home node toggle — relabel nodes relative to chosen home node
-// TODO: capo node layer — two-voice interval points
-//       open Q: capo click plays lower segment, upper, or both?
-// ══════════════════════════════════════════════════════════════════
+// ── TODO ──────────────────────────────────────────────────────────
+// TODO: capo free-drag mode (current: snap-only)
+// TODO: capo — add wider intervals (maj 9th, maj 10th etc.) for longer strings
+// TODO: harmonic numbers in tone strip and as optional node label layer
+// TODO: upstring-perspective ratio display
 
 // ── Physics ───────────────────────────────────────────────────────
 // TODO: STRING_LENGTH_M and MU_KG_M now partially exposed via UI
@@ -405,8 +445,21 @@ function tensionToFreq(lbs,inches,mu){
 function fundFreq(){return tensionToFreq(tensionLbs,effectiveSpeakingLength(),muKgM);}
 
 // ── Node view & nut height ────────────────────────────────────────
-let nodeView='full'; // 'full' | 'nut'
-let nutOffsetInches=0;   // inches subtracted from full string length (0 = main nut)
+let nodeView='full'; // 'full' | 'nut' | 'capo'
+let nutOffsetInches=0;
+
+// ── Capo ──────────────────────────────────────────────────────────
+const CAPO_COL='#C8821A';
+const CAPO_NODES=[
+  {label:'min 3rd',  itvl:'6:5', phi:5/11,  phiStr:'5/11'},
+  {label:'maj 3rd',  itvl:'5:4', phi:4/9,   phiStr:'4/9' },
+  {label:'perf 4th', itvl:'4:3', phi:3/7,   phiStr:'3/7' },
+  {label:'perf 5th', itvl:'3:2', phi:2/5,   phiStr:'2/5' },
+  {label:'min 6th',  itvl:'8:5', phi:5/13,  phiStr:'5/13'},
+  {label:'maj 6th',  itvl:'5:3', phi:3/8,   phiStr:'3/8' },
+  {label:'octave',   itvl:'2:1', phi:1/3,   phiStr:'1/3' },
+];
+let capoNodeIdx=3; // default: perfect fifth   // inches subtracted from full string length (0 = main nut)
 // Presets: offsets in inches from main nut
 let nutPresets=[6, 12, 19];
 
@@ -416,20 +469,167 @@ function effectiveSpeakingLength(){
 
 function setNodeView(view, btn){
   nodeView=view;
-  document.querySelectorAll('#view-full,#view-nut').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('#view-full,#view-nut,#view-capo').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
-  const cluster=document.getElementById('nut-preset-cluster');
-  if(view==='nut'){
-    cluster.style.opacity='1';
-    cluster.style.pointerEvents='';
-  } else {
-    cluster.style.opacity='0.35';
-    cluster.style.pointerEvents='none';
+  const nutCluster=document.getElementById('nut-preset-cluster');
+  const capoCluster=document.getElementById('capo-cluster');
+  nutCluster.style.display=view==='nut'?'':'none';
+  capoCluster.style.display=view==='capo'?'':'none';
+  updateColHeaders();
+  if(view!=='nut'){
     nutOffsetInches=0;
-    document.getElementById('len-sl').value=stringInches;
-    document.getElementById('len-ro').value=fmtLen(stringInches);
+    if(view!=='capo'){
+      document.getElementById('len-sl').value=stringInches;
+      document.getElementById('len-ro').value=fmtLen(stringInches);
+    }
   }
   render();
+}
+
+// ── Column header updates ─────────────────────────────────────────
+function updateColHeaders(){
+  const isCapo=nodeView==='capo';
+  document.getElementById('col-strdeg').textContent=  isCapo ? 'interval' : 'str°';
+  document.getElementById('col-homedeg').textContent= isCapo ? 'ratio'    : 'home°';
+  document.getElementById('col-keydeg').textContent=  isCapo ? ''         : 'key°';
+  document.getElementById('col-note').textContent=    isCapo ? ''         : 'note';
+  document.getElementById('col-info').textContent=    isCapo ? ''         : 'fraction · ratio · interval';
+  document.getElementById('col-segs').textContent=    isCapo ? ''         : 'upper | lower';
+}
+function capoYpx(){
+  const nutY=nutEffY(), speakingPx=TY-nutY;
+  return nutY + CAPO_NODES[capoNodeIdx].phi * speakingPx;
+}
+function capoUpperIn(){ return CAPO_NODES[capoNodeIdx].phi * effectiveSpeakingLength(); }
+function capoLowerIn(){ return (1-CAPO_NODES[capoNodeIdx].phi) * effectiveSpeakingLength(); }
+function capoUpperFreq(){ return fundFreq() / CAPO_NODES[capoNodeIdx].phi; }
+function capoLowerFreq(){ return fundFreq() / (1-CAPO_NODES[capoNodeIdx].phi); }
+
+function setCapoNode(idx){
+  capoNodeIdx=idx;
+  document.querySelectorAll('.capo-snap-btn').forEach((b,i)=>b.classList.toggle('on',i===idx));
+  updateCapoReadouts();
+  render();
+}
+
+function updateCapoReadouts(){
+  const uro=document.getElementById('capo-upper-ro');
+  const lro=document.getElementById('capo-lower-ro');
+  if(uro) uro.value=fmtLen(capoUpperIn());
+  if(lro) lro.value=fmtLen(capoLowerIn());
+}
+
+function playCapoBoth(){
+  playTone(capoUpperFreq());
+  playTone(capoLowerFreq());
+}
+
+// Build snap buttons (called once on init)
+function buildCapoSnapBtns(){
+  const container=document.getElementById('capo-snap-btns');
+  if(!container) return;
+  container.innerHTML='';
+  CAPO_NODES.forEach((cn,i)=>{
+    const b=document.createElement('button');
+    b.className='capo-snap-btn'+(i===capoNodeIdx?' on':'');
+    b.textContent=cn.label+' ('+cn.itvl+')';
+    b.onclick=()=>setCapoNode(i);
+    container.appendChild(b);
+  });
+}
+
+// ── Capo layer render ─────────────────────────────────────────────
+function updateCapoLayer(){
+  updateColHeaders();
+  const layer=document.getElementById('capo-layer');
+  if(nodeView!=='capo'){layer.setAttribute('display','none');return;}
+  layer.setAttribute('display','');
+
+  const fund=fundFreq();
+  const speakingIn=effectiveSpeakingLength();
+  const nutY=nutEffY();
+  const cy=capoYpx();
+  const cn=CAPO_NODES[capoNodeIdx];
+  const mainFS=30;
+
+  // Update drag marker position
+  document.getElementById('capo-drag-rect').setAttribute('y', cy-6);
+  document.getElementById('capo-drag-line1').setAttribute('y1',cy-2);
+  document.getElementById('capo-drag-line1').setAttribute('y2',cy-2);
+  document.getElementById('capo-drag-line2').setAttribute('y1',cy+2);
+  document.getElementById('capo-drag-line2').setAttribute('y2',cy+2);
+
+  // Snap ticks with diagonal callout lines to fanned labels — all 7 always shown
+  const ticksG=document.getElementById('capo-ticks');
+  ticksG.innerHTML='';
+  const mkT=(tag,attrs,txt)=>{const el=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const[k,v]of Object.entries(attrs))el.setAttribute(k,v);if(txt!==undefined)el.textContent=txt;return el;};
+  const TICK_X1=462, TICK_X2=522, LABEL_X=610, LABEL_FS=mainFS, MIN_GAP=LABEL_FS+6;
+
+  // Compute fixed fan positions from ALL nodes sorted by ty — never changes
+  const allNodes=CAPO_NODES.map((n,i)=>({n,i,ty:nutY+n.phi*(TY-nutY)}));
+  allNodes.sort((a,b)=>a.ty-b.ty);
+  const labelYs=allNodes.map(d=>d.ty);
+  for(let pass=0;pass<30;pass++){
+    for(let k=1;k<labelYs.length;k++){
+      if(labelYs[k]-labelYs[k-1]<MIN_GAP) labelYs[k]=labelYs[k-1]+MIN_GAP;
+    }
+  }
+
+  // Draw all ticks + callout lines + labels
+  allNodes.forEach((d,k)=>{
+    const lY=labelYs[k];
+    const isActive=d.i===capoNodeIdx;
+    // Tick
+    ticksG.appendChild(mkT('line',{x1:isActive?440:TICK_X1,x2:TICK_X2,y1:d.ty,y2:d.ty,
+      stroke:CAPO_COL,'stroke-width':isActive?3.5:2.5}));
+    // Callout line
+    ticksG.appendChild(mkT('line',{x1:TICK_X2,x2:LABEL_X-4,y1:d.ty,y2:lY,
+      stroke:CAPO_COL,'stroke-width':isActive?2:1.75}));
+    // Label
+    const lbl=mkT('text',{x:LABEL_X,y:lY+LABEL_FS*0.35,'font-size':LABEL_FS,
+      'font-weight':isActive?'600':'500',fill:CAPO_COL,opacity:isActive?1:0.55});
+    lbl.textContent=d.n.label+' · '+d.n.itvl; ticksG.appendChild(lbl);
+    // Clickable hit
+    const lHit=mkT('rect',{x:LABEL_X-2,y:lY-LABEL_FS*0.7,width:200,height:LABEL_FS+6,
+      fill:'transparent',style:'cursor:pointer;'});
+    lHit.addEventListener('click',e=>{e.stopPropagation();setCapoNode(d.i);});
+    ticksG.appendChild(lHit);
+  });
+
+  // Annotation
+  const annG=document.getElementById('capo-ann');
+  annG.innerHTML='';
+  const mkA=(tag,attrs,txt)=>{const el=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const[k,v]of Object.entries(attrs))el.setAttribute(k,v);if(txt!==undefined)el.textContent=txt;return el;};
+
+  // Upper segment shading
+  annG.appendChild(mkA('rect',{x:470,y:nutY,width:20,height:Math.max(0,cy-nutY),fill:'rgba(200,130,26,0.08)',rx:2}));
+
+  // Capo label — stacked, right-aligned just left of buttons
+  annG.appendChild(mkA('text',{x:346,y:cy-mainFS*0.05,'font-size':mainFS,'font-weight':'500','text-anchor':'end',fill:CAPO_COL},cn.label));
+  annG.appendChild(mkA('text',{x:346,y:cy+mainFS*0.95,'font-size':mainFS,'text-anchor':'end',fill:CAPO_COL,opacity:0.7},cn.itvl));
+
+  // ── Travelling play buttons — right up against drag marker left edge ──
+  const BTN_X=350, BTN_W=86, BTN_H=22, BTN_R=4, BTN_GAP=3;
+  const totalBtnH=BTN_H*3+BTN_GAP*2;
+  const btnDefs=[
+    {label:'▲ top',    action:()=>playTone(capoUpperFreq()), strip:()=>showStrip(capoUpperFreq(), cn.phi, '↑ '+cn.label, CAPO_COL)},
+    {label:'▲▼ both',  action:()=>playCapoBoth(),            strip:()=>showStripBoth()},
+    {label:'▼ bottom', action:()=>playTone(capoLowerFreq()), strip:()=>showStrip(capoLowerFreq(), 1-cn.phi, '↓ '+cn.label, CAPO_COL)},
+  ];
+  btnDefs.forEach(({label,action,strip},i)=>{
+    const bY=cy - totalBtnH/2 + i*(BTN_H+BTN_GAP);
+    const bg=mkA('rect',{x:BTN_X,y:bY,width:BTN_W,height:BTN_H,rx:BTN_R,
+      fill:'rgba(200,130,26,0.15)',stroke:CAPO_COL,'stroke-width':0.75,style:'cursor:pointer;'});
+    const txt=mkA('text',{x:BTN_X+BTN_W/2,y:bY+BTN_H*0.68,'font-size':11,
+      'text-anchor':'middle',fill:CAPO_COL,'font-weight':'500',style:'pointer-events:none;'},label);
+    bg.addEventListener('click',e=>{e.stopPropagation();action();strip();});
+    bg.addEventListener('mouseenter',()=>strip());
+    bg.addEventListener('mouseleave',clearStrip);
+    bg.addEventListener('mousedown',e=>e.stopPropagation());
+    annG.appendChild(bg); annG.appendChild(txt);
+  });
+
+  updateCapoReadouts();
 }
 
 
@@ -558,7 +758,7 @@ function setMode(mode, btn){
 }
 
 // ── Audio ─────────────────────────────────────────────────────────
-let audioCtx=null, waveform='warm', toneDuration=1.0, volume=0.65;
+let audioCtx=null, waveform='string', toneDuration=0.5, volume=0.65;
 let polyOn=true;
 // For polyphony=off: track active node so we can stop it cleanly
 let activeOsc=null, activeGain=null;
@@ -1063,6 +1263,49 @@ window.addEventListener('touchend',()=>{
   nutDragging=false; nutDidDrag=false;
 });
 
+// ── Capo drag ─────────────────────────────────────────────────────
+let capoDragging=false, capoDragStartY=0, capoDragStartPhi=0;
+document.getElementById('capo-drag-marker').addEventListener('mousedown',e=>{
+  if(nodeView!=='capo') return;
+  capoDragging=true; e.stopPropagation(); e.preventDefault();
+  capoDragStartY=e.clientY;
+  capoDragStartPhi=CAPO_NODES[capoNodeIdx].phi;
+});
+document.getElementById('capo-drag-marker').addEventListener('touchstart',e=>{
+  if(nodeView!=='capo') return;
+  capoDragging=true; e.stopPropagation();
+  capoDragStartY=e.touches[0].clientY;
+  capoDragStartPhi=CAPO_NODES[capoNodeIdx].phi;
+},{passive:true});
+
+function capoSnapFromRawPhi(rawPhi){
+  const phi=Math.max(0.05, Math.min(0.95, rawPhi));
+  let best=0, bestDist=Infinity;
+  CAPO_NODES.forEach((cn,i)=>{const d=Math.abs(cn.phi-phi);if(d<bestDist){bestDist=d;best=i;}});
+  if(best!==capoNodeIdx){
+    capoNodeIdx=best;
+    document.querySelectorAll('.capo-snap-btn').forEach((b,i)=>b.classList.toggle('on',i===best));
+    render();
+  }
+}
+
+window.addEventListener('mousemove',e=>{
+  if(!capoDragging) return;
+  const nutY=nutEffY(), speakingPx=TY-nutY;
+  const dyPx=(e.clientY-capoDragStartY)/sc;
+  const rawPhi=capoDragStartPhi + dyPx/speakingPx;
+  capoSnapFromRawPhi(rawPhi);
+});
+window.addEventListener('touchmove',e=>{
+  if(!capoDragging) return;
+  const nutY=nutEffY(), speakingPx=TY-nutY;
+  const dyPx=(e.touches[0].clientY-capoDragStartY)/sc;
+  const rawPhi=capoDragStartPhi + dyPx/speakingPx;
+  capoSnapFromRawPhi(rawPhi);
+},{passive:true});
+window.addEventListener('mouseup',()=>{ capoDragging=false; });
+window.addEventListener('touchend',()=>{ capoDragging=false; });
+
 
 
 function resolveColor(node,snapped,inKey,isHome){
@@ -1116,6 +1359,38 @@ function showStrip(freq, frac, nodeLabel, color){
 function clearStrip(){
   document.getElementById('tone-row1').innerHTML=
     '<span class="strip-idle">hover or touch a node to see details</span>';
+  const row2=document.getElementById('tone-row2');
+  row2.classList.remove('visible');
+  row2.innerHTML='';
+  document.getElementById('tone-strip').classList.remove('two-voice');
+  document.querySelector('#tone-strip .strip-label').textContent='current tone';
+}
+
+function stripVoiceHTML(freq, frac, label, color){
+  const ni=noteInfo(freq);
+  const kd=ni.snapped?chromDeg(ni.midi,homeKey):'—';
+  const inKey=ni.snapped?isInKey(ni.midi):false;
+  const noteStr=ni.snapped?ni.name+ni.octave:'—';
+  const keyCol=inKey?'#0F6E56':'rgba(153,60,29,0.6)';
+  const segIn=frac*effectiveSpeakingLength();
+  return `<div class="strip-large">`+
+    `<span class="strip-deg" style="color:${color}">${label}</span>`+
+    `<span class="strip-keydeg" style="color:${keyCol}">${kd}</span>`+
+    `<span class="strip-note" style="color:${keyCol}">${noteStr}</span>`+
+    `<span class="strip-freq" style="color:${color}">${freq.toFixed(1)} Hz · ${fmtLen(segIn)}</span>`+
+  `</div>`;
+}
+
+function showStripBoth(){
+  const cn=CAPO_NODES[capoNodeIdx];
+  const uFreq=capoUpperFreq(), lFreq=capoLowerFreq();
+  const strip=document.getElementById('tone-strip');
+  strip.classList.add('two-voice');
+  document.querySelector('#tone-strip .strip-label').textContent='current tones';
+  document.getElementById('tone-row1').innerHTML=stripVoiceHTML(uFreq, cn.phi, '↑ '+cn.label, CAPO_COL);
+  const row2=document.getElementById('tone-row2');
+  row2.innerHTML=stripVoiceHTML(lFreq, 1-cn.phi, '↓ '+cn.label, CAPO_COL);
+  row2.classList.add('visible');
 }
 
 function hideHoldPanel(){
@@ -1135,7 +1410,7 @@ function complementFrac(fs){
   return cn===0?'0':`${cn/g}/${d/g}`;
 }
 
-function showRuler(nodeY, upperIn, lowerIn, nodeFs, nodeFreq){
+function showRuler(nodeY, upperIn, lowerIn, nodeFs, nodeFreq, upperFracStr, rulerColor){
   clearRuler();
   const g=document.getElementById('dyn-ruler');
   const nutY=nutEffY();
@@ -1143,12 +1418,13 @@ function showRuler(nodeY, upperIn, lowerIn, nodeFs, nodeFreq){
   const labelFS=36;
   const fund=fundFreq();
   const speakingIn=effectiveSpeakingLength();
+  const COL=rulerColor||RULER_COL;
   const mkr=(tag,attrs)=>{
     const el=document.createElementNS('http://www.w3.org/2000/svg',tag);
     for(const[k,v]of Object.entries(attrs))el.setAttribute(k,v);
     return el;
   };
-  const hash=(y,op,hw,sw)=>mkr('line',{x1:RX-hw,x2:RX+hw,y1:y,y2:y,stroke:RULER_COL,
+  const hash=(y,op,hw,sw)=>mkr('line',{x1:RX-hw,x2:RX+hw,y1:y,y2:y,stroke:COL,
     'stroke-width':sw||1.5,opacity:op});
 
   // lines: array of strings, stacked outward from node hash
@@ -1159,7 +1435,7 @@ function showRuler(nodeY, upperIn, lowerIn, nodeFs, nodeFreq){
         ? y - labelFS*0.2 - i*labelFS*1.0
         : y + labelFS*0.9 + i*labelFS*1.0;
       const el=mkr('text',{x:RLX,y:ly,'font-size':labelFS,'text-anchor':'end',
-        fill:RULER_COL,'font-weight':i===0?'500':'400',opacity:i===0?1:i===1?0.65:0.45});
+        fill:COL,'font-weight':i===0?'500':'400',opacity:i===0?1:i===1?0.65:0.45});
       el.textContent=txt; g.appendChild(el);
     });
   };
@@ -1173,9 +1449,9 @@ function showRuler(nodeY, upperIn, lowerIn, nodeFs, nodeFreq){
 
   // Upper segment
   if(upperIn > 0.5 && nodeY-nutY > gap*3){
-    g.appendChild(mkr('line',{x1:RX,x2:RX,y1:nutY+gap,y2:nodeY-gap,stroke:RULER_COL,
+    g.appendChild(mkr('line',{x1:RX,x2:RX,y1:nutY+gap,y2:nodeY-gap,stroke:COL,
       'stroke-width':1,'marker-start':'url(#arrow)','marker-end':'url(#arrow)'}));
-    const ufrac=complementFrac(nodeFs);
+    const ufrac=upperFracStr||complementFrac(nodeFs);
     const upperFreq=upperIn>0 ? fund*(speakingIn/upperIn) : 0;
     const uni=upperFreq>0 ? noteInfo(upperFreq) : null;
     const uNote=uni&&uni.snapped ? uni.name+uni.octave : '';
@@ -1185,7 +1461,7 @@ function showRuler(nodeY, upperIn, lowerIn, nodeFs, nodeFreq){
 
   // Lower segment
   if(TY-nodeY > gap*3){
-    g.appendChild(mkr('line',{x1:RX,x2:RX,y1:nodeY+gap,y2:TY-gap,stroke:RULER_COL,
+    g.appendChild(mkr('line',{x1:RX,x2:RX,y1:nodeY+gap,y2:TY-gap,stroke:COL,
       'stroke-width':1,'marker-start':'url(#arrow)','marker-end':'url(#arrow)'}));
     const lni=nodeFreq ? noteInfo(nodeFreq) : null;
     const lNote=lni&&lni.snapped ? lni.name+lni.octave : '';
@@ -1215,11 +1491,17 @@ function updateStatus(){
 function render(){
   updateStatus();
   updateNutMarker();
+  updateCapoLayer();
   document.getElementById('dyn-nodes').innerHTML='';
   document.getElementById('dyn-nut').innerHTML='';
   document.getElementById('dyn-home-rings').innerHTML='';
   document.getElementById('dyn-ruler').innerHTML='';
   hideHoldPanel();
+  if(nodeView==='capo'){
+    const cn=CAPO_NODES[capoNodeIdx];
+    showRuler(capoYpx(), capoUpperIn(), capoLowerIn(), '1\u2212'+cn.phiStr, capoLowerFreq(), cn.phiStr, CAPO_COL);
+    return;
+  }
   const g=document.getElementById('dyn-nodes');
   const homeRingsG=document.getElementById('dyn-home-rings');
   const nutG=document.getElementById('dyn-nut');
@@ -1401,7 +1683,7 @@ canvas.addEventListener('touchmove',e=>{
 canvas.addEventListener('touchend',()=>{dragging=false;});
 
 // Initialize to fit view on load
-setTimeout(()=>{zoomFit();updateScaleSpelling();render();},0);
+setTimeout(()=>{zoomFit();buildCapoSnapBtns();updateScaleSpelling();render();},0);
 window.addEventListener('resize',()=>{clamp();applyT();});
 </script>
 </body>
