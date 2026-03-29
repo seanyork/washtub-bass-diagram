@@ -194,7 +194,7 @@ input[type=range]{width:110px;cursor:pointer;}
 .ov-btn{height:22px;padding:0 8px;font-size:9px;border:0.5px solid rgba(128,128,128,0.3);border-radius:3px;color:#555;background:#fff;white-space:nowrap;display:inline-flex;align-items:center;cursor:pointer;}
 .ov-btn.danger{border-color:rgba(153,60,29,0.3);color:rgba(153,60,29,0.8);}
 /* ── CoF + picker overlays ── */
-#cof-wrap{position:absolute;left:0;bottom:76px;width:170px;height:170px;z-index:14;pointer-events:auto;}
+#cof-wrap{position:absolute;left:0;bottom:0;width:170px;height:170px;z-index:14;pointer-events:auto;}
 #cof-canvas{display:block;cursor:grab;}
 #cof-canvas.spinning{cursor:grabbing;}
 #scale-picker{position:absolute;left:44px;top:50px;z-index:50;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.12);padding:6px 0;min-width:140px;display:none;}
@@ -1563,7 +1563,7 @@ function drawCoF(){
     const labelR=(innerR+outerR)/2;
     const lx=cx+labelR*Math.cos(midA);
     const ly=cy+labelR*Math.sin(midA);
-    ctx.font=(atDot?'bold ':'')+(atDot?'12':'10.5')+'px system-ui,sans-serif';
+    ctx.font=(atDot?'bold ':'')+(atDot?'14':'12')+'px system-ui,sans-serif';
     ctx.fillStyle=textColor;
     ctx.textAlign='center';
     ctx.textBaseline='middle';
@@ -2950,9 +2950,8 @@ canvas.addEventListener('wheel',e=>{
   const f=e.deltaY>0?0.85:1.18, ns=Math.min(scMx,Math.max(scMn,sc*f));
   tx=mx-(mx-tx)*(ns/sc);ty=my-(my-ty)*(ns/sc);sc=ns;clamp();applyT();
 },{passive:false});
-// ── Canvas touch: two-finger pan + pinch zoom ─────────────────────
-// Single-finger touches are exclusively for node hit-rects (row-hit).
-// Two-finger touches pan and pinch-zoom the diagram.
+// ── Canvas touch: single-finger pan + two-finger pinch zoom ──────
+// Single-finger on a non-hit area pans. Two-finger pinch zooms.
 let _t2StartDist=0, _t2StartSc=0, _t2StartTx=0, _t2StartTy=0, _t2MidX=0, _t2MidY=0;
 
 function _t2Mid(e){
@@ -2968,30 +2967,35 @@ function _t2Mid(e){
 
 canvas.addEventListener('touchstart',e=>{
   if(e.touches.length===2){
-    // Two-finger: start pan+pinch
-    dragging=false; // cancel any single-finger drag
+    // Two-finger: start pinch — cancel any single-finger pan
+    dragging=false;
     const m=_t2Mid(e);
     _t2StartDist=m.dist; _t2StartSc=sc;
     _t2StartTx=tx; _t2StartTy=ty;
     _t2MidX=m.x; _t2MidY=m.y;
+  } else if(e.touches.length===1&&!e.target.classList.contains('row-hit')){
+    // Single-finger on non-node area: pan
+    dragging=true;
+    dsx=e.touches[0].clientX; dsy=e.touches[0].clientY;
+    dtx=tx; dty=ty;
   }
-  // Single-finger on non-hit areas: no pan (handled by hit-rects only)
 },{passive:true});
 
 canvas.addEventListener('touchmove',e=>{
   if(e.touches.length===2){
     const m=_t2Mid(e);
-    // pinch scale
     const ns=Math.min(scMx,Math.max(scMn,_t2StartSc*(m.dist/_t2StartDist)));
-    // pan: midpoint movement
     const dx=m.x-_t2MidX, dy=m.y-_t2MidY;
-    // scale-adjusted position
     const r=canvas.getBoundingClientRect();
     const mx=_t2MidX-r.left, my=_t2MidY-r.top;
     tx=mx-(mx-_t2StartTx)*(ns/_t2StartSc)+dx;
     ty=my-(my-_t2StartTy)*(ns/_t2StartSc)+dy;
     sc=ns; clamp(); applyT();
-    e.preventDefault(); // prevent page scroll during pinch
+    e.preventDefault();
+  } else if(dragging&&e.touches.length===1){
+    tx=dtx+(e.touches[0].clientX-dsx);
+    ty=dty+(e.touches[0].clientY-dsy);
+    clamp(); applyT();
   }
 },{passive:false});
 
