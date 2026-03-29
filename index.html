@@ -6,7 +6,7 @@
 <title>Washtub Bass String Map</title>
 <style>
 *{box-sizing:border-box;}
-body{margin:0;padding:10px;font-family:system-ui,sans-serif;background:#fff;color:#1a1a1a;font-size:13px;}
+body{margin:0;padding:0;font-family:system-ui,sans-serif;background:#fff;color:#1a1a1a;font-size:13px;overflow:hidden;}
 :root{--inkey:#1a1a1a;--inkey-fill:rgba(0,0,0,0.06);}
 @media(prefers-color-scheme:dark){body{background:#1a1a1a;color:#e0e0e0;}:root{--inkey:#d8d8d0;--inkey-fill:rgba(255,255,255,0.08);}}
 #ctrl-bar{background:rgba(128,128,128,0.07);border:0.5px solid rgba(128,128,128,0.2);border-radius:10px;padding:10px 14px;margin-bottom:10px;}
@@ -37,11 +37,11 @@ input[type=range]{width:110px;cursor:pointer;}
 .readout{font-size:11px;font-weight:500;color:#1a1a1a;background:rgba(255,255,255,0.9);border:0.5px solid rgba(128,128,128,0.3);border-radius:4px;padding:2px 5px;width:78px;text-align:center;}
 .readout:focus{outline:none;border-color:#533AB7;}
 @media(prefers-color-scheme:dark){.readout{background:rgba(255,255,255,0.08);color:#e0e0e0;}}
-#canvas-outer{display:flex;gap:6px;align-items:stretch;}
+#canvas-outer{display:none;}
 #zoom-rail{display:flex;flex-direction:column;gap:3px;align-items:center;padding-top:4px;width:32px;flex-shrink:0;}
 #zoom-rail button{width:26px;height:26px;border:0.5px solid rgba(128,128,128,0.3);background:rgba(255,255,255,0.92);color:#333;border-radius:5px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 @media(prefers-color-scheme:dark){#zoom-rail button{background:rgba(30,30,30,0.92);color:#ddd;}}
-#canvas-wrap{overflow:hidden;flex:1;height:calc(100vh - 420px);min-height:300px;cursor:grab;user-select:none;border:0.5px solid rgba(128,128,128,0.2);border-radius:10px;position:relative;}
+#canvas-wrap{overflow:hidden;flex:1 1 0%;cursor:grab;user-select:none;position:relative;min-height:0;}
 #canvas-wrap.dragging{cursor:grabbing;}
 #zoom-label{font-size:10px;color:#888;text-align:center;}
 .capo-snap-btn{height:22px;font-size:11px;background:transparent;border:0.5px solid rgba(200,130,26,0.35);border-radius:3px;color:#C8821A;cursor:pointer;padding:0 8px;white-space:nowrap;display:flex;align-items:center;}
@@ -71,260 +71,312 @@ input[type=range]{width:110px;cursor:pointer;}
 #tone-strip .strip-idle{font-size:12px;color:#aaa;font-style:italic;display:flex;align-items:center;}
 
 @media(prefers-color-scheme:dark){#tone-strip .strip-label{color:#666;}#tone-strip .strip-seg-row{color:#666;}#tone-strip .strip-idle{color:#555;}}
+
+/* ══ v4 APP SHELL CSS ══════════════════════════════════════════════ */
+#app-shell{display:flex;flex-direction:column;height:100vh;overflow:hidden;background:#fff;position:relative;}
+@media(prefers-color-scheme:dark){#app-shell{background:#1a1a1a;}}
+
+/* top tone strip */
+#new-tone-strip{height:50px;flex-shrink:0;display:flex;align-items:stretch;border-bottom:0.5px solid rgba(128,128,128,0.18);background:#fff;z-index:5;position:relative;}
+@media(prefers-color-scheme:dark){#new-tone-strip{background:#252525;}}
+#nts-left{flex:1 1 0%;display:flex;flex-direction:column;justify-content:center;padding:4px 10px;gap:1px;border-right:0.5px solid rgba(128,128,128,0.15);}
+#nts-scale{font-size:11px;font-weight:500;}
+.nts-spell{display:flex;}
+.nts-spell span{display:inline-block;width:22px;font-size:9px;text-align:center;}
+#nts-num span{color:#533AB7;font-weight:500;}
+#nts-let span{color:#888;}
+#nts-right{width:140px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;padding:4px 8px;gap:2px;}
+.nts-idle{font-size:11px;color:#aaa;font-style:italic;}
+
+/* app body */
+#app-body{flex:1 1 0%;display:flex;overflow:hidden;position:relative;min-height:0;}
+
+/* left rail */
+#left-rail{width:40px;flex-shrink:0;border-right:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column-reverse;align-items:center;padding:5px 0;gap:3px;background:rgb(250,250,250);position:relative;z-index:15;}
+@media(prefers-color-scheme:dark){#left-rail{background:#252525;}}
+#lr-tune-btn{width:30px;height:28px;background:#EEEDFE;border:0.5px solid #AFA9EC;border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.lr-icon{font-size:12px;color:#533AB7;}
+.lr-tune-lbl{font-size:6px;color:#533AB7;text-align:center;line-height:1.1;}
+.lr-chip{width:30px;height:22px;border:0.5px solid rgba(128,128,128,0.25);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:#fff;flex-shrink:0;}
+@media(prefers-color-scheme:dark){.lr-chip{background:#333;}}
+.lr-chip-open{border-color:#533AB7;background:#EEEDFE;}
+.lr-chip-lbl{font-size:6.5px;color:#aaa;text-transform:uppercase;letter-spacing:0.04em;}
+.lr-chip-val{font-size:11px;font-weight:600;color:#533AB7;line-height:1.1;}
+.lr-chip-sub{font-size:7px;color:#533AB7;line-height:1;}
+.lr-sep{width:26px;height:0.5px;background:rgba(128,128,128,0.2);flex-shrink:0;}
+#lr-zoom-cluster{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;}
+.lr-zb{width:26px;height:26px;border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;font-size:13px;color:#555;display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;flex-shrink:0;}
+.lr-zb:hover{border-color:rgba(128,128,128,0.5);}
+@media(prefers-color-scheme:dark){.lr-zb{background:#333;color:#ddd;}}
+.lr-zb-pct{font-size:7.5px;font-weight:500;}
+.lr-zoom-pct{font-size:7px;color:#888;text-align:center;}
+.lr-tension-lbl{font-size:6.5px;color:#aaa;text-transform:uppercase;letter-spacing:0.04em;flex-shrink:0;}
+#lr-tension-track{flex:1 1 0%;min-height:40px;position:relative;display:flex;justify-content:center;align-items:stretch;width:20px;}
+#ten-sl-v{-webkit-appearance:slider-vertical;appearance:slider-vertical;writing-mode:vertical-lr;direction:rtl;width:20px;height:100%;cursor:pointer;margin:0;}
+#lr-fund{display:flex;flex-direction:column;align-items:center;gap:0;flex-shrink:0;padding-top:2px;width:100%;}
+.lr-fund-note{font-size:13px;font-weight:600;color:#533AB7;line-height:1.2;text-align:center;}
+.lr-fund-num{font-size:20px;font-weight:600;color:#533AB7;line-height:1;width:100%;text-align:center;overflow:hidden;}
+.lr-fund-hz{font-size:8px;color:#aaa;line-height:1.4;}
+
+/* canvas-wrap already has flex:1 from updated rule above */
+#canvas-wrap.dragging{cursor:grabbing;}
+
+/* label panel — pointer-events:none so node hits pass through */
+#label-panel{position:absolute;right:0;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;pointer-events:none;z-index:20;opacity:0;transition:opacity 0.12s;}
+#label-inner{white-space:nowrap;}
+
+/* ruler rail */
+#rrail{width:28px;flex-shrink:0;border-left:0.5px solid rgba(128,128,128,0.15);display:flex;flex-direction:column;align-items:center;padding:10px 0;background:rgba(248,247,244,0.94);position:relative;z-index:13;}
+@media(prefers-color-scheme:dark){#rrail{background:rgba(40,40,40,0.94);}}
+#rr-track{flex:1;width:2px;background:rgba(128,128,128,0.2);border-radius:1px;position:relative;}
+.rr-tick{position:absolute;left:50%;transform:translateX(-50%);width:8px;height:2px;background:rgba(128,128,128,0.4);border-radius:1px;}
+#rr-viewport{position:absolute;left:50%;transform:translateX(-50%);width:16px;border-radius:3px;background:rgba(83,58,183,0.12);border:0.5px solid rgba(83,58,183,0.25);cursor:ns-resize;top:0;height:100%;}
+#rr-dot{display:none;position:absolute;left:50%;transform:translateX(-50%) translateY(-50%);width:10px;height:10px;border-radius:50%;background:#533AB7;border:2px solid #fff;box-shadow:0 0 0 1.5px #533AB7;z-index:3;}
+#rr-fan{position:absolute;inset:0;pointer-events:none;z-index:4;overflow:visible;}
+
+/* bottom rail */
+#bottom-rail{height:76px;flex-shrink:0;border-top:0.5px solid rgba(128,128,128,0.18);display:flex;background:rgb(250,250,250);position:relative;z-index:16;}
+@media(prefers-color-scheme:dark){#bottom-rail{background:#252525;}}
+#br-nv{width:40px;border-right:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 3px;gap:2px;flex-shrink:0;}
+.br-nvb{width:32px;height:20px;font-size:9px;border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;color:#666;display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;}
+.br-nvb-on{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
+.br-nvb-cap-on{background:#C8821A;color:#fff;border-color:#C8821A;}
+@media(prefers-color-scheme:dark){.br-nvb{background:#333;color:#aaa;}}
+#br-ctx{flex:1 1 0%;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
+.br-ctx-row{flex:1 1 0%;display:flex;align-items:center;padding:0 6px;gap:4px;border-bottom:0.5px solid rgba(128,128,128,0.1);}
+.br-ctx-row:last-child{border-bottom:none;}
+.br-ctx-idle{font-size:8.5px;color:#ccc;font-style:italic;}
+.br-more-bar{flex:1 1 0%;height:1.5px;background:rgba(128,128,128,0.15);border-radius:1px;}
+.br-more-lbl{font-size:8px;color:#bbb;white-space:nowrap;}
+#br-ap{width:44px;flex-shrink:0;border-left:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 3px;gap:2px;}
+.br-apb{width:36px;height:18px;font-size:7.5px;border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;color:#555;display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;}
+.br-apb-on{background:#533AB7;color:#fff;border-color:#533AB7;}
+@media(prefers-color-scheme:dark){.br-apb{background:#333;color:#aaa;}}
+
+/* CoF */
+#cof-wrap{position:absolute;left:0;bottom:0;width:160px;height:160px;z-index:14;}
+#cof-canvas{display:block;cursor:grab;}
+#cof-dot{position:absolute;left:76px;top:4px;width:8px;height:8px;background:#533AB7;border-radius:50%;pointer-events:none;box-shadow:0 0 0 2px #fff;z-index:2;}
+
+/* overflow panel (below bottom rail on desktop, slide-up on mobile) */
+#overflow-panel{display:none;position:absolute;bottom:76px;left:0;right:0;z-index:15;background:#fff;border-top:0.5px solid rgba(128,128,128,0.18);padding:10px 12px;flex-direction:column;gap:8px;}
+@media(prefers-color-scheme:dark){#overflow-panel{background:#1e1e1e;}}
+#overflow-panel.visible{display:flex;}
+/* ── bottom rail control styles ── */
+.br-chip{font-size:9px;color:#533AB7;font-weight:500;background:rgba(83,58,183,0.07);border:0.5px solid rgba(83,58,183,0.25);border-radius:3px;padding:1px 5px;white-space:nowrap;line-height:1.4;}
+.br-chip-lbl{font-size:8px;color:#aaa;white-space:nowrap;}
+.br-btn{height:18px;padding:0 6px;font-size:8.5px;border:0.5px solid rgba(128,128,128,0.3);border-radius:3px;color:#555;background:#fff;white-space:nowrap;display:inline-flex;align-items:center;cursor:pointer;}
+.br-btn.on{background:#533AB7;color:#fff;border-color:#533AB7;}
+.br-preset-btn{height:20px;padding:0 5px;font-size:8.5px;border:0.5px solid rgba(83,58,183,0.3);border-radius:3px;color:#533AB7;background:rgba(83,58,183,0.06);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:1;}
+.br-preset-btn.on{background:rgba(83,58,183,0.18);font-weight:600;}
+.br-play-btn{flex:1;height:20px;font-size:9px;font-weight:500;border:0.5px solid rgba(200,130,26,0.4);border-radius:3px;color:#C8821A;background:rgba(200,130,26,0.08);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;white-space:nowrap;gap:2px;}
+.br-snap-btn{height:18px;padding:0 4px;font-size:8px;border:0.5px solid rgba(200,130,26,0.3);border-radius:3px;color:#C8821A;background:#fff;white-space:nowrap;display:inline-flex;align-items:center;cursor:pointer;}
+.br-snap-btn.on{background:#C8821A;color:#fff;border-color:#C8821A;}
+.br-wav-btn{height:18px;padding:0 6px;font-size:8.5px;border:0.5px solid rgba(128,128,128,0.3);border-radius:3px;color:#555;background:#fff;white-space:nowrap;display:inline-flex;align-items:center;cursor:pointer;}
+.br-wav-btn.on{background:#533AB7;color:#fff;border-color:#533AB7;}
+.br-poly-btn{height:18px;padding:0 7px;font-size:8.5px;border:0.5px solid rgba(128,128,128,0.3);border-radius:3px;color:#555;background:#fff;display:inline-flex;align-items:center;cursor:pointer;}
+.br-poly-btn.on{background:#533AB7;color:#fff;border-color:#533AB7;}
+.br-sl-wrap{display:flex;align-items:center;gap:3px;flex:1;min-width:0;}
+.br-sl-lbl{font-size:7.5px;color:#aaa;white-space:nowrap;}
+.br-sl-track{flex:1;height:3px;background:rgba(83,58,183,0.2);border-radius:2px;position:relative;cursor:pointer;}
+.br-sl-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:9px;height:9px;border-radius:50%;background:#533AB7;border:1.5px solid #fff;box-shadow:0 0 0 1px #533AB7;pointer-events:none;}
+.br-sl-val{font-size:7.5px;color:#533AB7;font-weight:500;white-space:nowrap;min-width:24px;text-align:right;}
+.lgnd-grid{display:grid;grid-template-columns:1fr 1fr;width:100%;height:100%;}
+.lgnd-cell{display:flex;align-items:center;gap:3px;padding:2px 5px;}
+.lgnd-cell.br{border-right:0.5px solid rgba(128,128,128,0.08);}
+.lgnd-cell.bb{border-bottom:0.5px solid rgba(128,128,128,0.08);}
+.lgnd-txt{font-size:8px;color:#555;white-space:nowrap;line-height:1.2;}
+.ov-title{font-size:9px;color:#aaa;text-transform:uppercase;letter-spacing:0.05em;font-weight:500;}
+.ov-sep{height:0.5px;background:rgba(128,128,128,0.15);}
+.ov-row{display:flex;align-items:center;gap:5px;}
+.ov-lbl{font-size:10px;color:#888;white-space:nowrap;min-width:46px;}
+.ov-field{height:22px;border:0.5px solid rgba(128,128,128,0.3);border-radius:3px;font-size:10px;font-weight:500;color:#533AB7;background:rgba(83,58,183,0.04);padding:0 5px;width:62px;flex-shrink:0;}
+.ov-btn{height:22px;padding:0 8px;font-size:9px;border:0.5px solid rgba(128,128,128,0.3);border-radius:3px;color:#555;background:#fff;white-space:nowrap;display:inline-flex;align-items:center;cursor:pointer;}
+.ov-btn.danger{border-color:rgba(153,60,29,0.3);color:rgba(153,60,29,0.8);}
+/* ── CoF + picker overlays ── */
+#cof-wrap{position:absolute;left:0;bottom:76px;width:170px;height:170px;z-index:14;pointer-events:auto;}
+#cof-canvas{display:block;cursor:grab;}
+#cof-canvas.spinning{cursor:grabbing;}
+#scale-picker{position:absolute;left:44px;top:50px;z-index:50;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.12);padding:6px 0;min-width:140px;display:none;}
+@media(prefers-color-scheme:dark){#scale-picker{background:#2a2a2a;}}
+#scale-picker.visible{display:block;}
+.sp-item{padding:5px 14px;font-size:11px;cursor:pointer;color:#1a1a1a;white-space:nowrap;}
+.sp-item:hover{background:rgba(83,58,183,0.07);}
+.sp-item.on{color:#533AB7;font-weight:600;background:rgba(83,58,183,0.05);}
+.sp-sep{height:0.5px;background:rgba(128,128,128,0.15);margin:3px 0;}
+@media(prefers-color-scheme:dark){.sp-item{color:#e0e0e0;}}
+#home-picker{position:absolute;left:44px;top:100px;z-index:50;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.12);padding:5px;display:none;flex-direction:column;gap:2px;min-width:80px;}
+@media(prefers-color-scheme:dark){#home-picker{background:#2a2a2a;}}
+#home-picker.visible{display:flex;}
+.hp-item{padding:4px 10px;font-size:11px;cursor:pointer;color:#1a1a1a;border-radius:4px;white-space:nowrap;}
+.hp-item:hover{background:rgba(83,58,183,0.07);}
+.hp-item.on{color:#533AB7;font-weight:600;background:rgba(83,58,183,0.06);}
+@media(prefers-color-scheme:dark){.hp-item{color:#e0e0e0;}}
+/* ══ end v4 APP SHELL CSS ═══════════════════════════════════════════ */
 </style>
 </head>
 <body>
+<div id="dev-banner" style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#C8821A;color:#fff;font-family:system-ui,sans-serif;font-size:11px;font-weight:500;text-align:center;padding:3px 0;letter-spacing:0.05em;pointer-events:none;">DEV v4.8 — cross-platform pass</div>
 
-<div id="ctrl-bar">
 
-  <!-- Row 1: audio -->
-  <div class="ctrl-row" style="margin-bottom:4px;">
-    <div class="ctrl-col">
-      <div class="sec-lbl">waveform</div>
-      <div class="tog-grp">
-        <button class="tog" id="wav-sine" onclick="setWaveform('sine',this)">sine</button>
-        <button class="tog" id="wav-warm" onclick="setWaveform('warm',this)">warm</button>
-        <button class="tog on" id="wav-string" onclick="setWaveform('string',this)">string</button>
-      </div>
-    </div>
-    <div class="ctrl-col">
-      <div class="sec-lbl">polyphony</div>
-      <div class="tog-grp">
-        <button class="tog on" onclick="setPoly(true,this)">on</button>
-        <button class="tog" onclick="setPoly(false,this)">off</button>
-      </div>
-    </div>
-    <div class="ctrl-col">
-      <div class="sec-lbl">duration</div>
-      <div class="sl-row">
-        <input type="range" id="dur-sl" min="0.2" max="4" step="0.1" value="0.5" oninput="syncSlider('dur',this.value)">
-        <input class="readout" id="dur-ro" value="0.5 s" onchange="syncReadout('dur',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
-      </div>
-    </div>
-    <div class="ctrl-col">
-      <div class="sec-lbl">volume</div>
-      <div class="sl-row">
-        <input type="range" id="vol-sl" min="0" max="100" step="1" value="65" oninput="syncSlider('vol',this.value)">
-        <input class="readout" id="vol-ro" value="65%" onchange="syncReadout('vol',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
-      </div>
-    </div>
+<!-- ════════════════════════════════════════════════════════════════
+     LEGACY CONTROLS — hidden from view, preserved for JS compatibility
+     All element IDs that existing JS references by getElementById()
+     or querySelectorAll() live here. Steps 3–12 wire new visible UI
+     elements to call the same functions / update the same state.
+     Do NOT remove or rename any element ID in this section.
+     ════════════════════════════════════════════════════════════════ -->
+<div id="legacy-controls" style="display:none;" aria-hidden="true">
+  <!-- waveform -->
+  <button id="wav-sine" onclick="setWaveform('sine',this)"></button>
+  <button id="wav-warm" onclick="setWaveform('warm',this)"></button>
+  <button class="on" id="wav-string" onclick="setWaveform('string',this)"></button>
+  <!-- duration + volume -->
+  <input type="range" id="dur-sl" min="0.2" max="4" step="0.1" value="0.5" oninput="syncSlider('dur',this.value)">
+  <input id="dur-ro" value="0.5 s" onchange="syncReadout('dur',this.value)">
+  <input type="range" id="vol-sl" min="0" max="100" step="1" value="65" oninput="syncSlider('vol',this.value)">
+  <input id="vol-ro" value="65%" onchange="syncReadout('vol',this.value)">
+  <!-- key grid — JS builds kbtn children here -->
+  <div id="key-grid"></div>
+  <!-- mode buttons -->
+  <button class="tog on mode-btn" onclick="setMode('ionian',this)">1 Ionian</button>
+  <button class="tog mode-btn" onclick="setMode('dorian',this)">2 Dorian</button>
+  <button class="tog mode-btn" onclick="setMode('phrygian',this)">3 Phrygian</button>
+  <button class="tog mode-btn" onclick="setMode('lydian',this)">4 Lydian</button>
+  <button class="tog mode-btn" onclick="setMode('mixolydian',this)">5 Mixolydian</button>
+  <button class="tog mode-btn" onclick="setMode('aeolian',this)">6 Aeolian</button>
+  <button class="tog mode-btn" onclick="setMode('locrian',this)">7 Locrian</button>
+  <button class="tog mode-btn" onclick="setMode('harmonic_minor',this)">harmonic minor</button>
+  <button class="tog mode-btn" onclick="setMode('melodic_minor',this)">melodic minor</button>
+  <!-- tune buttons -->
+  <button id="tune-btn" onclick="tuneToKey()">Tune to G</button>
+  <button id="tune-btn2" onclick="tuneToKey()">Tune String to G Ionian</button>
+  <!-- scale spelling chip -->
+  <div id="scale-spelling"></div>
+  <!-- node view (hidden — new BR nav buttons call setNodeView passing these) -->
+  <button class="tog on" id="view-full" onclick="setNodeView('full',this)">full string</button>
+  <button class="tog" id="view-nut" onclick="setNodeView('nut',this)">nut height</button>
+  <button class="tog" id="view-capo" onclick="setNodeView('capo',this)">capo</button>
+  <!-- nut clusters -->
+  <div id="nut-preset-cluster">
+    <input id="nut-pre-0" value='6.0"' onchange="setNutPreset(0,this.value)">
+    <input id="nut-pre-1" value='12.0"' onchange="setNutPreset(1,this.value)">
+    <input id="nut-pre-2" value='19.0"' onchange="setNutPreset(2,this.value)">
+    <input id="nut-offset-ro" value='0.0"' readonly>
+    <input id="nut-speaking-ro" value='69.0"' readonly>
   </div>
-  <div class="ctrl-sep"></div>
-
-  <!-- Row 2: musical context — root note + mode/scale -->
-  <div class="ctrl-row" style="margin-bottom:4px;align-items:flex-start;">
-    <div class="ctrl-col">
-      <div class="sec-lbl">root note</div>
-      <div class="key-grid" id="key-grid"></div>
-    </div>
-    <div class="ctrl-vsep"></div>
-    <div class="ctrl-col">
-      <div class="sec-lbl">mode / scale</div>
-      <div style="display:flex;gap:10px;align-items:flex-start;">
-        <div>
-          <div style="font-size:10px;color:#aaa;margin-bottom:3px;">modes</div>
-          <div style="display:flex;gap:2px;flex-wrap:wrap;max-width:268px;">
-            <button class="tog on mode-btn" onclick="setMode('ionian',this)">1 Ionian</button>
-            <button class="tog mode-btn" onclick="setMode('dorian',this)">2 Dorian</button>
-            <button class="tog mode-btn" onclick="setMode('phrygian',this)">3 Phrygian</button>
-            <button class="tog mode-btn" onclick="setMode('lydian',this)">4 Lydian</button>
-            <button class="tog mode-btn" onclick="setMode('mixolydian',this)">5 Mixolydian</button>
-            <button class="tog mode-btn" onclick="setMode('aeolian',this)">6 Aeolian</button>
-            <button class="tog mode-btn" onclick="setMode('locrian',this)">7 Locrian</button>
-          </div>
-        </div>
-        <div class="ctrl-vsep"></div>
-        <div>
-          <div style="font-size:10px;color:#aaa;margin-bottom:3px;">modified scales</div>
-          <div style="display:flex;flex-direction:column;gap:2px;">
-            <button class="tog mode-btn" onclick="setMode('harmonic_minor',this)">harmonic minor</button>
-            <button class="tog mode-btn" onclick="setMode('melodic_minor',this)">melodic minor</button>
-          </div>
-        </div>
-        <div class="ctrl-vsep"></div>
-        <div style="display:flex;flex-direction:column;justify-content:center;align-self:stretch;">
-          <button class="tog act" id="tune-btn2" onclick="tuneToKey()" style="width:72px;height:52px;font-size:11px;white-space:normal;line-height:1.3;text-align:center;padding:4px 6px;background:#EEEDFE;border-color:#AFA9EC;color:#533AB7;">Tune String to G Ionian</button>
-        </div>
-      </div>
-      <div style="margin-top:5px;">
-        <div id="scale-spelling" style="font-size:11px;color:#888;letter-spacing:0.03em;"></div>
-      </div>
-    </div>
+  <!-- capo cluster -->
+  <div id="capo-cluster">
+    <div id="capo-snap-btns"></div>
+    <input id="capo-upper-ro" value="—" readonly>
+    <input id="capo-lower-ro" value="—" readonly>
   </div>
-  <div class="ctrl-sep"></div>
-
-  <!-- Row 3: node view + context cluster (only active one shown) -->
-  <div class="ctrl-row" style="margin-bottom:4px;align-items:flex-start;">
-    <div class="ctrl-col">
-      <div class="sec-lbl">node view</div>
-      <div style="display:flex;flex-direction:column;gap:2px;">
-        <button class="tog on" id="view-full" onclick="setNodeView('full',this)">full string</button>
-        <button class="tog" id="view-nut" onclick="setNodeView('nut',this)">nut height</button>
-        <button class="tog" id="view-capo" onclick="setNodeView('capo',this)">capo</button>
-      </div>
+  <!-- home node -->
+  <button class="tog on" id="hn-fund" onclick="setHomeNodeUI(1)">fundamental</button>
+  <button class="tog" id="hn-fifth" onclick="setHomeNodeUI(5)">5th node</button>
+  <select id="hn-select" onchange="setHomeNodeFromSelect(this.value)">
+    <option value="1" selected>1st</option><option value="2">2nd</option>
+    <option value="3">3rd</option><option value="4">4th</option>
+    <option value="5">5th</option><option value="6">6th</option>
+    <option value="7">7th</option>
+  </select>
+  <!-- physics sliders (canonical state holders) -->
+  <input type="range" id="len-sl" min="24" max="200" step="0.5" value="69" oninput="syncSlider('len',this.value)">
+  <input id="len-ro" value='69.0"' onchange="syncReadout('len',this.value)">
+  <button class="tog on" id="unit-in" onclick="setUnits('in',this)">in</button>
+  <button class="tog" id="unit-cm" onclick="setUnits('cm',this)">cm</button>
+  <input type="range" id="ten-sl" min="10" max="150" step="1" value="50" oninput="syncSlider('ten',this.value)">
+  <input id="ten-ro" value="5.0 lbs" onchange="syncReadout('ten',this.value)">
+  <input type="range" id="mu-sl" min="1" max="100" step="1" value="52" oninput="syncSlider('mu',this.value)">
+  <input id="mu-ro" value="0.000754" onchange="syncReadout('mu',this.value)">
+  <!-- my bass defaults -->
+  <input id="def-len" value='69.0"'>
+  <input id="def-ten" value="5.0 lbs">
+  <input id="def-mu" value="0.000754">
+  <!-- status elements (still updated by updateStatus()) -->
+  <span id="st-fund">—</span><span id="st-hz">—</span>
+  <span id="st-tension">—</span><span id="st-root">G</span>
+  <span id="st-scale">G Ionian</span>
+  <span id="st-scale-degs">—</span><span id="st-scale-notes">—</span>
+  <!-- tone strip rows (still written by showStrip/clearStrip — redirected in Step 4) -->
+  <div id="tone-strip">
+    <div class="strip-label">current tone</div>
+    <div class="strip-main" id="tone-row1">
+      <span class="strip-idle">hover or touch a node</span>
     </div>
-    <div class="ctrl-vsep"></div>
-    <div class="ctrl-col" id="nut-preset-cluster" style="display:none;">
-      <div class="sec-lbl">nut height <span style="text-transform:none;letter-spacing:0;font-size:10px;color:#aaa;">(drag nut to adjust)</span></div>
-      <div style="display:flex;gap:10px;align-items:flex-start;">
-        <div>
-          <div style="font-size:10px;color:#aaa;margin-bottom:3px;">presets</div>
-          <div style="display:grid;grid-template-columns:auto auto auto auto;gap:2px 4px;align-items:center;">
-            <span style="font-size:11px;color:#888;white-space:nowrap;">nut 1</span>
-            <input class="readout" id="nut-pre-0" value='6.0"' style="width:54px;" onchange="setNutPreset(0,this.value)" onkeydown="if(event.key==='Enter')this.blur()">
-            <button class="tog" style="font-size:10px;height:20px;padding:0 6px;" onclick="saveNutPreset(0)">save</button>
-            <button class="tog" style="font-size:10px;height:20px;padding:0 6px;" onclick="applyNutPreset(0)">apply</button>
-
-            <span style="font-size:11px;color:#888;white-space:nowrap;">nut 2</span>
-            <input class="readout" id="nut-pre-1" value='12.0"' style="width:54px;" onchange="setNutPreset(1,this.value)" onkeydown="if(event.key==='Enter')this.blur()">
-            <button class="tog" style="font-size:10px;height:20px;padding:0 6px;" onclick="saveNutPreset(1)">save</button>
-            <button class="tog" style="font-size:10px;height:20px;padding:0 6px;" onclick="applyNutPreset(1)">apply</button>
-
-            <span style="font-size:11px;color:#888;white-space:nowrap;">nut 3</span>
-            <input class="readout" id="nut-pre-2" value='19.0"' style="width:54px;" onchange="setNutPreset(2,this.value)" onkeydown="if(event.key==='Enter')this.blur()">
-            <button class="tog" style="font-size:10px;height:20px;padding:0 6px;" onclick="saveNutPreset(2)">save</button>
-            <button class="tog" style="font-size:10px;height:20px;padding:0 6px;" onclick="applyNutPreset(2)">apply</button>
-          </div>
-        </div>
-        <div class="ctrl-vsep"></div>
-        <div>
-          <div style="font-size:10px;color:#aaa;margin-bottom:3px;">current</div>
-          <div style="display:grid;grid-template-columns:auto auto;gap:2px 6px;align-items:center;">
-            <span style="font-size:11px;color:#888;white-space:nowrap;">offset</span>
-            <input class="readout" id="nut-offset-ro" value='0.0"' readonly style="width:54px;background:rgba(83,58,183,0.04);color:#533AB7;font-weight:500;border-color:rgba(83,58,183,0.3);">
-            <span style="font-size:11px;color:#888;white-space:nowrap;">speaking</span>
-            <input class="readout" id="nut-speaking-ro" value='69.0"' readonly style="width:54px;background:rgba(83,58,183,0.04);color:#533AB7;font-weight:500;border-color:rgba(83,58,183,0.3);">
-            <button class="tog" style="grid-column:1/-1;font-size:10px;height:20px;padding:0 8px;margin-top:2px;" onclick="applyNutOffset(0);render()">set to full string</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="ctrl-col" id="capo-cluster" style="display:none;">
-      <div class="sec-lbl">capo <span style="text-transform:none;letter-spacing:0;font-size:10px;color:#aaa;">(drag to adjust · snaps to interval)</span></div>
-      <div style="display:flex;gap:10px;align-items:flex-start;">
-        <div>
-          <div style="font-size:10px;color:#aaa;margin-bottom:3px;">snap to interval</div>
-          <div style="display:grid;grid-template-columns:repeat(4,auto);gap:2px;" id="capo-snap-btns"></div>
-        </div>
-        <div class="ctrl-vsep"></div>
-        <div style="display:flex;flex-direction:column;gap:4px;">
-          <div style="font-size:10px;color:#aaa;">segment lengths</div>
-          <div style="display:flex;gap:4px;align-items:center;">
-            <span style="font-size:11px;color:#888;">↑</span>
-            <input class="readout" id="capo-upper-ro" value="—" readonly style="width:60px;background:rgba(200,130,26,0.06);color:#C8821A;font-weight:500;border-color:rgba(200,130,26,0.3);">
-            <span style="font-size:11px;color:#888;">↓</span>
-            <input class="readout" id="capo-lower-ro" value="—" readonly style="width:60px;background:rgba(200,130,26,0.06);color:#C8821A;font-weight:500;border-color:rgba(200,130,26,0.3);">
-          </div>
-          <button class="tog" onclick="playCapoBoth()" style="background:rgba(200,130,26,0.12);border-color:rgba(200,130,26,0.4);color:#C8821A;font-size:11px;height:24px;padding:0 10px;">play both</button>
-        </div>
-      </div>
-    </div>
+    <div id="tone-row2"></div>
   </div>
-  <div class="ctrl-sep"></div>
-
-  <!-- Row 4: home node + string physics + my bass defaults -->
-  <div class="ctrl-row" style="align-items:flex-start;">
-    <div class="ctrl-col">
-      <div class="sec-lbl">home node</div>
-      <div style="display:flex;gap:4px;align-items:center;">
-        <div style="display:flex;flex-direction:column;gap:2px;">
-          <button class="tog on" id="hn-fund" onclick="setHomeNodeUI(1)">fundamental</button>
-          <button class="tog" id="hn-fifth" onclick="setHomeNodeUI(5)">5th node</button>
-        </div>
-        <select id="hn-select" onchange="setHomeNodeFromSelect(this.value)" style="height:24px;font-size:11px;border:0.5px solid rgba(128,128,128,0.3);border-radius:4px;background:rgba(255,255,255,0.9);color:#1a1a1a;padding:0 4px;">
-          <option value="1" selected>1st</option>
-          <option value="2">2nd</option>
-          <option value="3">3rd</option>
-          <option value="4">4th</option>
-          <option value="5">5th</option>
-          <option value="6">6th</option>
-          <option value="7">7th</option>
-        </select>
-      </div>
-      <div style="font-size:10px;color:#aaa;margin-top:2px;font-style:italic;">which node is the scale root</div>
-    </div>
-    <div class="ctrl-vsep"></div>
-    <div class="ctrl-col" style="gap:5px;">
-      <div class="sec-lbl">string physics</div>
-      <div class="sl-row">
-        <span class="sl-lbl">string length</span>
-        <input type="range" id="len-sl" min="24" max="200" step="0.5" value="69" oninput="syncSlider('len',this.value)">
-        <input class="readout" id="len-ro" value='69.0"' onchange="syncReadout('len',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
-        <div class="tog-grp" style="margin-left:2px;">
-          <button class="tog on" id="unit-in" onclick="setUnits('in',this)">in</button>
-          <button class="tog" id="unit-cm" onclick="setUnits('cm',this)">cm</button>
-        </div>
-      </div>
-      <div class="sl-row">
-        <span class="sl-lbl">tension</span>
-        <input type="range" id="ten-sl" min="10" max="150" step="1" value="50" oninput="syncSlider('ten',this.value)">
-        <input class="readout" id="ten-ro" value="5.0 lbs" onchange="syncReadout('ten',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
-        <button class="tog" id="tune-btn" onclick="tuneToKey()" style="margin-left:4px;padding:0 8px;white-space:nowrap;">Tune to G</button>
-      </div>
-      <div class="sl-row">
-        <span class="sl-lbl">linear density</span>
-        <input type="range" id="mu-sl" min="1" max="100" step="1" value="52" oninput="syncSlider('mu',this.value)">
-        <input class="readout" id="mu-ro" value="0.000754" onchange="syncReadout('mu',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
-        <span style="font-size:10px;color:#aaa;white-space:nowrap;">kg/m</span>
-      </div>
-    </div>
-    <div class="ctrl-vsep"></div>
-    <div class="ctrl-col" style="gap:5px;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
-        <div class="sec-lbl" style="margin-bottom:0;">my bass defaults</div>
-        <button class="tog act" onclick="resetDefaults()" style="font-size:10px;height:20px;padding:0 7px;">reset</button>
-        <button class="tog act" onclick="applyDefaults()" style="font-size:10px;height:20px;padding:0 7px;">apply</button>
-        <button class="tog act" onclick="useCurrentSettings()" style="font-size:10px;height:20px;padding:0 7px;">use current</button>
-      </div>
-      <div class="sl-row">
-        <span class="sl-lbl">string length</span>
-        <input class="readout" id="def-len" value='69.0"' style="width:72px;" onkeydown="if(event.key==='Enter')this.blur()">
-      </div>
-      <div class="sl-row">
-        <span class="sl-lbl">tension</span>
-        <input class="readout" id="def-ten" value="5.0 lbs" style="width:72px;" onkeydown="if(event.key==='Enter')this.blur()">
-      </div>
-      <div class="sl-row">
-        <span class="sl-lbl">linear density</span>
-        <input class="readout" id="def-mu" value="0.000754" style="width:72px;" onkeydown="if(event.key==='Enter')this.blur()">
-        <span style="font-size:10px;color:#aaa;white-space:nowrap;">kg/m</span>
-      </div>
-    </div>
-  </div>
-  <div class="ctrl-sep"></div>
-
-  <!-- Status row (bottom, above tone strip) -->
-  <div class="ctrl-row">
-    <span class="chip">fund: <strong id="st-fund">—</strong></span>
-    <span class="chip">root: <strong id="st-root">G</strong></span>
-    <span class="chip">scale: <strong id="st-scale">G Ionian</strong></span>
-    <span class="chip"><strong id="st-scale-degs">—</strong></span>
-    <span class="chip"><strong id="st-scale-notes">—</strong></span>
-  </div>
-
+  <!-- zoom label (written by applyT()) — moved to left rail in Step 3, kept here as fallback) -->
 </div>
 
-<!-- TONE INFO STRIP -->
-<div id="tone-strip">
-  <div class="strip-label">current tone</div>
-  <div class="strip-main" id="tone-row1">
-    <span class="strip-idle">hover or touch a node to see details</span>
-  </div>
-  <!-- Row 2: reserved for capo mode second tone -->
-  <div id="tone-row2"></div>
-</div>
+<!-- ════ v4 APP SHELL ════════════════════════════════════════════ -->
+<div id="app-shell">
 
-<!-- CANVAS -->
-<div id="canvas-outer">
-  <div id="zoom-rail">
-    <button onclick="zoom(1.3)">+</button>
-    <button onclick="zoom(1/1.3)">−</button>
-    <button onclick="zoomFit()" style="font-size:10px;">fit</button>
-    <button onclick="zoomTo1()" style="font-size:10px;">100%</button>
-    <div id="zoom-label" style="font-size:10px;color:#888;text-align:center;">100%</div>
+  <!-- DEV banner spacer — keeps content below fixed banner -->
+  <div style="height:22px;flex-shrink:0;"></div>
+
+  <!-- top tone strip -->
+  <div id="new-tone-strip">
+    <div id="nts-left">
+      <div id="nts-scale">G Ionian</div>
+      <div id="nts-num" class="nts-spell"></div>
+      <div id="nts-let" class="nts-spell"></div>
+    </div>
+    <div id="nts-right">
+      <span class="nts-idle">hover or touch a node</span>
+    </div>
   </div>
-  <div id="canvas-wrap">
-  <div id="svg-inner">
+
+  <!-- app body: left rail + diagram + ruler -->
+  <div id="app-body">
+
+    <!-- left rail -->
+    <div id="left-rail">
+      <!-- column-reverse: FIRST child = visual BOTTOM, LAST child = visual TOP -->
+      <!-- Visual order top→bottom: fund · tension · sep · zoom · sep · home · scale · key · tune -->
+      <!-- DOM order (reversed):    tune · key · scale · home · sep · zoom · sep · tension · fund -->
+      <div id="lr-tune-btn" onclick="tuneToKey()">
+        <div class="lr-icon">⟳</div>
+        <div class="lr-tune-lbl" id="lr-tune-lbl">tune<br>G Ion</div>
+      </div>
+      <div id="chip-key" class="lr-chip lr-chip-open" onclick="toggleCoF()">
+        <div class="lr-chip-lbl">key</div>
+        <div class="lr-chip-val" id="chip-key-val">G</div>
+      </div>
+      <div id="chip-scale" class="lr-chip lr-chip-open" onclick="openScalePicker()">
+        <div class="lr-chip-lbl">scale</div>
+        <div class="lr-chip-sub" id="chip-scale-val">Ionian</div>
+      </div>
+      <div id="chip-home" class="lr-chip" onclick="openHomePicker()">
+        <div class="lr-chip-lbl">home</div>
+        <div class="lr-chip-val" id="chip-home-val">1</div>
+      </div>
+      <div class="lr-sep"></div>
+      <div id="lr-zoom-cluster">
+        <button class="lr-zb" onclick="zoom(1.3)" title="zoom in">+</button>
+        <button class="lr-zb" onclick="zoom(1/1.3)" title="zoom out">−</button>
+        <button class="lr-zb" onclick="fitH()" title="fit horizontal" style="font-size:11px;">↔</button>
+        <button class="lr-zb" onclick="fitV()" title="fit vertical" style="font-size:11px;">↕</button>
+        <button class="lr-zb lr-zb-pct" onclick="zoomTo1()" title="100%">100%</button>
+        <div id="zoom-label" class="lr-zoom-pct">100%</div>
+      </div>
+      <div class="lr-sep"></div>
+      <div class="lr-tension-lbl">tension</div>
+      <div id="lr-tension-track">
+        <input type="range" id="ten-sl-v" min="10" max="150" step="1" value="50"
+               oninput="syncSlider('ten',this.value);document.getElementById('ten-sl').value=this.value;"
+               title="tension">
+      </div>
+      <div id="lr-fund">
+        <div class="lr-fund-note" id="lr-fund-note">G2</div>
+        <div class="lr-fund-num" id="lr-fund-num">98</div>
+        <div class="lr-fund-hz">Hz</div>
+      </div>
+    </div>
+
+    <!-- diagram canvas — ID kept as canvas-wrap for JS compatibility -->
+    <div id="canvas-wrap">
+      <div id="svg-inner">
 <svg id="main-svg" width="1380" height="1440" viewBox="0 0 1380 1440" xmlns="http://www.w3.org/2000/svg">
 
 <!-- Pitch axis (left of string) -->
@@ -391,6 +443,7 @@ input[type=range]{width:110px;cursor:pointer;}
 
 <!-- Dynamic -->
 <g id="dyn-ruler"></g>
+<g id="row-hl"></g>
 <g id="dyn-home-rings"></g>
 <g id="dyn-nut"></g>
 <g id="dyn-nodes"></g>
@@ -420,11 +473,139 @@ input[type=range]{width:110px;cursor:pointer;}
     <line id="capo-drag-line2" x1="452" y1="86" x2="508" y2="86" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
   </g>
 </g>
+      </div><!-- end svg-inner -->
+      <!-- label panel: absolute, pointer-events:none, never shifts layout -->
+      <div id="label-panel">
+        <div id="label-inner"></div>
+      </div>
+    </div><!-- end canvas-wrap -->
+
+    <!-- ruler rail -->
+    <div id="rrail">
+      <div id="rr-track">
+        <div class="rr-tick" style="top:0;"></div>
+        <div class="rr-tick" style="bottom:0;"></div>
+        <div id="rr-viewport"></div>
+        <div id="rr-dot"></div>
+        <svg id="rr-fan" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+    </div>
+
+  </div><!-- end app-body -->
+
+  <!-- bottom rail (placeholder — wired in Steps 6–12) -->
+  <div id="bottom-rail">
+    <div id="br-nv">
+      <div class="br-nvb br-nvb-on" id="br-full"
+           onclick="setNodeView('full',document.getElementById('view-full'))">full</div>
+      <div class="br-nvb" id="br-nut"
+           onclick="setNodeView('nut',document.getElementById('view-nut'))">nut</div>
+      <div class="br-nvb" id="br-capo"
+           onclick="setNodeView('capo',document.getElementById('view-capo'))">capo</div>
+    </div>
+    <div id="br-ctx">
+      <div class="br-ctx-row"><span class="br-ctx-idle">no view controls</span></div>
+      <div class="br-ctx-row"></div>
+      <div class="br-ctx-row">
+        <div class="br-more-bar"></div>
+        <div class="br-more-lbl" id="br-more-lbl" onclick="toggleOverflow()">my bass defaults ↑</div>
+        <div class="br-more-bar"></div>
+      </div>
+    </div>
+    <div id="br-ap">
+      <div class="br-apb" id="br-audio" onclick="setBRPanel('audio',this)">♪ audio</div>
+      <div class="br-apb" id="br-phys"  onclick="setBRPanel('phys',this)">⚙ phys</div>
+      <div class="br-apb" id="br-lgnd"  onclick="setBRPanel('lgnd',this)">⬡ lgnd</div>
+    </div>
   </div>
+
+  <!-- overflow panel (wired in Steps 8 & 11) -->
+  <div id="overflow-panel"></div>
+
+  <!-- scale + home pickers — direct children of app-shell so they overflow bottom rail -->
+  <div id="scale-picker"></div>
+  <div id="home-picker"></div>
+
+  <!-- CoF wheel — z:14, bottom rail z:16 covers lower half -->
+  <div id="cof-wrap" style="display:none;">
+    <canvas id="cof-canvas" width="160" height="160"></canvas>
+    <div id="cof-dot"></div>
   </div>
-</div>
+
+</div><!-- end app-shell -->
+
 
 <script>
+// ══════════════════════════════════════════════════════════════════════════════
+// ⚠️  PHYSICS & MUSIC THEORY CORE — DO NOT MODIFY DURING UI REDESIGN (v4.x)
+// ══════════════════════════════════════════════════════════════════════════════
+// The following functions are FROZEN for all Steps 1–16 of the v4 UI redesign.
+// They contain all frequency physics, just intonation math, music theory logic,
+// audio engine code, and node rendering logic. UI wiring steps must CALL these
+// functions, never rewrite them.
+//
+// FROZEN FUNCTIONS:
+//   tensionToFreq()       — core frequency formula f=(1/2L)√(T/μ)
+//   fundFreq()            — fundamental frequency from current physics state
+//   effectiveSpeakingLength() — accounts for nut height offset
+//   diatonicPitchClasses()   — pitch class set for current key+mode
+//   scaleInfo()           — degree labels + note names for current scale
+//   freqToMidi()          — frequency → MIDI note number
+//   noteInfo()            — MIDI → note name, octave, cents, snapped flag
+//   chromDeg()            — chromatic degree label relative to home key
+//   isInKey()             — is a MIDI note diatonic to current key+mode?
+//   setMode()             — change mode/scale, trigger render
+//   playTone()            — Web Audio tone synthesis
+//   stopActive()          — stop currently playing tone (mono mode)
+//   getCtx()              — get/create AudioContext
+//   tuneToKey()           — calculate tension to tune home node to key root
+//   remapDegree()         — remap node ratio to degree relative to home node
+//   isTonalCenter()       — is this node the home node?
+//   homeNodeRatio()       — JI ratio for current home node degree
+//   setHomeNode()         — change home node, sync UI, trigger render
+//   resolveColor()        — node color logic (in-key, chromatic, home, unsnapped)
+//   render()              — full diagram redraw (calls all dynamic draw functions)
+//   updateNutMarker()     — nut height layer SVG update
+//   updateCapoLayer()     — capo SVG layer update
+//   capoYpx()             — capo Y position in SVG pixels
+//   capoUpperIn/LowerIn/UpperFreq/LowerFreq() — capo segment math
+//   setCapoNode()         — select capo snap interval
+//   playCapoBoth()        — play both capo segments
+//   syncSlider()          — slider → value → readout → render
+//   syncReadout()         — readout → value → slider → render
+//   tenSlToVal/tenValToSl/muSlToVal/muValToSl() — slider scale conversions
+//   resetDefaults()       — restore hardwired default values
+//   applyDefaults()       — copy default fields → physics state → render
+//   useCurrentSettings()  — copy live physics → default fields
+//   setNutPreset/saveNutPreset/applyNutPreset/applyNutOffset() — nut preset logic
+//   buildCapoSnapBtns()   — build capo snap button DOM
+//   updateScaleSpelling() — update #scale-spelling chip
+//   updateTuneBtn()       — update tune button label
+//   updateStatus()        — update status chips
+//   mk()                  — SVG element factory
+//   fontSize()            — dynamic font size based on node spacing
+//   gcdFn/complementFrac()— fraction math for ruler labels
+//   showRuler/clearRuler()— SVG ruler annotation (to be replaced in Step 5)
+//   showStrip/clearStrip/showStripBoth/stripVoiceHTML() — tone strip (Step 4)
+//   hideHoldPanel()       — clear hold panel SVG group
+//
+// FROZEN CONSTANTS & DATA:
+//   LBS_TO_N, IN_TO_M     — unit conversion
+//   NOTES, REF_HZ, REF_MIDI, SNAP_CENTS, CHROM — music constants
+//   MODE_SCALES, MODE_NAMES — scale definitions
+//   NODES                 — harmonic node data (fracs, ratios, labels, desc)
+//   CAPO_NODES            — capo snap position data
+//   DEGREE_RATIOS, DEGREE_LABELS — JI degree ratios
+//   SX, TY, NY, SPX, SVG_W, BR, BMW, BMR — SVG layout constants
+//   SDEG_X, HOME_X, KD_RX, NOTE_X, INFO_X, SEG_X — column x positions
+//
+// UI REDESIGN MAY ONLY:
+//   • Add new functions that CALL the above
+//   • Add/remove/restructure HTML elements
+//   • Add new CSS
+//   • Add new event listeners that call existing handlers
+//   • Redirect output targets (e.g. showStrip → new element)
+// ══════════════════════════════════════════════════════════════════════════════
 // ── TODO ──────────────────────────────────────────────────────────
 // TODO: capo free-drag mode (current: snap-only)
 // TODO: capo — add wider intervals (maj 9th, maj 10th etc.) for longer strings
@@ -436,6 +617,1105 @@ input[type=range]{width:110px;cursor:pointer;}
 // Calibrated: G1 (49 Hz) at 5 lbs, L=69"
 // f = (1/2L) * sqrt(T/mu)  [SI]
 const LBS_TO_N=4.44822, IN_TO_M=0.0254;
+
+// ── v4 LEFT RAIL WIRING (Step 3) ══════════════════════════════════
+
+// ── Fund display ──────────────────────────────────────────────────
+// Called at end of updateStatus() — updates the large Hz/note display
+// at the top of the left rail.
+function updateFundDisplay(){
+  const fund=fundFreq();
+  const fi=noteInfo(fund);
+  const noteEl=document.getElementById('lr-fund-note');
+  const numEl=document.getElementById('lr-fund-num');
+  if(noteEl) noteEl.textContent=fi.name+(fi.octave!==undefined?fi.octave:'');
+  if(numEl)  numEl.textContent=Math.round(fund);
+}
+
+// ── Left rail chip labels ─────────────────────────────────────────
+// Called whenever key, mode, or homeNode changes.
+function updateLeftRailChips(){
+  const kv=document.getElementById('chip-key-val');
+  const sv=document.getElementById('chip-scale-val');
+  const hv=document.getElementById('chip-home-val');
+  const tl=document.getElementById('lr-tune-lbl');
+  if(kv) kv.textContent=NOTES[homeKey];
+  if(sv) sv.textContent=MODE_NAMES[currentMode];
+  if(hv) hv.textContent=homeNode;
+  if(tl) tl.innerHTML='tune<br>'+NOTES[homeKey]+' '+MODE_NAMES[currentMode].slice(0,3);
+}
+
+// ── fitH — proper horizontal pan ─────────────────────────────────
+// Keeps current sc. Pans tx so the string column sits at ~35% from
+// the left edge of the canvas, leaving room for label panel on right.
+// SVG has explicit pixel dimensions (1380×1440) so there is no
+// letterboxing — SVG x=480 (string) maps directly to inner div px 480.
+// DEV NOTE (future): Improve to account for node text label widths at
+// high zoom, and for ruler label panel width when active, rather than
+// using a fixed 35% heuristic.
+function fitH(){
+  const cw=canvas.clientWidth;
+  // String is at SVG x=480; after our transform its screen x = tx + 480*sc
+  // Target: string at 35% of canvas width
+  tx=cw*0.35 - 480*sc;
+  clamp();
+  applyT();
+}
+
+// ── fitV — fit full string height vertically ──────────────────────
+// Scales so the full 1440px SVG height fits in the canvas, resets pan.
+function fitV(){
+  sc=canvas.clientHeight/1440;
+  tx=0; ty=0;
+  clamp(); applyT();
+}
+
+// ── Vertical tension slider sync ──────────────────────────────────
+// #ten-sl-v (visible vertical) ↔ #ten-sl (hidden canonical)
+// The oninput on ten-sl-v already calls syncSlider('ten', value) and
+// updates ten-sl directly. This function goes the other direction:
+// when hidden ten-sl is updated by other means (e.g. applyDefaults),
+// sync the visible slider.
+function syncTensionSliderV(){
+  const v=document.getElementById('ten-sl');
+  const vv=document.getElementById('ten-sl-v');
+  if(v&&vv) vv.value=v.value;
+}
+
+// ── Patch updateStatus to also update fund display + chips ─────────
+const _updateStatus_orig=updateStatus;
+updateStatus = function(){
+  _updateStatus_orig();
+  updateFundDisplay();
+  updateLeftRailChips();
+  syncTensionSliderV();
+};
+
+// ── Patch updateTuneBtn to also update left rail label ────────────
+const _updateTuneBtn_orig=updateTuneBtn;
+updateTuneBtn = function(){
+  _updateTuneBtn_orig();
+  updateLeftRailChips();
+};
+
+// ── Patch setHomeNode to also update chip ─────────────────────────
+const _setHomeNode_orig=setHomeNode;
+setHomeNode = function(deg){
+  _setHomeNode_orig(deg);
+  updateLeftRailChips();
+};
+
+// ── Patch setMode to also update chip ────────────────────────────
+const _setMode_orig=setMode;
+setMode = function(mode,btn){
+  _setMode_orig(mode,btn);
+  updateLeftRailChips();
+};
+
+// ── Stub overrides — real implementations injected in Steps 13–14 ──
+function toggleCoF(){} // replaced in Step 13 block below
+function openScalePicker(){} // replaced in Step 14 block below
+function openHomePicker(){} // replaced in Step 14 block below
+function setBRPanel(panel,btn){} // replaced in Step 6 block above (re-declared below)
+function toggleOverflow(){} // replaced in Step 8/11 block above
+
+// ── End Step 3 left rail wiring ═══════════════════════════════════
+
+// ── v4 TONE STRIP WIRING (Step 4) ═════════════════════════════════
+
+// ── Left half: scale context (always visible) ─────────────────────
+// Populates #nts-scale, #nts-num, #nts-let from current key+mode.
+// Called by updateStatus() (via wrapper below) and by setMode/key changes.
+function updateScaleStrip(){
+  const si=scaleInfo();
+  const scaleEl=document.getElementById('nts-scale');
+  const numEl=document.getElementById('nts-num');
+  const letEl=document.getElementById('nts-let');
+  if(scaleEl) scaleEl.textContent=NOTES[homeKey]+' '+MODE_NAMES[currentMode];
+  if(numEl)   numEl.innerHTML=si.degrees.map(d=>`<span>${d}</span>`).join('');
+  if(letEl)   letEl.innerHTML=si.noteNames.map(n=>`<span>${n}</span>`).join('');
+  // also keep legacy scale-spelling in sync (used by frozen updateScaleSpelling)
+}
+
+// ── Right half: current tone (on hover/touch) ─────────────────────
+// Uses assignment (not function declaration) to avoid hoisting conflicts.
+// Builds #nts-right content directly from data — avoids CSS scoping
+// issues that arise from copying #tone-strip-scoped class markup.
+
+const _origShowStrip = showStrip;
+showStrip = function(freq, frac, nodeLabel, color){
+  _origShowStrip(freq, frac, nodeLabel, color); // still writes legacy tone-row1
+  // Build nts-right directly from the same parameters
+  const fund=fundFreq();
+  const ni=noteInfo(freq);
+  const kd=ni.snapped?chromDeg(ni.midi,homeKey):'—';
+  const inKey=ni.snapped?isInKey(ni.midi):false;
+  const noteStr=ni.snapped?ni.name+ni.octave:'—';
+  const col=color||'#533AB7';
+  const keyCol=inKey?'#0F6E56':'rgba(153,60,29,0.6)';
+  const upperIn=((1-frac)*effectiveSpeakingLength()).toFixed(1);
+  const upperFreq=frac<1?fund/(1-frac):0;
+  const upperHz=upperFreq>0?upperFreq.toFixed(1)+' Hz':'—';
+  const dst=document.getElementById('nts-right');
+  if(!dst) return;
+  dst.innerHTML=
+    `<div style="display:flex;align-items:baseline;gap:4px;line-height:1;">
+       <span style="font-size:18px;font-weight:500;color:${col};">${nodeLabel}</span>
+       <span style="font-size:10px;color:#999;">·</span>
+       <span style="font-size:18px;font-weight:500;color:${keyCol};">${kd}</span>
+       <span style="font-size:10px;color:#999;">·</span>
+       <span style="font-size:18px;font-weight:500;color:${keyCol};">${noteStr}</span>
+     </div>
+     <div style="display:flex;align-items:center;gap:4px;margin-top:1px;">
+       <span style="font-size:10px;font-weight:500;color:${col};">${freq.toFixed(1)} Hz</span>
+       <span style="font-size:9px;color:#999;">·</span>
+       <span style="font-size:10px;color:#1a1a1a;">↑ ${upperIn}"</span>
+       <span style="font-size:9px;color:#999;">·</span>
+       <span style="font-size:10px;color:#888;">${upperHz}</span>
+     </div>`;
+};
+
+const _origClearStrip = clearStrip;
+clearStrip = function(){
+  _origClearStrip();
+  const dst=document.getElementById('nts-right');
+  if(dst) dst.innerHTML='<span class="nts-idle">hover or touch a node</span>';
+};
+
+const _origShowStripBoth = showStripBoth;
+showStripBoth = function(){
+  _origShowStripBoth();
+  const cn=CAPO_NODES[capoNodeIdx];
+  const uFreq=capoUpperFreq(), lFreq=capoLowerFreq();
+  const uNi=noteInfo(uFreq), lNi=noteInfo(lFreq);
+  const uNote=uNi.snapped?uNi.name+uNi.octave:'—';
+  const lNote=lNi.snapped?lNi.name+lNi.octave:'—';
+  const dst=document.getElementById('nts-right');
+  if(!dst) return;
+  dst.innerHTML=
+    `<div style="display:flex;align-items:baseline;gap:4px;line-height:1;">
+       <span style="font-size:15px;font-weight:500;color:#C8821A;">↑ ${cn.label}</span>
+       <span style="font-size:10px;color:#888;">${uFreq.toFixed(1)} Hz · ${uNote}</span>
+     </div>
+     <div style="height:0.5px;background:rgba(200,130,26,0.3);margin:1px 0;"></div>
+     <div style="display:flex;align-items:baseline;gap:4px;line-height:1;">
+       <span style="font-size:15px;font-weight:500;color:#C8821A;">↓ ${cn.label}</span>
+       <span style="font-size:10px;color:#888;">${lFreq.toFixed(1)} Hz · ${lNote}</span>
+     </div>`;
+};
+
+// ── Patch updateStatus to also update scale strip ──────────────────
+const _updateStatus_step4=updateStatus;
+updateStatus = function(){
+  _updateStatus_step4();
+  updateScaleStrip();
+};
+
+// ── Patch setMode to also update scale strip ───────────────────────
+const _setMode_step4=setMode;
+setMode = function(mode,btn){
+  _setMode_step4(mode,btn);
+  updateScaleStrip();
+};
+
+// ── Patch key grid onclick to also update scale strip ─────────────
+// Key grid buttons are built by existing JS in the key-grid element.
+// We hook into the key change by patching the click handler post-build.
+// The key grid builds buttons with onclick that call render() which calls
+// updateStatus() which now calls updateScaleStrip() — so this is automatic.
+
+// ── End Step 4 tone strip wiring ══════════════════════════════════
+
+// ── v4 LABEL PANEL + RULER WIRING (Step 5) ════════════════════════
+
+const svgNS_v4='http://www.w3.org/2000/svg';
+
+// ── Fraction complement helper ────────────────────────────────────
+function compFrac(fs){
+  const p=fs.split('/'); if(p.length!==2) return '';
+  const n=parseInt(p[0]),d=parseInt(p[1]),cn=d-n;
+  const g=(a,b)=>b===0?a:g(b,a%b);
+  const gg=g(cn,d); return `${cn/gg}/${d/gg}`;
+}
+
+// ── Build label HTML for a node ───────────────────────────────────
+function buildLabel(n){
+  const inKey=isInKey(noteInfo(fundFreq()*n.ratio).midi);
+  const nc=inKey?'inkey':'chrom';
+  const lIn=(n.frac*effectiveSpeakingLength()).toFixed(1);
+  const uIn=((1-n.frac)*effectiveSpeakingLength()).toFixed(1);
+  const lHz=Math.round(fundFreq()*n.ratio);
+  const uHz=Math.round(fundFreq()/(1-n.frac));
+  const uFrac=compFrac(n.fs);
+  const ni=noteInfo(fundFreq()*n.ratio);
+  const noteName=ni.snapped?ni.name+ni.octave:'—';
+  const uNi=noteInfo(fundFreq()/(1-n.frac));
+  const uNoteName=uNi.snapped?uNi.name+uNi.octave:'—';
+  const uNoteStyle=`font-size:14px;font-weight:500;line-height:1.2;color:${isInKey(uNi.midi)?'#0F6E56':'rgba(153,60,29,0.85)'};`;
+  const P='#533AB7';
+  const rowStyle='background:rgba(255,255,255,0.75);padding:0 5px 0 3px;white-space:nowrap;display:block;text-align:right;';
+  const mainStyle=`font-size:15px;font-weight:500;color:${P};line-height:1.2;`;
+  const unitStyle='font-size:11px;color:#aaa;margin-left:1px;';
+  const noteStyle=`font-size:14px;font-weight:500;line-height:1.2;color:${inKey?'#0F6E56':'rgba(153,60,29,0.85)'};`;
+  const dirStyle=`font-size:10px;font-weight:500;color:${P};`;
+  const midStyle=`font-size:13px;font-weight:500;color:${P};line-height:1.3;`;
+  const midItvlStyle='font-size:11px;font-weight:500;color:#888;line-height:1.3;';
+  return `
+    <div style="display:flex;flex-direction:column;align-items:flex-end;padding:3px 0;">
+      <span style="${rowStyle}"><span style="${uNoteStyle}">${uNoteName}</span></span>
+      <span style="${rowStyle}"><span style="${mainStyle}">${uHz}</span><span style="${unitStyle}"> Hz</span></span>
+      <span style="${rowStyle}"><span style="${mainStyle}">${uFrac}</span></span>
+      <span style="${rowStyle}"><span style="${mainStyle}">${uIn}</span><span style="${unitStyle}">"</span></span>
+      <span style="${rowStyle}"><span style="${dirStyle}">↑ upper</span></span>
+    </div>
+    <div style="height:1.5px;background:rgba(83,58,183,0.4);"></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;padding:3px 0;">
+      <span style="${rowStyle}"><span style="${midStyle}">${n.fs}</span></span>
+      <span style="${rowStyle}"><span style="${midStyle}">${n.rs}</span></span>
+      <span style="${rowStyle}"><span style="${midItvlStyle}">${n.desc.split('·')[0].trim()}</span></span>
+    </div>
+    <div style="height:1.5px;background:rgba(83,58,183,0.4);"></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;padding:3px 0;">
+      <span style="${rowStyle}"><span style="${dirStyle}">↓ lower</span></span>
+      <span style="${rowStyle}"><span style="${mainStyle}">${lIn}</span><span style="${unitStyle}">"</span></span>
+      <span style="${rowStyle}"><span style="${mainStyle}">${n.fs}</span></span>
+      <span style="${rowStyle}"><span style="${mainStyle}">${lHz}</span><span style="${unitStyle}"> Hz</span></span>
+      <span style="${rowStyle}"><span style="${noteStyle}">${noteName}</span></span>
+    </div>`;
+}
+
+// ── Row highlight ─────────────────────────────────────────────────
+function setRowHL(nodeFrac){
+  const g=document.getElementById('row-hl');
+  if(!g){return;}
+  g.innerHTML='';
+  if(nodeFrac===null) return;
+  const y=TY-nodeFrac*SPX;
+  const rect=document.createElementNS(svgNS_v4,'rect');
+  Object.entries({x:0,y:y-16,width:SVG_W,height:32,fill:'rgba(200,150,20,0.14)',rx:2})
+    .forEach(([k,v])=>rect.setAttribute(k,v));
+  g.appendChild(rect);
+}
+
+// ── Show / hide label panel ───────────────────────────────────────
+let _activeFrac=null;
+
+function showLabel(n){
+  const panel=document.getElementById('label-panel');
+  const inner=document.getElementById('label-inner');
+  if(!panel||!inner) return;
+  inner.innerHTML=buildLabel(n);
+  panel.style.opacity='1';
+  _activeFrac=n.frac;
+  setRowHL(n.frac);
+  updateRulerDot(n.frac);
+  drawFanLine(n.frac);
+}
+
+function hideLabel(){
+  const panel=document.getElementById('label-panel');
+  if(panel) panel.style.opacity='0';
+  _activeFrac=null;
+  setRowHL(null);
+  const dot=document.getElementById('rr-dot');
+  if(dot) dot.style.display='none';
+  const fan=document.getElementById('rr-fan');
+  if(fan) fan.innerHTML='';
+}
+
+// ── Ruler dot ────────────────────────────────────────────────────
+function updateRulerDot(frac){
+  const dot=document.getElementById('rr-dot');
+  if(!dot) return;
+  dot.style.display='block';
+  dot.style.top=((1-frac)*100)+'%';
+}
+
+// ── Fan line: vertical line in ruler from dot to panel centre ─────
+function drawFanLine(frac){
+  const fan=document.getElementById('rr-fan');
+  const track=document.getElementById('rr-track');
+  if(!fan||!track) return;
+  fan.innerHTML='';
+  const trackH=track.offsetHeight||1;
+  const dotY=(1-frac)*trackH;
+  const midY=trackH/2;
+  const line=document.createElementNS(svgNS_v4,'line');
+  Object.entries({
+    x1:1,y1:Math.min(dotY,midY),
+    x2:1,y2:Math.max(dotY,midY),
+    stroke:'#3C3489','stroke-width':'3',
+    'stroke-linecap':'round',opacity:'0.85'
+  }).forEach(([k,v])=>line.setAttribute(k,v));
+  fan.appendChild(line);
+}
+
+// ── Viewport indicator ────────────────────────────────────────────
+function updateVP(){
+  const track=document.getElementById('rr-track');
+  const vp=document.getElementById('rr-viewport');
+  if(!track||!vp) return;
+  const trackH=track.offsetHeight||1;
+  const diagH=canvas.clientHeight||1;
+  const visH=Math.max(6,Math.min(trackH,trackH/sc));
+  const maxScroll=diagH*(sc-1);
+  const scrollFrac=maxScroll>0?Math.min(1,Math.max(0,-ty/maxScroll)):0;
+  vp.style.height=visH+'px';
+  vp.style.top=(scrollFrac*(trackH-visH))+'px';
+  // keep fan line in sync if a node is active
+  if(_activeFrac!==null) drawFanLine(_activeFrac);
+}
+
+// Patch applyT to also update viewport indicator
+const _applyT_orig=applyT;
+applyT = function(){
+  _applyT_orig();
+  updateVP();
+};
+
+// ── Viewport drag ─────────────────────────────────────────────────
+let _vpDrag=false,_vpStartY=0,_vpStartTy=0;
+document.getElementById('rr-viewport').addEventListener('mousedown',e=>{
+  e.stopPropagation();
+  _vpDrag=true; _vpStartY=e.clientY; _vpStartTy=ty;
+});
+window.addEventListener('mousemove',e=>{
+  if(!_vpDrag) return;
+  const track=document.getElementById('rr-track');
+  const trackH=track.offsetHeight||1;
+  const diagH=canvas.clientHeight||1;
+  const maxScroll=diagH*(sc-1);
+  const delta=(e.clientY-_vpStartY)/trackH*maxScroll;
+  ty=Math.min(0,Math.max(-maxScroll,_vpStartTy-delta));
+  applyT();
+});
+window.addEventListener('mouseup',()=>{ _vpDrag=false; });
+
+// ── Hook showStrip / clearStrip to show/hide label panel ──────────
+// We further wrap the already-patched showStrip/clearStrip to also
+// drive the label panel. We look up the matching NODES entry by frac.
+const _origShowStrip_step5=showStrip;
+showStrip = function(freq, frac, nodeLabel, color){
+  _origShowStrip_step5(freq, frac, nodeLabel, color);
+  // Find the matching node by frac (nut row has frac=1.0 — no node entry)
+  const node=NODES.find(n=>Math.abs(n.frac-frac)<0.001);
+  if(node) showLabel(node);
+  else hideLabel(); // nut row — hide panel (nut row has its own travelling annotation)
+};
+
+const _origClearStrip_step5=clearStrip;
+clearStrip = function(){
+  _origClearStrip_step5();
+  hideLabel();
+};
+
+// ── Clear row-hl on render (nodes redrawn) ────────────────────────
+const _render_orig=render;
+render = function(){
+  _render_orig();
+  // Restore row highlight if a node is still active after redraw
+  if(_activeFrac!==null) setRowHL(_activeFrac);
+  updateVP();
+};
+
+// ── End Step 5 label panel + ruler wiring ═════════════════════════
+
+// ── v4 BOTTOM RAIL STATE MACHINE (Steps 6–12) ═════════════════════
+
+// State: which node-view and which right panel are active
+let brNodeView = 'full';   // 'full' | 'nut' | 'capo'
+let brRightPanel = null;   // null | 'audio' | 'phys' | 'lgnd'
+let overflowOpen = false;
+
+// ── isMobile helper ───────────────────────────────────────────────
+function isMobile(){ return window.matchMedia('(max-width:600px)').matches; }
+
+// ── Mini slider helper ────────────────────────────────────────────
+// Creates a draggable mini slider div synced to a hidden range input.
+// onchange(0–1 normalized value) is called on drag.
+function makeMiniSlider(pct, onchange){
+  const wrap=document.createElement('div');
+  wrap.className='br-sl-track';
+  const thumb=document.createElement('div');
+  thumb.className='br-sl-thumb';
+  thumb.style.left=(pct*100)+'%';
+  wrap.appendChild(thumb);
+  let dragging=false;
+  wrap.addEventListener('mousedown',e=>{
+    dragging=true; e.preventDefault();
+    const move=ev=>{
+      if(!dragging) return;
+      const r=wrap.getBoundingClientRect();
+      const v=Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width));
+      thumb.style.left=(v*100)+'%';
+      onchange(v);
+    };
+    const up=()=>{dragging=false;window.removeEventListener('mousemove',move);window.removeEventListener('mouseup',up);};
+    window.addEventListener('mousemove',move);
+    window.addEventListener('mouseup',up);
+  });
+  return wrap;
+}
+
+// ── Render bottom rail center zone ───────────────────────────────
+function renderBRCtx(){
+  const ctx=document.getElementById('br-ctx');
+  if(!ctx) return;
+
+  // Node-view button highlights
+  ['full','nut','capo'].forEach(v=>{
+    const btn=document.getElementById('br-'+v);
+    if(!btn) return;
+    btn.className='br-nvb'+(brNodeView===v?(v==='capo'?' br-nvb-cap-on':' br-nvb-on'):'');
+  });
+  // Right panel button highlights
+  ['audio','phys','lgnd'].forEach(p=>{
+    const btn=document.getElementById('br-'+p);
+    if(btn) btn.className='br-apb'+(brRightPanel===p?' br-apb-on':'');
+  });
+
+  // If a right panel is active, it takes over all three rows
+  if(brRightPanel){
+    ctx.innerHTML=renderRightPanel(brRightPanel);
+    return;
+  }
+  // Otherwise show node-view context
+  ctx.innerHTML=renderNodeViewCtx(brNodeView);
+}
+
+// ── Node view context rows ────────────────────────────────────────
+function renderNodeViewCtx(view){
+  if(view==='full'){
+    return `<div class="br-ctx-row"><span class="br-ctx-idle">no view controls</span></div>
+            <div class="br-ctx-row"></div>
+            <div class="br-ctx-row"></div>`;
+  }
+  if(view==='nut'){
+    const offset=fmtLen(nutOffsetInches);
+    const speaking=fmtLen(effectiveSpeakingLength());
+    // Which preset matches current offset?
+    const activeP=nutPresets.findIndex(p=>Math.abs(p-nutOffsetInches)<0.05);
+    const pbtns=[0,1,2].map(i=>`<div class="br-preset-btn${activeP===i?' on':''}"
+      onclick="applyNutPreset(${i});renderBRCtx()">nut ${i+1}</div>`).join('');
+    return `<div class="br-ctx-row">
+              <span class="br-chip-lbl">offset</span>
+              <span class="br-chip" id="br-nut-offset">${offset}</span>
+              <span class="br-chip-lbl">speaking</span>
+              <span class="br-chip" id="br-nut-speaking">${speaking}</span>
+            </div>
+            <div class="br-ctx-row" style="gap:3px;">${pbtns}</div>
+            <div class="br-ctx-row" onclick="toggleOverflow()" style="cursor:pointer;">
+              <div class="br-more-bar"></div>
+              <div class="br-more-lbl">nut presets ↑</div>
+              <div class="br-more-bar"></div>
+            </div>`;
+  }
+  if(view==='capo'){
+    const cn=CAPO_NODES[capoNodeIdx];
+    const uLen=fmtLen(capoUpperIn());
+    const lLen=fmtLen(capoLowerIn());
+    const snaps=['m3','M3','P4','P5','m6','M6','8ve'];
+    const snapBtns=snaps.map((s,i)=>`<div class="br-snap-btn${i===capoNodeIdx?' on':''}"
+      onclick="setCapoNode(${i});renderBRCtx()">${s}</div>`).join('');
+    return `<div class="br-ctx-row" style="gap:3px;">
+              <div class="br-play-btn" onclick="playTone(capoUpperFreq())">▲ ${uLen}</div>
+              <div class="br-play-btn" onclick="playTone(capoLowerFreq())">▼ ${lLen}</div>
+              <div class="br-play-btn" onclick="playCapoBoth()">▲▼ both</div>
+            </div>
+            <div style="flex:2 1 0%;display:flex;align-items:stretch;padding:3px 5px;gap:2px;border-top:0.5px solid rgba(128,128,128,0.1);">
+              ${snapBtns}
+            </div>`;
+  }
+  return '';
+}
+
+// ── Right panel contexts ──────────────────────────────────────────
+function renderRightPanel(panel){
+  if(panel==='audio') return renderAudioPanel();
+  if(panel==='phys')  return renderPhysPanel();
+  if(panel==='lgnd')  return renderLgndPanel();
+  return '';
+}
+
+function renderAudioPanel(){
+  const wavs=['sine','warm','string'];
+  const wavLabels=['sin','warm','str'];
+  const wbtns=wavs.map((w,i)=>`<div class="br-wav-btn${waveform===w?' on':''}"
+    onclick="setWaveform('${w}',document.querySelectorAll('#legacy-controls #wav-${w}')[0]);renderBRCtx()">${wavLabels[i]}</div>`).join('');
+  const polyon=`<div class="br-poly-btn${polyOn?' on':''}" onclick="setPoly(true,this);renderBRCtx()">on</div>`;
+  const polyoff=`<div class="br-poly-btn${!polyOn?' on':''}" onclick="setPoly(false,this);renderBRCtx()">off</div>`;
+  const durPct=(toneDuration-0.2)/(4-0.2);
+  const volPct=volume;
+  return `<div class="br-ctx-row" style="gap:3px;">
+            <span class="br-chip-lbl">wave</span>${wbtns}
+            <div style="width:0.5px;background:rgba(128,128,128,0.2);align-self:stretch;"></div>
+            <span class="br-chip-lbl">poly</span>${polyon}${polyoff}
+          </div>
+          <div class="br-ctx-row" id="br-dur-row">
+            <div class="br-sl-wrap">
+              <span class="br-sl-lbl">dur</span>
+              <div class="br-sl-track" id="br-dur-track">
+                <div class="br-sl-thumb" style="left:${(durPct*100).toFixed(1)}%"></div>
+              </div>
+              <span class="br-sl-val" id="br-dur-val">${toneDuration.toFixed(1)}s</span>
+            </div>
+          </div>
+          <div class="br-ctx-row" id="br-vol-row">
+            <div class="br-sl-wrap">
+              <span class="br-sl-lbl">vol</span>
+              <div class="br-sl-track" id="br-vol-track">
+                <div class="br-sl-thumb" style="left:${(volume*100).toFixed(1)}%"></div>
+              </div>
+              <span class="br-sl-val" id="br-vol-val">${Math.round(volume*100)}%</span>
+            </div>
+          </div>`;
+}
+
+function renderPhysPanel(){
+  const lenVal=fmtLen(nodeView==='nut'?effectiveSpeakingLength():stringInches);
+  const densVal=muKgM.toFixed(6);
+  const inOn=useInches, cmOn=!useInches;
+  return `<div class="br-ctx-row" style="gap:3px;">
+            <span class="br-chip-lbl">length</span>
+            <span class="br-chip">${lenVal}</span>
+            <div class="br-btn${inOn?' on':''}" onclick="setUnits('in',document.getElementById('unit-in'));renderBRCtx()">in</div>
+            <div class="br-btn${cmOn?' on':''}" onclick="setUnits('cm',document.getElementById('unit-cm'));renderBRCtx()">cm</div>
+          </div>
+          <div class="br-ctx-row" style="gap:3px;">
+            <span class="br-chip-lbl">density</span>
+            <span class="br-chip">${densVal}</span>
+            <span class="br-chip-lbl" style="font-size:7.5px;">kg/m</span>
+          </div>
+          <div class="br-ctx-row" onclick="toggleOverflow()" style="cursor:pointer;">
+            <div class="br-more-bar"></div>
+            <div class="br-more-lbl">my bass defaults ↑</div>
+            <div class="br-more-bar"></div>
+          </div>`;
+}
+
+function renderLgndPanel(){
+  // Legend: 2×2 grid spanning all three rows
+  const svgInKey=`<svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="none" stroke="#1a1a1a" stroke-width="1.2"/></svg>
+    <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="rgba(0,0,0,0.06)" stroke="#1a1a1a" stroke-width="1.5"/><circle cx="7" cy="7" r="2.5" fill="#1a1a1a"/></svg>`;
+  const svgChrom=`<svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="none" stroke="#D85A30" stroke-width="1.2"/></svg>
+    <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="#FAECE7" stroke="#993C1D" stroke-width="1.5"/><circle cx="7" cy="7" r="2.5" fill="#993C1D"/></svg>`;
+  const svgHome=`<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="none" stroke="#533AB7" stroke-width="1.5" opacity="0.45"/><circle cx="8" cy="8" r="4.5" fill="#EEEDFE" stroke="#533AB7" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="#533AB7"/></svg>`;
+  const svgBetween=`<svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="none" stroke="#B4B2A9" stroke-width="1.2" stroke-dasharray="2 1.5"/></svg>`;
+  return `<div style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden;">
+      <div class="lgnd-cell br bb">${svgInKey}<span class="lgnd-txt">in key</span></div>
+      <div class="lgnd-cell bb">${svgChrom}<span class="lgnd-txt">chromatic</span></div>
+      <div class="lgnd-cell br">${svgHome}<span class="lgnd-txt">home node</span></div>
+      <div class="lgnd-cell">${svgBetween}<span class="lgnd-txt">between named pitches</span></div>
+    </div>
+    <div style="flex:0 0 25px;border-top:0.5px solid rgba(128,128,128,0.1);"></div>
+  </div>`;
+}
+
+// ── Overflow panel ────────────────────────────────────────────────
+// ── Overlay sync helpers ──────────────────────────────────────────
+// Move a slider thumb given an element ID and a 0–1 fraction
+function setThumb(id, pct){
+  const t=document.getElementById(id);
+  if(t) { const th=t.querySelector('.br-sl-thumb'); if(th) th.style.left=(Math.max(0,Math.min(1,pct))*100).toFixed(1)+'%'; }
+}
+// Sync all three phys overlay fields + thumbs from current def-* values
+function syncOvPhysFields(){
+  const lenRaw=parseFloat(document.getElementById('def-len').value);
+  const tenRaw=parseFloat(document.getElementById('def-ten').value);
+  const muRaw =parseFloat(document.getElementById('def-mu').value);
+  const lenIn =useInches ? lenRaw : lenRaw/2.54;
+  const tenLbs=tenRaw;
+  const muVal =muRaw;
+  const lf=document.getElementById('def-len-ov'); if(lf) lf.value=document.getElementById('def-len').value;
+  const tf=document.getElementById('def-ten-ov'); if(tf) tf.value=document.getElementById('def-ten').value;
+  const mf=document.getElementById('def-mu-ov');  if(mf) mf.value=document.getElementById('def-mu').value;
+  setThumb('ov-len-sl', (lenIn-24)/(200-24));
+  setThumb('ov-ten-sl', (tenLbs-1)/(15-1));
+  setThumb('ov-mu-sl',  Math.log(muVal/0.0001)/Math.log(0.005/0.0001));
+}
+// Sync one nut preset slider thumb from nutPresets[i]
+function syncOvNutSlider(i){
+  setThumb(`ov-nut-sl-${i}`, nutPresets[i]/Math.max(1,stringInches));
+  const f=document.getElementById(`nut-pre-ov-${i}`);
+  if(f) f.value=fmtLen(nutPresets[i]);
+}
+
+function renderOverflowPanel(){
+  const op=document.getElementById('overflow-panel');
+  if(!op) return;
+  if(brNodeView==='nut' && !brRightPanel){
+    op.innerHTML=`
+      <div class="ov-title">nut presets</div>
+      ${[0,1,2].map(i=>`
+      <div class="ov-row">
+        <span class="ov-lbl">nut ${i+1}</span>
+        <input class="ov-field" id="nut-pre-ov-${i}" value="${fmtLen(nutPresets[i])}"
+          onchange="setNutPreset(${i},this.value);document.getElementById('nut-pre-${i}').value=this.value;syncOvNutSlider(${i})"
+          onkeydown="if(event.key==='Enter')this.blur()">
+        <div class="br-sl-track" id="ov-nut-sl-${i}" style="flex:1;">
+          <div class="br-sl-thumb" style="left:${(nutPresets[i]/Math.max(1,stringInches)*100).toFixed(1)}%"></div>
+        </div>
+        <div class="ov-btn" onclick="setNutPreset(${i},document.getElementById('nut-pre-ov-${i}').value);syncOvNutSlider(${i});renderBRCtx()">save</div>
+        <div class="ov-btn" onclick="applyNutPreset(${i});renderBRCtx()">apply</div>
+      </div>`).join('')}
+      <div class="ov-sep"></div>
+      <div class="ov-row" style="justify-content:flex-end;">
+        <div class="ov-btn danger" onclick="applyNutOffset(0);render();renderBRCtx()">reset to defaults</div>
+      </div>`;
+  } else if(brRightPanel==='phys'){
+    const tensionPct=(tensionLbs-1)/(15-1);
+    const lenPct=(stringInches-24)/(200-24);
+    const muPct=Math.log(muKgM/0.0001)/Math.log(0.005/0.0001);
+    op.innerHTML=`
+      <div class="ov-title">my bass defaults</div>
+      <div class="ov-row" style="gap:4px;flex-wrap:wrap;">
+        <div class="ov-btn" onclick="resetDefaults();syncOvPhysFields()">reset</div>
+        <div class="ov-btn" onclick="applyDefaults();renderBRCtx();updateOverflowDesktop()">apply</div>
+        <div class="ov-btn" onclick="useCurrentSettings();syncOvPhysFields()">set current as default</div>
+      </div>
+      <div class="ov-sep"></div>
+      <div class="ov-row">
+        <span class="ov-lbl">length</span>
+        <input class="ov-field" id="def-len-ov" value="${document.getElementById('def-len').value}"
+          oninput="document.getElementById('def-len').value=this.value;setThumb('ov-len-sl',(parseFloat(this.value)${useInches?'':'/2.54'}-24)/(200-24))"
+          onchange="document.getElementById('def-len').value=this.value;setThumb('ov-len-sl',(parseFloat(this.value)${useInches?'':'/2.54'}-24)/(200-24))"
+          onkeydown="if(event.key==='Enter')this.blur()">
+        <div class="br-sl-track" id="ov-len-sl" style="flex:1;"><div class="br-sl-thumb" style="left:${(lenPct*100).toFixed(1)}%"></div></div>
+        <span style="font-size:9px;color:#aaa;white-space:nowrap;">${useInches?'in':'cm'}</span>
+      </div>
+      <div class="ov-row">
+        <span class="ov-lbl">tension</span>
+        <input class="ov-field" id="def-ten-ov" value="${document.getElementById('def-ten').value}"
+          oninput="document.getElementById('def-ten').value=this.value;setThumb('ov-ten-sl',(parseFloat(this.value)-1)/(15-1))"
+          onchange="document.getElementById('def-ten').value=this.value;setThumb('ov-ten-sl',(parseFloat(this.value)-1)/(15-1))"
+          onkeydown="if(event.key==='Enter')this.blur()">
+        <div class="br-sl-track" id="ov-ten-sl" style="flex:1;"><div class="br-sl-thumb" style="left:${(tensionPct*100).toFixed(1)}%"></div></div>
+        <span style="font-size:9px;color:#aaa;white-space:nowrap;">lbs</span>
+      </div>
+      <div class="ov-row">
+        <span class="ov-lbl">density</span>
+        <input class="ov-field" id="def-mu-ov" value="${document.getElementById('def-mu').value}"
+          oninput="document.getElementById('def-mu').value=this.value;setThumb('ov-mu-sl',Math.log(parseFloat(this.value)/0.0001)/Math.log(0.005/0.0001))"
+          onchange="document.getElementById('def-mu').value=this.value;setThumb('ov-mu-sl',Math.log(parseFloat(this.value)/0.0001)/Math.log(0.005/0.0001))"
+          onkeydown="if(event.key==='Enter')this.blur()">
+        <div class="br-sl-track" id="ov-mu-sl" style="flex:1;"><div class="br-sl-thumb" style="left:${(muPct*100).toFixed(1)}%"></div></div>
+        <span style="font-size:9px;color:#aaa;white-space:nowrap;">kg/m</span>
+      </div>`;
+  } else {
+    op.innerHTML='';
+  }
+}
+
+function toggleOverflow(){
+  overflowOpen=!overflowOpen;
+  const op=document.getElementById('overflow-panel');
+  if(!op) return;
+  if(overflowOpen){
+    renderOverflowPanel();
+    op.classList.add('visible');
+    setTimeout(wireAllBRSliders,0);
+  } else {
+    op.classList.remove('visible');
+    op.innerHTML='';
+  }
+}
+
+// On desktop, show overflow automatically when state has one
+function updateOverflowDesktop(){
+  if(isMobile()) return;
+  const hasOverflow=(brNodeView==='nut'&&!brRightPanel)||(brRightPanel==='phys');
+  const op=document.getElementById('overflow-panel');
+  if(!op) return;
+  if(hasOverflow){
+    overflowOpen=true;
+    renderOverflowPanel();
+    op.classList.add('visible');
+    setTimeout(wireAllBRSliders,0);
+  } else {
+    overflowOpen=false;
+    op.classList.remove('visible');
+    op.innerHTML='';
+  }
+}
+
+// ── Wire duration/volume mini sliders after render ─────────────────
+// ── Unified mini-slider wiring ────────────────────────────────────
+// Called via setTimeout after every renderBRCtx() and renderOverflowPanel().
+// Handles all three slider families: audio dur/vol, nut preset offsets,
+// phys defaults length/tension/density.
+function wireAllBRSliders(){
+
+  // Generic wiring: given a track el, min, max, callback(value)
+  function wireTrack(track, min, max, cb){
+    if(!track || track._wired) return;
+    track._wired=true;
+    const thumb=track.querySelector('.br-sl-thumb');
+    if(!thumb) return;
+    let drag=false;
+    track.addEventListener('mousedown',e=>{
+      drag=true; e.preventDefault();
+      const move=ev=>{
+        if(!drag) return;
+        const r=track.getBoundingClientRect();
+        const pct=Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width));
+        thumb.style.left=(pct*100).toFixed(1)+'%';
+        cb(min+pct*(max-min), pct);
+      };
+      const up=()=>{drag=false;window.removeEventListener('mousemove',move);window.removeEventListener('mouseup',up);};
+      window.addEventListener('mousemove',move);
+      window.addEventListener('mouseup',up);
+    });
+    // touch support
+    track.addEventListener('touchstart',e=>{
+      drag=true;
+      const move=ev=>{
+        if(!drag) return;
+        const r=track.getBoundingClientRect();
+        const pct=Math.max(0,Math.min(1,(ev.touches[0].clientX-r.left)/r.width));
+        thumb.style.left=(pct*100).toFixed(1)+'%';
+        cb(min+pct*(max-min), pct);
+      };
+      const up=()=>{drag=false;track.removeEventListener('touchmove',move);track.removeEventListener('touchend',up);};
+      track.addEventListener('touchmove',move,{passive:true});
+      track.addEventListener('touchend',up,{passive:true});
+    },{passive:true});
+  }
+
+  // ── Audio: dur ────────────────────────────────────────────────
+  wireTrack(document.getElementById('br-dur-track'), 0.2, 4, (val)=>{
+    const valEl=document.getElementById('br-dur-val');
+    if(valEl) valEl.textContent=val.toFixed(1)+'s';
+    syncSlider('dur', val);
+  });
+
+  // ── Audio: vol ────────────────────────────────────────────────
+  wireTrack(document.getElementById('br-vol-track'), 0, 100, (val)=>{
+    const valEl=document.getElementById('br-vol-val');
+    if(valEl) valEl.textContent=Math.round(val)+'%';
+    syncSlider('vol', val);
+  });
+
+  // ── Overflow: nut preset sliders ──────────────────────────────
+  [0,1,2].forEach(i=>{
+    const track=document.getElementById(`ov-nut-sl-${i}`);
+    wireTrack(track, 0, stringInches, (val)=>{
+      nutPresets[i]=Math.max(0,Math.min(stringInches*0.85,val));
+      const field=document.getElementById(`nut-pre-ov-${i}`);
+      if(field) field.value=fmtLen(nutPresets[i]);
+      // also sync legacy field
+      const leg=document.getElementById(`nut-pre-${i}`);
+      if(leg) leg.value=fmtLen(nutPresets[i]);
+    });
+  });
+
+  // ── Overflow: phys defaults sliders ──────────────────────────
+  wireTrack(document.getElementById('ov-len-sl'), 24, 200, (val)=>{
+    const v=useInches?val.toFixed(1)+'"':(val*2.54).toFixed(1)+' cm';
+    const f=document.getElementById('def-len-ov');
+    if(f){f.value=v; document.getElementById('def-len').value=v;}
+  });
+  wireTrack(document.getElementById('ov-ten-sl'), 1, 15, (val)=>{
+    const v=val.toFixed(1)+' lbs';
+    const f=document.getElementById('def-ten-ov');
+    if(f){f.value=v; document.getElementById('def-ten').value=v;}
+  });
+  // density: log scale — handled by IIFE below, no wireTrack call here
+  // mu uses log scale — re-wire manually
+  (()=>{
+    const track=document.getElementById('ov-mu-sl');
+    if(!track || track._wired) return;
+    track._wired=true;
+    const thumb=track.querySelector('.br-sl-thumb');
+    if(!thumb) return;
+    let drag=false;
+    const doMove=(clientX)=>{
+      const r=track.getBoundingClientRect();
+      const pct=Math.max(0,Math.min(1,(clientX-r.left)/r.width));
+      const val=0.0001*Math.pow(0.005/0.0001,pct);
+      thumb.style.left=(pct*100).toFixed(1)+'%';
+      const v=val.toFixed(6);
+      const f=document.getElementById('def-mu-ov');
+      if(f){f.value=v; document.getElementById('def-mu').value=v;}
+    };
+    track.addEventListener('mousedown',e=>{
+      drag=true; e.preventDefault();
+      const move=ev=>{if(drag) doMove(ev.clientX);};
+      const up=()=>{drag=false;window.removeEventListener('mousemove',move);window.removeEventListener('mouseup',up);};
+      window.addEventListener('mousemove',move);
+      window.addEventListener('mouseup',up);
+    });
+    track.addEventListener('touchstart',e=>{
+      const move=ev=>{doMove(ev.touches[0].clientX);};
+      const up=()=>{track.removeEventListener('touchmove',move);track.removeEventListener('touchend',up);};
+      track.addEventListener('touchmove',move,{passive:true});
+      track.addEventListener('touchend',up,{passive:true});
+    },{passive:true});
+  })();
+}
+
+// ── setBRPanel — right panel toggle ──────────────────────────────
+setBRPanel = function(panel, btn){
+  brRightPanel = (brRightPanel===panel) ? null : panel;
+  overflowOpen=false;
+  renderBRCtx();
+  setTimeout(wireAllBRSliders,0);
+  updateOverflowDesktop();
+};
+
+// ── Patch setNodeView to also update BR state ─────────────────────
+const _setNodeView_orig=setNodeView;
+setNodeView = function(view, btn){
+  brNodeView=view;
+  brRightPanel=null; // node view switch clears right panel
+  overflowOpen=false;
+  _setNodeView_orig(view, btn);
+  renderBRCtx();
+  updateOverflowDesktop();
+};
+
+// ── Patch render to refresh BR readouts ───────────────────────────
+const _render_step6=render;
+render = function(){
+  _render_step6();
+  // Refresh nut offset/speaking readouts if visible
+  if(brNodeView==='nut'&&!brRightPanel){
+    const oEl=document.getElementById('br-nut-offset');
+    const sEl=document.getElementById('br-nut-speaking');
+    if(oEl) oEl.textContent=fmtLen(nutOffsetInches);
+    if(sEl) sEl.textContent=fmtLen(effectiveSpeakingLength());
+  }
+  // Refresh phys length readout if visible
+  if(brRightPanel==='phys'){
+    renderBRCtx();
+  }
+};
+
+// ── Update setCapoNode to refresh BR capo play button labels ──────
+const _setCapoNode_orig=setCapoNode;
+setCapoNode = function(idx){
+  _setCapoNode_orig(idx);
+  if(brNodeView==='capo'&&!brRightPanel) renderBRCtx();
+};
+
+// ── Override toggleOverflow for mobile slide-up ───────────────────
+// (Already defined above — mobile vs desktop handled in function)
+
+// ── Init bottom rail ──────────────────────────────────────────────
+function initBR(){
+  renderBRCtx();
+  updateOverflowDesktop();
+}
+
+// ── End Steps 6–12 bottom rail wiring ════════════════════════════
+
+// ── v4 CoF WHEEL + PICKERS (Steps 13–14) ══════════════════════════
+
+// ── Circle of Fifths ──────────────────────────────────────────────
+let cofVisible=false;
+let cofAngle=0;
+const COF_CX=85, COF_CY=85, COF_R=68;
+
+function drawCoF(){
+  const cv=document.getElementById('cof-canvas');
+  if(!cv) return;
+  const ctx=cv.getContext('2d');
+  const W=170, cx=COF_CX, cy=COF_CY;
+  const outerR=78, innerR=34, gap=0.018;
+  ctx.clearRect(0,0,W,W);
+
+  // Which position is currently under the selector dot (12 o'clock)
+  const selPos=cofKeyAtTop();
+
+  COF_ORDER.forEach((chromIdx,pos)=>{
+    const distFromSel=Math.min(
+      Math.abs(pos-selPos),
+      12-Math.abs(pos-selPos)
+    );
+    const atDot=(distFromSel===0);
+
+    const midA=(pos/12)*2*Math.PI - Math.PI/2 + cofAngle;
+    const sliceAngle=(2*Math.PI/12);
+    const startA=midA - sliceAngle/2 + gap;
+    const endA  =midA + sliceAngle/2 - gap;
+
+    // Lighting follows dot position, not homeKey
+    let fillColor, textColor;
+    if(atDot){
+      fillColor='#533AB7'; textColor='#fff';
+    } else if(distFromSel===1){
+      fillColor='rgba(83,58,183,0.18)'; textColor='rgba(83,58,183,0.9)';
+    } else if(distFromSel===2){
+      fillColor='rgba(83,58,183,0.07)'; textColor='rgba(83,58,183,0.55)';
+    } else {
+      fillColor='rgba(83,58,183,0.04)'; textColor='rgba(83,58,183,0.32)';
+    }
+
+    // Draw slice
+    ctx.beginPath();
+    ctx.arc(cx,cy,outerR,startA,endA);
+    ctx.arc(cx,cy,innerR,endA,startA,true);
+    ctx.closePath();
+    ctx.fillStyle=fillColor;
+    ctx.fill();
+
+    // Label at midpoint radius
+    const labelR=(innerR+outerR)/2;
+    const lx=cx+labelR*Math.cos(midA);
+    const ly=cy+labelR*Math.sin(midA);
+    ctx.font=(atDot?'bold ':'')+(atDot?'12':'10.5')+'px system-ui,sans-serif';
+    ctx.fillStyle=textColor;
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText(NOTES[chromIdx],lx,ly);
+  });
+}
+
+function cofKeyAtTop(){
+  // Normalise each position's angle to [-π,π] and find closest to 0 (top = -π/2 + π/2 = 0)
+  let best=0, bestDist=Infinity;
+  COF_ORDER.forEach((_,pos)=>{
+    let a=((pos/12)*2*Math.PI + cofAngle) % (2*Math.PI);
+    if(a>Math.PI) a-=2*Math.PI;
+    if(Math.abs(a)<bestDist){bestDist=Math.abs(a);best=pos;}
+  });
+  return best;
+}
+
+function snapCoF(){
+  const pos=cofKeyAtTop();
+  const targetAngle=-(pos/12)*2*Math.PI;
+  const start=cofAngle;
+  let diff=((targetAngle-start) % (2*Math.PI));
+  if(diff>Math.PI) diff-=2*Math.PI;
+  if(diff<-Math.PI) diff+=2*Math.PI;
+  const duration=220, t0=performance.now();
+  function step(t){
+    const p=Math.min(1,(t-t0)/duration);
+    const ease=1-Math.pow(1-p,3);
+    cofAngle=start+diff*ease;
+    drawCoF();
+    if(p<1){ requestAnimationFrame(step); }
+    else{
+      cofAngle=targetAngle;
+      const newKey=COF_ORDER[pos];
+      homeKey=newKey;
+      drawCoF(); // redraw with updated homeKey so highlight reflects new selection
+      document.querySelectorAll('.kbtn').forEach((b,bi)=>{
+        b.classList.toggle('on', COF_ORDER[bi]===newKey);
+      });
+      updateTuneBtn(); updateScaleSpelling(); updateScaleStrip();
+      updateLeftRailChips(); render();
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+function initCoF(){
+  const homePos=COF_ORDER.indexOf(homeKey);
+  cofAngle=-(homePos/12)*2*Math.PI;
+  drawCoF();
+}
+
+// Drag wiring
+(function(){
+  const cv=document.getElementById('cof-canvas');
+  if(!cv) return;
+  let dragging=false, startA=0, startCof=0;
+  function ptrAngle(e){
+    const r=cv.getBoundingClientRect();
+    const cx=(e.touches?e.touches[0].clientX:e.clientX)-r.left-COF_CX;
+    const cy=(e.touches?e.touches[0].clientY:e.clientY)-r.top-COF_CY;
+    return Math.atan2(cy,cx);
+  }
+  cv.addEventListener('mousedown',e=>{dragging=true;cv.style.cursor='grabbing';startA=ptrAngle(e);startCof=cofAngle;e.stopPropagation();});
+  cv.addEventListener('touchstart',e=>{dragging=true;startA=ptrAngle(e);startCof=cofAngle;e.stopPropagation();},{passive:true});
+  window.addEventListener('mousemove',e=>{if(!dragging)return;cofAngle=startCof+(ptrAngle(e)-startA);drawCoF();});
+  window.addEventListener('touchmove',e=>{if(!dragging)return;cofAngle=startCof+(ptrAngle(e)-startA);drawCoF();},{passive:true});
+  window.addEventListener('mouseup',()=>{if(dragging){dragging=false;cv.style.cursor='grab';snapCoF();}});
+  window.addEventListener('touchend',()=>{if(dragging){dragging=false;snapCoF();}});
+})();
+
+toggleCoF = function(){
+  cofVisible=!cofVisible;
+  const wrap=document.getElementById('cof-wrap');
+  if(!wrap) return;
+  wrap.style.display=cofVisible?'block':'none';
+  if(cofVisible){ initCoF(); }
+  closePickers();
+};
+
+// ── Scale picker ──────────────────────────────────────────────────
+const MODES_ORDER=[
+  {key:'ionian',label:'1 Ionian'},{key:'dorian',label:'2 Dorian'},
+  {key:'phrygian',label:'3 Phrygian'},{key:'lydian',label:'4 Lydian'},
+  {key:'mixolydian',label:'5 Mixolydian'},{key:'aeolian',label:'6 Aeolian'},
+  {key:'locrian',label:'7 Locrian'},null,
+  {key:'harmonic_minor',label:'Harmonic Minor'},
+  {key:'melodic_minor',label:'Melodic Minor'},
+];
+
+function setModeByName(mode){
+  const btn=document.querySelector(`#legacy-controls .mode-btn[onclick*="'${mode}'"]`);
+  if(btn) setMode(mode,btn);
+  else{ currentMode=mode; render(); }
+  updateScaleStrip(); updateLeftRailChips();
+}
+
+openScalePicker = function(){
+  closeHomePicker();
+  const sp=document.getElementById('scale-picker');
+  if(!sp) return;
+  if(sp.classList.contains('visible')){sp.classList.remove('visible');return;}
+  const chip=document.getElementById('chip-scale');
+  if(chip){
+    const r=chip.getBoundingClientRect();
+    const pr=document.getElementById('app-shell').getBoundingClientRect();
+    sp.style.top=(r.top-pr.top)+'px';
+    sp.style.left=(r.right-pr.left+4)+'px';
+  }
+  sp.innerHTML=MODES_ORDER.map(m=>
+    m===null?'<div class="sp-sep"></div>'
+    :`<div class="sp-item${currentMode===m.key?' on':''}"
+        onclick="setModeByName('${m.key}');closePickers()">${m.label}</div>`
+  ).join('');
+  sp.classList.add('visible');
+};
+
+// ── Home picker ───────────────────────────────────────────────────
+openHomePicker = function(){
+  closeScalePicker();
+  const hp=document.getElementById('home-picker');
+  if(!hp) return;
+  if(hp.classList.contains('visible')){hp.classList.remove('visible');return;}
+  const chip=document.getElementById('chip-home');
+  if(chip){
+    const r=chip.getBoundingClientRect();
+    const pr=document.getElementById('app-shell').getBoundingClientRect();
+    hp.style.top=(r.top-pr.top)+'px';
+    hp.style.left=(r.right-pr.left+4)+'px';
+  }
+  hp.innerHTML=[1,2,3,4,5,6,7].map(d=>
+    `<div class="hp-item${homeNode===d?' on':''}"
+       onclick="setHomeNode(${d});closePickers()">${d}</div>`
+  ).join('');
+  hp.classList.add('visible');
+};
+
+function closeScalePicker(){const s=document.getElementById('scale-picker');if(s)s.classList.remove('visible');}
+function closeHomePicker(){const h=document.getElementById('home-picker');if(h)h.classList.remove('visible');}
+function closePickers(){closeScalePicker();closeHomePicker();}
+
+// Close pickers on outside click
+document.addEventListener('mousedown',e=>{
+  const sp=document.getElementById('scale-picker');
+  const hp=document.getElementById('home-picker');
+  if(sp&&sp.classList.contains('visible')&&!sp.contains(e.target)&&e.target.id!=='chip-scale') closeScalePicker();
+  if(hp&&hp.classList.contains('visible')&&!hp.contains(e.target)&&e.target.id!=='chip-home') closeHomePicker();
+});
+
+// ── End Steps 13–14 CoF + pickers ════════════════════════════════
+
 let stringInches=69, muKgM=0.000754, tensionLbs=5.0;
 
 function tensionToFreq(lbs,inches,mu){
@@ -1670,20 +2950,89 @@ canvas.addEventListener('wheel',e=>{
   const f=e.deltaY>0?0.85:1.18, ns=Math.min(scMx,Math.max(scMn,sc*f));
   tx=mx-(mx-tx)*(ns/sc);ty=my-(my-ty)*(ns/sc);sc=ns;clamp();applyT();
 },{passive:false});
+// ── Canvas touch: two-finger pan + pinch zoom ─────────────────────
+// Single-finger touches are exclusively for node hit-rects (row-hit).
+// Two-finger touches pan and pinch-zoom the diagram.
+let _t2StartDist=0, _t2StartSc=0, _t2StartTx=0, _t2StartTy=0, _t2MidX=0, _t2MidY=0;
+
+function _t2Mid(e){
+  return {
+    x:(e.touches[0].clientX+e.touches[1].clientX)/2,
+    y:(e.touches[0].clientY+e.touches[1].clientY)/2,
+    dist:Math.hypot(
+      e.touches[1].clientX-e.touches[0].clientX,
+      e.touches[1].clientY-e.touches[0].clientY
+    )
+  };
+}
+
 canvas.addEventListener('touchstart',e=>{
-  if(e.touches.length===1&&!e.target.classList.contains('row-hit')){
-    dragging=true;dsx=e.touches[0].clientX;dsy=e.touches[0].clientY;dtx=tx;dty=ty;
+  if(e.touches.length===2){
+    // Two-finger: start pan+pinch
+    dragging=false; // cancel any single-finger drag
+    const m=_t2Mid(e);
+    _t2StartDist=m.dist; _t2StartSc=sc;
+    _t2StartTx=tx; _t2StartTy=ty;
+    _t2MidX=m.x; _t2MidY=m.y;
   }
+  // Single-finger on non-hit areas: no pan (handled by hit-rects only)
 },{passive:true});
+
 canvas.addEventListener('touchmove',e=>{
-  if(dragging&&e.touches.length===1){
-    tx=dtx+(e.touches[0].clientX-dsx);ty=dty+(e.touches[0].clientY-dsy);clamp();applyT();
+  if(e.touches.length===2){
+    const m=_t2Mid(e);
+    // pinch scale
+    const ns=Math.min(scMx,Math.max(scMn,_t2StartSc*(m.dist/_t2StartDist)));
+    // pan: midpoint movement
+    const dx=m.x-_t2MidX, dy=m.y-_t2MidY;
+    // scale-adjusted position
+    const r=canvas.getBoundingClientRect();
+    const mx=_t2MidX-r.left, my=_t2MidY-r.top;
+    tx=mx-(mx-_t2StartTx)*(ns/_t2StartSc)+dx;
+    ty=my-(my-_t2StartTy)*(ns/_t2StartSc)+dy;
+    sc=ns; clamp(); applyT();
+    e.preventDefault(); // prevent page scroll during pinch
   }
-},{passive:true});
-canvas.addEventListener('touchend',()=>{dragging=false;});
+},{passive:false});
+
+canvas.addEventListener('touchend',e=>{
+  if(e.touches.length<2){ dragging=false; }
+});
+
+// ── Overflow drag gesture ─────────────────────────────────────────
+// The "more ↑" row opens the overflow on tap OR on upward swipe ≥20px.
+// Works alongside the existing onclick on the row element.
+(function wireOverflowDrag(){
+  let _odStartY=0, _odMoved=false;
+  document.getElementById('bottom-rail').addEventListener('touchstart',e=>{
+    const row=e.target.closest('.br-ctx-row');
+    if(!row) return;
+    const lbl=row.querySelector('.br-more-lbl');
+    if(!lbl) return;
+    _odStartY=e.touches[0].clientY; _odMoved=false;
+  },{passive:true});
+  document.getElementById('bottom-rail').addEventListener('touchmove',e=>{
+    const dy=_odStartY-e.touches[0].clientY; // positive = upward
+    if(dy>20&&!overflowOpen&&!_odMoved){
+      _odMoved=true;
+      toggleOverflow();
+    } else if(dy<-20&&overflowOpen&&!_odMoved){
+      _odMoved=true;
+      toggleOverflow();
+    }
+  },{passive:true});
+})();
 
 // Initialize to fit view on load
-setTimeout(()=>{zoomFit();buildCapoSnapBtns();updateScaleSpelling();render();},0);
+setTimeout(()=>{
+  zoomFit();
+  buildCapoSnapBtns();
+  updateScaleSpelling();
+  updateScaleStrip();
+  render();
+  initBR();
+  initCoF();
+},0);
 window.addEventListener('resize',()=>{clamp();applyT();});
 </script>
 </body>
