@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Washtub Bass String Map</title>
 <style>
 *{box-sizing:border-box;}
-body{margin:0;padding:0;font-family:system-ui,sans-serif;background:#fff;color:#1a1a1a;font-size:13px;overflow:hidden;}
+body{margin:0;padding:0;font-family:system-ui,sans-serif;background:#fff;color:#1a1a1a;font-size:13px;overflow:hidden;overscroll-behavior:none;touch-action:none;}
+html{overflow:hidden;overscroll-behavior:none;}
 :root{--inkey:#1a1a1a;--inkey-fill:rgba(0,0,0,0.06);}
 @media(prefers-color-scheme:dark){body{background:#1a1a1a;color:#e0e0e0;}:root{--inkey:#d8d8d0;--inkey-fill:rgba(255,255,255,0.08);}}
 #ctrl-bar{background:rgba(128,128,128,0.07);border:0.5px solid rgba(128,128,128,0.2);border-radius:10px;padding:10px 14px;margin-bottom:10px;}
@@ -3026,6 +3027,19 @@ canvas.addEventListener('touchend',e=>{
     }
   },{passive:true});
 })();
+
+// ── iOS Safari: prevent page scroll/bounce during all touch interactions ──
+// Must be non-passive to allow preventDefault. Allows scrolling inside
+// elements that explicitly need it (overflow-y:auto) via the check below.
+document.addEventListener('touchmove', e=>{
+  // Allow scrolling inside overflow panels (e.g. if overflow-panel is tall)
+  let el=e.target;
+  while(el && el!==document.body){
+    if(el.id==='overflow-panel') return; // let overflow panel scroll
+    el=el.parentElement;
+  }
+  e.preventDefault();
+}, {passive:false});
 
 // Initialize to fit view on load
 setTimeout(()=>{
