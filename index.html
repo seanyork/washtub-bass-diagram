@@ -93,47 +93,66 @@ input[type=range]{width:110px;cursor:pointer;}
 #app-body{flex:1 1 0%;display:flex;overflow:hidden;position:relative;min-height:0;}
 
 /* left rail */
-#left-rail{width:40px;flex-shrink:0;border-right:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column-reverse;align-items:center;padding:5px 0;gap:3px;background:rgb(250,250,250);position:relative;z-index:15;}
+#left-rail{width:56px;flex-shrink:0;border-right:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column-reverse;align-items:center;padding:6px 0;gap:4px;background:rgb(250,250,250);position:relative;z-index:15;}
 @media(prefers-color-scheme:dark){#left-rail{background:#252525;}}
-#lr-tune-btn{width:30px;height:28px;background:#EEEDFE;border:0.5px solid #AFA9EC;border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+#lr-tune-btn{width:46px;height:32px;background:#EEEDFE;border:0.5px solid #AFA9EC;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 .lr-icon{font-size:12px;color:#533AB7;}
 .lr-tune-lbl{font-size:6px;color:#533AB7;text-align:center;line-height:1.1;}
-.lr-chip{width:30px;height:22px;border:0.5px solid rgba(128,128,128,0.25);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:#fff;flex-shrink:0;}
+.lr-chip{width:46px;height:26px;border:0.5px solid rgba(128,128,128,0.25);border-radius:5px;display:flex;flex-direction:row;align-items:center;justify-content:center;cursor:pointer;background:#fff;flex-shrink:0;gap:5px;}
 @media(prefers-color-scheme:dark){.lr-chip{background:#333;}}
 .lr-chip-open{border-color:#533AB7;background:#EEEDFE;}
 .lr-chip-lbl{font-size:6.5px;color:#aaa;text-transform:uppercase;letter-spacing:0.04em;}
+.lr-ks-chip{width:46px;height:46px;border:0.5px solid #AFA9EC;border-radius:7px;background:#EEEDFE;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;gap:1px;padding:3px;}
+.lr-ks-chip.open{background:#533AB7;border-color:#533AB7;}
+.lr-ks-key{font-size:17px;font-weight:800;color:#533AB7;line-height:1.1;text-align:center;}
+.lr-ks-key-open{color:#fff;}
+.lr-ks-mode{font-size:9px;font-weight:700;color:#533AB7;opacity:0.75;text-align:center;line-height:1.2;letter-spacing:0.03em;}
+.lr-ks-mode-open{color:rgba(255,255,255,0.85);opacity:1;}
 .lr-chip-val{font-size:11px;font-weight:600;color:#533AB7;line-height:1.1;}
 .lr-chip-sub{font-size:7px;color:#533AB7;line-height:1;}
-.lr-sep{width:26px;height:0.5px;background:rgba(128,128,128,0.2);flex-shrink:0;}
-#lr-zoom-cluster{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;}
-.lr-zb{width:26px;height:26px;border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;font-size:13px;color:#555;display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;flex-shrink:0;}
+.lr-sep{width:44px;height:0.5px;background:rgba(128,128,128,0.2);flex-shrink:0;}
+#lr-zoom-cluster{display:grid;grid-template-columns:1fr 1fr;gap:2px;width:44px;flex-shrink:0;}
+.lr-zb{min-width:0;width:100%;height:24px;border:0.5px solid rgba(128,128,128,0.25);border-radius:4px;font-size:13px;color:#555;display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;overflow:hidden;}
 .lr-zb:hover{border-color:rgba(128,128,128,0.5);}
 @media(prefers-color-scheme:dark){.lr-zb{background:#333;color:#ddd;}}
-.lr-zb-pct{font-size:7.5px;font-weight:500;}
+.lr-zb-pct{font-size:7.5px;font-weight:600;}
 .lr-zoom-pct{font-size:7px;color:#888;text-align:center;}
 .lr-tension-lbl{font-size:6.5px;color:#aaa;text-transform:uppercase;letter-spacing:0.04em;flex-shrink:0;}
-#lr-tension-track{flex:1 1 0%;min-height:40px;position:relative;display:flex;justify-content:center;align-items:stretch;width:20px;}
-#ten-sl-v{-webkit-appearance:slider-vertical;appearance:slider-vertical;writing-mode:vertical-lr;direction:rtl;width:20px;height:100%;cursor:pointer;margin:0;}
+#lr-tension-track{flex:1 1 0%;min-height:40px;position:relative;width:28px;touch-action:none;}
+#ten-sl-v{display:none;}
+#lr-ten-track-inner{position:absolute;left:50%;top:4px;bottom:4px;transform:translateX(-50%);width:3px;background:rgba(128,128,128,0.25);border-radius:2px;cursor:pointer;}
+#lr-ten-fill{position:absolute;bottom:0;left:0;width:100%;background:#533AB7;border-radius:2px;opacity:0.5;}
+#lr-ten-thumb{position:absolute;left:50%;transform:translate(-50%,50%);width:16px;height:16px;background:#533AB7;border-radius:50%;border:2.5px solid #fff;box-shadow:0 0 0 1.5px #533AB7;cursor:ns-resize;touch-action:none;}
 #lr-fund{display:flex;flex-direction:column;align-items:center;gap:0;flex-shrink:0;padding-top:2px;width:100%;}
 .lr-fund-note{font-size:13px;font-weight:600;color:#533AB7;line-height:1.2;text-align:center;}
 .lr-fund-num{font-size:20px;font-weight:600;color:#533AB7;line-height:1;width:100%;text-align:center;overflow:hidden;}
 .lr-fund-hz{font-size:8px;color:#aaa;line-height:1.4;}
+.lr-fund-lbl{font-size:6.5px;color:#aaa;text-transform:uppercase;letter-spacing:0.04em;line-height:1.6;}
+.lr-ten-val{font-size:13px;font-weight:600;color:#533AB7;line-height:1.15;text-align:center;}
 
 /* canvas-wrap already has flex:1 from updated rule above */
 #canvas-wrap.dragging{cursor:grabbing;}
 
 /* label panel — pointer-events:none so node hits pass through */
-#label-panel{position:absolute;right:0;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;pointer-events:none;z-index:20;opacity:0;transition:opacity 0.12s;}
-#label-inner{white-space:nowrap;}
+/* label panel — kept in DOM but hidden; sidebar replaces it */
+#label-panel{display:none;}
+#label-inner{display:none;}
 
-/* ruler rail */
-#rrail{width:28px;flex-shrink:0;border-left:0.5px solid rgba(128,128,128,0.15);display:flex;flex-direction:column;align-items:center;padding:10px 0;background:rgba(248,247,244,0.94);position:relative;z-index:13;}
-@media(prefers-color-scheme:dark){#rrail{background:rgba(40,40,40,0.94);}}
-#rr-track{flex:1;width:2px;background:rgba(128,128,128,0.2);border-radius:1px;position:relative;}
-.rr-tick{position:absolute;left:50%;transform:translateX(-50%);width:8px;height:2px;background:rgba(128,128,128,0.4);border-radius:1px;}
-#rr-viewport{position:absolute;left:50%;transform:translateX(-50%);width:16px;border-radius:3px;background:rgba(83,58,183,0.12);border:0.5px solid rgba(83,58,183,0.25);cursor:ns-resize;top:0;height:100%;}
-#rr-dot{display:none;position:absolute;left:50%;transform:translateX(-50%) translateY(-50%);width:10px;height:10px;border-radius:50%;background:#533AB7;border:2px solid #fff;box-shadow:0 0 0 1.5px #533AB7;z-index:3;}
-#rr-fan{position:absolute;inset:0;pointer-events:none;z-index:4;overflow:visible;}
+/* ruler rail — wider, SVG-based */
+#rrail{width:42px;flex-shrink:0;border-left:0.5px solid rgba(128,128,128,0.15);background:rgba(248,247,244,0.97);position:relative;z-index:13;overflow:visible;}
+@media(prefers-color-scheme:dark){#rrail{background:rgba(40,40,40,0.97);}}
+#rr-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
+
+/* sidebar */
+#sidebar{width:72px;flex-shrink:0;border-left:0.5px solid rgba(128,128,128,0.15);background:#fff;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+@media(prefers-color-scheme:dark){#sidebar{background:#1e1e1e;}}
+#sb-upper{display:flex;flex-direction:column;justify-content:flex-end;padding:4px 5px;min-height:0;}
+#sb-lower{display:flex;flex-direction:column;justify-content:flex-start;padding:4px 5px;min-height:0;}
+#sb-hrule{height:0.5px;background:rgba(128,128,128,0.28);margin:0 6px;flex-shrink:0;}
+.sb-len{font-size:13px;font-weight:700;color:#533AB7;line-height:1.15;}
+.sb-hz{font-size:13px;font-weight:700;color:#1a1a1a;line-height:1.15;}
+.sb-note{font-size:13px;font-weight:700;line-height:1.15;}
+.sb-idle{font-size:9px;color:#ccc;font-style:italic;padding:6px 5px;}
 
 /* bottom rail */
 #bottom-rail{height:76px;flex-shrink:0;border-top:0.5px solid rgba(128,128,128,0.18);display:flex;background:rgb(250,250,250);position:relative;z-index:16;}
@@ -157,7 +176,7 @@ input[type=range]{width:110px;cursor:pointer;}
 /* CoF */
 #cof-wrap{position:absolute;left:0;bottom:0;width:160px;height:160px;z-index:14;}
 #cof-canvas{display:block;cursor:grab;}
-#cof-dot{position:absolute;left:76px;top:4px;width:8px;height:8px;background:#533AB7;border-radius:50%;pointer-events:none;box-shadow:0 0 0 2px #fff;z-index:2;}
+#cof-dot{display:none;}
 
 /* overflow panel (below bottom rail on desktop, slide-up on mobile) */
 #overflow-panel{display:none;position:absolute;bottom:76px;left:0;right:0;z-index:15;background:#fff;border-top:0.5px solid rgba(128,128,128,0.18);padding:10px 12px;flex-direction:column;gap:8px;}
@@ -198,26 +217,26 @@ input[type=range]{width:110px;cursor:pointer;}
 #cof-wrap{position:absolute;left:0;bottom:0;width:170px;height:170px;z-index:14;pointer-events:auto;}
 #cof-canvas{display:block;cursor:grab;}
 #cof-canvas.spinning{cursor:grabbing;}
-#scale-picker{position:absolute;left:44px;top:50px;z-index:50;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.12);padding:6px 0;min-width:140px;display:none;}
+#scale-picker{position:absolute;left:44px;top:50px;z-index:50;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,0.14);padding:6px 0;min-width:220px;display:none;}
 @media(prefers-color-scheme:dark){#scale-picker{background:#2a2a2a;}}
 #scale-picker.visible{display:block;}
-.sp-item{padding:5px 14px;font-size:11px;cursor:pointer;color:#1a1a1a;white-space:nowrap;}
+.sp-item{padding:8px 18px;font-size:28px;cursor:pointer;color:#1a1a1a;text-align:left;}
 .sp-item:hover{background:rgba(83,58,183,0.07);}
-.sp-item.on{color:#533AB7;font-weight:600;background:rgba(83,58,183,0.05);}
-.sp-sep{height:0.5px;background:rgba(128,128,128,0.15);margin:3px 0;}
+.sp-item.on{color:#533AB7;font-weight:700;background:rgba(83,58,183,0.05);}
+.sp-sep{height:0.5px;background:rgba(128,128,128,0.2);margin:4px 0;}
 @media(prefers-color-scheme:dark){.sp-item{color:#e0e0e0;}}
 #home-picker{position:absolute;left:44px;top:100px;z-index:50;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.12);padding:5px;display:none;flex-direction:column;gap:2px;min-width:80px;}
 @media(prefers-color-scheme:dark){#home-picker{background:#2a2a2a;}}
 #home-picker.visible{display:flex;}
-.hp-item{padding:4px 10px;font-size:11px;cursor:pointer;color:#1a1a1a;border-radius:4px;white-space:nowrap;}
+.hp-item{padding:8px 18px;font-size:28px;cursor:pointer;color:#1a1a1a;border-radius:4px;text-align:center;}
 .hp-item:hover{background:rgba(83,58,183,0.07);}
-.hp-item.on{color:#533AB7;font-weight:600;background:rgba(83,58,183,0.06);}
+.hp-item.on{color:#533AB7;font-weight:700;background:rgba(83,58,183,0.06);}
 @media(prefers-color-scheme:dark){.hp-item{color:#e0e0e0;}}
 /* ══ end v4 APP SHELL CSS ═══════════════════════════════════════════ */
 </style>
 </head>
 <body>
-<div id="dev-banner" style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#C8821A;color:#fff;font-family:system-ui,sans-serif;font-size:11px;font-weight:500;text-align:center;padding:3px 0;letter-spacing:0.05em;pointer-events:none;">DEV v4.8 — cross-platform pass</div>
+<div id="dev-banner" style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#C8821A;color:#fff;font-family:system-ui,sans-serif;font-size:11px;font-weight:500;text-align:center;padding:3px 0;letter-spacing:0.05em;pointer-events:none;">DEV v4.9 — left rail + CoF redesign</div>
 
 
 <!-- ════════════════════════════════════════════════════════════════
@@ -334,44 +353,66 @@ input[type=range]{width:110px;cursor:pointer;}
     <!-- left rail -->
     <div id="left-rail">
       <!-- column-reverse: FIRST child = visual BOTTOM, LAST child = visual TOP -->
-      <!-- Visual order top→bottom: fund · tension · sep · zoom · sep · home · scale · key · tune -->
-      <!-- DOM order (reversed):    tune · key · scale · home · sep · zoom · sep · tension · fund -->
-      <div id="lr-tune-btn" onclick="tuneToKey()">
-        <div class="lr-icon">⟳</div>
-        <div class="lr-tune-lbl" id="lr-tune-lbl">tune<br>G Ion</div>
+      <!-- DOM order: tune · ks-chip · home · sep · zoom · sep · tension · fund -->
+
+      <!-- tune button: T3 icon (offset waves + arrow) -->
+      <div id="lr-tune-btn" onclick="tuneToKey()" title="Tune to key">
+        <svg width="38" height="22" viewBox="0 0 38 22" xmlns="http://www.w3.org/2000/svg">
+          <!-- arrow across top -->
+          <line x1="3" y1="3" x2="34" y2="3" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round" opacity="0.8"/>
+          <polyline points="30,1 34,3 30,5" fill="none" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+          <!-- solid wave -->
+          <path d="M1 19 C4 19 5 11 8 11 C11 11 12 19 15 19 C18 19 19 11 22 11 C25 11 26 19 29 19 C32 19 33 11 36 11"
+                fill="none" stroke="#533AB7" stroke-width="1.8" stroke-linecap="round"/>
+          <!-- dashed wave shifted left — out of phase -->
+          <path d="M-3 9 C0 9 1 1 4 1 C7 1 8 9 11 9 C14 9 15 1 18 1 C21 1 22 9 25 9 C28 9 29 1 32 1"
+                fill="none" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round"
+                stroke-dasharray="3 2" opacity="0.55"/>
+        </svg>
       </div>
-      <div id="chip-key" class="lr-chip lr-chip-open" onclick="toggleCoF()">
-        <div class="lr-chip-lbl">key</div>
-        <div class="lr-chip-val" id="chip-key-val">G</div>
+
+      <!-- combined key + scale chip -->
+      <div id="chip-keyscale" class="lr-ks-chip" onclick="toggleCoF()">
+        <div class="lr-ks-key" id="chip-key-val">G</div>
+        <div class="lr-ks-mode" id="chip-scale-val">ION</div>
       </div>
-      <div id="chip-scale" class="lr-chip lr-chip-open" onclick="openScalePicker()">
-        <div class="lr-chip-lbl">scale</div>
-        <div class="lr-chip-sub" id="chip-scale-val">Ionian</div>
-      </div>
+
+      <!-- home chip: icon + number -->
       <div id="chip-home" class="lr-chip" onclick="openHomePicker()">
-        <div class="lr-chip-lbl">home</div>
+        <svg width="14" height="14" viewBox="0 0 14 14" style="flex-shrink:0;">
+          <circle cx="7" cy="7" r="6.5" fill="none" stroke="#533AB7" stroke-width="1.2" opacity="0.4"/>
+          <circle cx="7" cy="7" r="4" fill="#EEEDFE" stroke="#533AB7" stroke-width="1.2"/>
+          <circle cx="7" cy="7" r="1.8" fill="#533AB7"/>
+        </svg>
         <div class="lr-chip-val" id="chip-home-val">1</div>
       </div>
+
       <div class="lr-sep"></div>
+
+      <!-- zoom: 2×2 grid, no ↔ button -->
       <div id="lr-zoom-cluster">
         <button class="lr-zb" onclick="zoom(1.3)" title="zoom in">+</button>
         <button class="lr-zb" onclick="zoom(1/1.3)" title="zoom out">−</button>
-        <button class="lr-zb" onclick="fitH()" title="fit horizontal" style="font-size:11px;">↔</button>
         <button class="lr-zb" onclick="fitV()" title="fit vertical" style="font-size:11px;">↕</button>
-        <button class="lr-zb lr-zb-pct" onclick="zoomTo1()" title="100%">100%</button>
-        <div id="zoom-label" class="lr-zoom-pct">100%</div>
+        <button class="lr-zb lr-zb-pct" onclick="zoomTo1()" title="100%" style="font-size:8px;font-weight:600;">100%</button>
       </div>
+      <div id="zoom-label" class="lr-zoom-pct">100%</div>
+
       <div class="lr-sep"></div>
-      <div class="lr-tension-lbl">tension</div>
       <div id="lr-tension-track">
-        <input type="range" id="ten-sl-v" min="10" max="150" step="1" value="50"
-               oninput="syncSlider('ten',this.value);document.getElementById('ten-sl').value=this.value;"
-               title="tension">
+        <input type="range" id="ten-sl-v" min="10" max="150" step="1" value="50" style="display:none;">
+        <div id="lr-ten-track-inner">
+          <div id="lr-ten-fill"></div>
+          <div id="lr-ten-thumb"></div>
+        </div>
       </div>
       <div id="lr-fund">
+        <div class="lr-fund-lbl">fund</div>
         <div class="lr-fund-note" id="lr-fund-note">G2</div>
         <div class="lr-fund-num" id="lr-fund-num">98</div>
         <div class="lr-fund-hz">Hz</div>
+        <div class="lr-fund-lbl" style="margin-top:3px;">tension</div>
+        <div class="lr-ten-val" id="lr-ten-val">5.0 lbs</div>
       </div>
     </div>
 
@@ -381,6 +422,7 @@ input[type=range]{width:110px;cursor:pointer;}
 <svg id="main-svg" width="1380" height="1440" viewBox="0 0 1380 1440" xmlns="http://www.w3.org/2000/svg">
 
 <!-- Pitch axis (left of string) -->
+<g id="pitch-axis" style="display:none;">
 <line x1="220" y1="52" x2="460" y2="52" stroke="currentColor" stroke-width="0.5" opacity="0.25"/>
 <line x1="220" y1="52" x2="220" y2="1310" stroke="currentColor" stroke-width="0.3" stroke-dasharray="2 5" opacity="0.12"/>
 <line x1="300" y1="52" x2="300" y2="1310" stroke="currentColor" stroke-width="0.3" stroke-dasharray="2 5" opacity="0.12"/>
@@ -390,6 +432,7 @@ input[type=range]{width:110px;cursor:pointer;}
 <text x="300" y="46" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.3">3F</text>
 <text x="380" y="46" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.3">2F</text>
 <text x="460" y="46" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.3">F</text>
+</g>
 
 <!-- Column headers -->
 <text id="col-strdeg" x="438" y="22" text-anchor="middle" font-size="13" font-weight="500" fill="currentColor">str°</text>
@@ -443,7 +486,7 @@ input[type=range]{width:110px;cursor:pointer;}
 <text x="630" y="1432" font-size="10" fill="currentColor" opacity="0.3">upper | lower = length from nut | from tub</text>
 
 <!-- Dynamic -->
-<g id="dyn-ruler"></g>
+<g id="dyn-ruler" style="display:none;"></g>
 <g id="row-hl"></g>
 <g id="dyn-home-rings"></g>
 <g id="dyn-nut"></g>
@@ -465,6 +508,7 @@ input[type=range]{width:110px;cursor:pointer;}
 
 <!-- Capo view elements -->
 <g id="capo-layer" display="none">
+  <g id="capo-sub-nodes"></g>
   <g id="capo-ticks"></g>
   <g id="capo-zones"></g>
   <g id="capo-ann"></g>
@@ -476,20 +520,19 @@ input[type=range]{width:110px;cursor:pointer;}
 </g>
       </div><!-- end svg-inner -->
       <!-- label panel: absolute, pointer-events:none, never shifts layout -->
-      <div id="label-panel">
-        <div id="label-inner"></div>
-      </div>
+      <div id="label-panel"><div id="label-inner"></div></div>
     </div><!-- end canvas-wrap -->
 
-    <!-- ruler rail -->
+    <!-- ruler rail: single SVG, overflow:visible for fan line -->
     <div id="rrail">
-      <div id="rr-track">
-        <div class="rr-tick" style="top:0;"></div>
-        <div class="rr-tick" style="bottom:0;"></div>
-        <div id="rr-viewport"></div>
-        <div id="rr-dot"></div>
-        <svg id="rr-fan" xmlns="http://www.w3.org/2000/svg"></svg>
-      </div>
+      <svg id="rr-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+
+    <!-- sidebar: flex-ratio h-rule -->
+    <div id="sidebar">
+      <div id="sb-upper"></div>
+      <div id="sb-hrule"></div>
+      <div id="sb-lower"></div>
     </div>
 
   </div><!-- end app-body -->
@@ -629,21 +672,28 @@ function updateFundDisplay(){
   const fi=noteInfo(fund);
   const noteEl=document.getElementById('lr-fund-note');
   const numEl=document.getElementById('lr-fund-num');
+  const tenEl=document.getElementById('lr-ten-val');
   if(noteEl) noteEl.textContent=fi.name+(fi.octave!==undefined?fi.octave:'');
   if(numEl)  numEl.textContent=Math.round(fund);
+  if(tenEl)  tenEl.textContent=tensionLbs.toFixed(1)+' lbs';
 }
 
 // ── Left rail chip labels ─────────────────────────────────────────
-// Called whenever key, mode, or homeNode changes.
 function updateLeftRailChips(){
   const kv=document.getElementById('chip-key-val');
   const sv=document.getElementById('chip-scale-val');
   const hv=document.getElementById('chip-home-val');
-  const tl=document.getElementById('lr-tune-lbl');
   if(kv) kv.textContent=NOTES[homeKey];
-  if(sv) sv.textContent=MODE_NAMES[currentMode];
+  if(sv) sv.textContent=MODE_ABBREV[currentMode]||currentMode.slice(0,3).toUpperCase();
   if(hv) hv.textContent=homeNode;
-  if(tl) tl.innerHTML='tune<br>'+NOTES[homeKey]+' '+MODE_NAMES[currentMode].slice(0,3);
+  // Update combined chip open/closed state
+  const ks=document.getElementById('chip-keyscale');
+  if(ks){
+    const isOpen=cofVisible;
+    ks.className='lr-ks-chip'+(isOpen?' open':'');
+    if(kv) kv.className='lr-ks-key'+(isOpen?' lr-ks-key-open':'');
+    if(sv) sv.className='lr-ks-mode'+(isOpen?' lr-ks-mode-open':'');
+  }
 }
 
 // ── fitH — proper horizontal pan ─────────────────────────────────
@@ -780,7 +830,7 @@ const _origClearStrip = clearStrip;
 clearStrip = function(){
   _origClearStrip();
   const dst=document.getElementById('nts-right');
-  if(dst) dst.innerHTML='<span class="nts-idle">hover or touch a node</span>';
+  if(dst) dst.innerHTML='';
 };
 
 const _origShowStripBoth = showStripBoth;
@@ -815,6 +865,7 @@ updateStatus = function(){
 // ── Patch setMode to also update scale strip ───────────────────────
 const _setMode_step4=setMode;
 setMode = function(mode,btn){
+  _clearPin();
   _setMode_step4(mode,btn);
   updateScaleStrip();
 };
@@ -827,7 +878,7 @@ setMode = function(mode,btn){
 
 // ── End Step 4 tone strip wiring ══════════════════════════════════
 
-// ── v4 LABEL PANEL + RULER WIRING (Step 5) ════════════════════════
+// ── v4 RULER + SIDEBAR WIRING (Step 5, redesigned) ════════════════
 
 const svgNS_v4='http://www.w3.org/2000/svg';
 
@@ -839,56 +890,31 @@ function compFrac(fs){
   const gg=g(cn,d); return `${cn/gg}/${d/gg}`;
 }
 
-// ── Build label HTML for a node ───────────────────────────────────
-function buildLabel(n){
-  const inKey=isInKey(noteInfo(fundFreq()*n.ratio).midi);
-  const nc=inKey?'inkey':'chrom';
-  const lIn=(n.frac*effectiveSpeakingLength()).toFixed(1);
-  const uIn=((1-n.frac)*effectiveSpeakingLength()).toFixed(1);
-  const lHz=Math.round(fundFreq()*n.ratio);
-  const uHz=Math.round(fundFreq()/(1-n.frac));
-  const uFrac=compFrac(n.fs);
-  const ni=noteInfo(fundFreq()*n.ratio);
-  const noteName=ni.snapped?ni.name+ni.octave:'—';
-  const uNi=noteInfo(fundFreq()/(1-n.frac));
-  const uNoteName=uNi.snapped?uNi.name+uNi.octave:'—';
-  const uNoteStyle=`font-size:14px;font-weight:500;line-height:1.2;color:${isInKey(uNi.midi)?'#0F6E56':'rgba(153,60,29,0.85)'};`;
-  const P='#533AB7';
-  const rowStyle='background:rgba(255,255,255,0.75);padding:0 5px 0 3px;white-space:nowrap;display:block;text-align:right;';
-  const mainStyle=`font-size:15px;font-weight:500;color:${P};line-height:1.2;`;
-  const unitStyle='font-size:11px;color:#aaa;margin-left:1px;';
-  const noteStyle=`font-size:14px;font-weight:500;line-height:1.2;color:${inKey?'#0F6E56':'rgba(153,60,29,0.85)'};`;
-  const dirStyle=`font-size:10px;font-weight:500;color:${P};`;
-  const midStyle=`font-size:13px;font-weight:500;color:${P};line-height:1.3;`;
-  const midItvlStyle='font-size:11px;font-weight:500;color:#888;line-height:1.3;';
-  return `
-    <div style="display:flex;flex-direction:column;align-items:flex-end;padding:3px 0;">
-      <span style="${rowStyle}"><span style="${uNoteStyle}">${uNoteName}</span></span>
-      <span style="${rowStyle}"><span style="${mainStyle}">${uHz}</span><span style="${unitStyle}"> Hz</span></span>
-      <span style="${rowStyle}"><span style="${mainStyle}">${uFrac}</span></span>
-      <span style="${rowStyle}"><span style="${mainStyle}">${uIn}</span><span style="${unitStyle}">"</span></span>
-      <span style="${rowStyle}"><span style="${dirStyle}">↑ upper</span></span>
-    </div>
-    <div style="height:1.5px;background:rgba(83,58,183,0.4);"></div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;padding:3px 0;">
-      <span style="${rowStyle}"><span style="${midStyle}">${n.fs}</span></span>
-      <span style="${rowStyle}"><span style="${midStyle}">${n.rs}</span></span>
-      <span style="${rowStyle}"><span style="${midItvlStyle}">${n.desc.split('·')[0].trim()}</span></span>
-    </div>
-    <div style="height:1.5px;background:rgba(83,58,183,0.4);"></div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;padding:3px 0;">
-      <span style="${rowStyle}"><span style="${dirStyle}">↓ lower</span></span>
-      <span style="${rowStyle}"><span style="${mainStyle}">${lIn}</span><span style="${unitStyle}">"</span></span>
-      <span style="${rowStyle}"><span style="${mainStyle}">${n.fs}</span></span>
-      <span style="${rowStyle}"><span style="${mainStyle}">${lHz}</span><span style="${unitStyle}"> Hz</span></span>
-      <span style="${rowStyle}"><span style="${noteStyle}">${noteName}</span></span>
-    </div>`;
+// ── Interval name from just-intonation ratio ──────────────────────
+function intervalName(ratio){
+  let r=ratio;
+  while(r>=2) r/=2; while(r<1) r*=2;
+  const table=[
+    [1,'P1'],[9/8,'M2'],[5/4,'M3'],[4/3,'P4'],
+    [3/2,'P5'],[5/3,'M6'],[15/8,'M7'],[2,'P8']
+  ];
+  let best='?',bestD=Infinity;
+  table.forEach(([v,name])=>{const d=Math.abs(r-v);if(d<bestD){bestD=d;best=name;}});
+  return best;
+}
+
+// ── Collect home node fracs (nut + tonic NODES) ──────────────────
+function getHomeNodeFracs(){
+  const fracs=[];
+  if(isTonalCenter(1)) fracs.push(1.0); // nut = frac=1 in the coordinate system
+  NODES.forEach(n=>{if(isTonalCenter(n.ratio)) fracs.push(n.frac);});
+  return fracs.sort((a,b)=>a-b);
 }
 
 // ── Row highlight ─────────────────────────────────────────────────
 function setRowHL(nodeFrac){
   const g=document.getElementById('row-hl');
-  if(!g){return;}
+  if(!g) return;
   g.innerHTML='';
   if(nodeFrac===null) return;
   const y=TY-nodeFrac*SPX;
@@ -898,134 +924,305 @@ function setRowHL(nodeFrac){
   g.appendChild(rect);
 }
 
-// ── Show / hide label panel ───────────────────────────────────────
-let _activeFrac=null;
+// ── Active state ──────────────────────────────────────────────────
+let _activeFrac=null, _activeNode=null;
+let _pinnedFrac=null;
+let _lastPinTouch=0; // debounce synthetic mousedown after touchstart
 
-function showLabel(n){
-  const panel=document.getElementById('label-panel');
-  const inner=document.getElementById('label-inner');
-  if(!panel||!inner) return;
-  inner.innerHTML=buildLabel(n);
-  panel.style.opacity='1';
-  _activeFrac=n.frac;
-  setRowHL(n.frac);
-  updateRulerDot(n.frac);
-  drawFanLine(n.frac);
+function _setPin(frac, fromTouch){
+  _pinnedFrac=frac;
+  if(fromTouch) _lastPinTouch=Date.now();
+}
+function _togglePin(frac, fromTouch){
+  if(!fromTouch && Date.now()-_lastPinTouch < 400) return false;
+  if(_pinnedFrac===frac){ unpinAndClear(); return false; }
+  _setPin(frac, fromTouch); return true;
+}
+let _activeSegment=null; // 'lower'|'upper'|null — set when a capo sub-node is active // frac of pinned node, null when nothing pinned
+let _lastStripArgs=null; // cache last showStrip call args for replay on tension change
+
+// ── Full ruler SVG redraw ─────────────────────────────────────────
+function drawRulerSVG(node){
+  const rrail=document.getElementById('rrail');
+  const svg=document.getElementById('rr-svg');
+  if(!rrail||!svg) return;
+  const W=rrail.clientWidth||42, H=rrail.clientHeight||300;
+  const CX=W/2;
+  const TOP_INSET=66, BOT_INSET=54;
+  const MINI_TOP=TOP_INSET, MINI_BOT=H-BOT_INSET, MINI_H=MINI_BOT-MINI_TOP;
+  const frac=node?node.frac:null;
+  const miniY=f=>MINI_BOT-f*MINI_H; // frac=1=nut=top, frac=0=bridge=bottom
+
+  // Viewport indicator
+  const diagH=canvas.clientHeight||1;
+  const visH=Math.max(6,Math.min(MINI_H,MINI_H/sc));
+  const maxScroll=diagH*(sc-1);
+  const scrollFrac=maxScroll>0?Math.min(1,Math.max(0,-ty/maxScroll)):0;
+  const vpTop=MINI_TOP+scrollFrac*(MINI_H-visH);
+
+  let html='';
+
+  // Fan line FIRST (behind everything)
+  if(frac!==null){
+    const nodeSvgY=TY-frac*SPX;
+    const nodeScreenY=ty+nodeSvgY*sc;
+    const fanX2=(tx+SX*sc)-canvas.clientWidth;
+    html+=`<line x1="${CX}" y1="${miniY(frac).toFixed(1)}" x2="${fanX2.toFixed(1)}" y2="${nodeScreenY.toFixed(1)}"
+      stroke="#533AB7" stroke-width="1" stroke-dasharray="3 3" opacity="0.4"/>`;
+  }
+
+  // Viewport indicator
+  html+=`<rect x="${(CX-8).toFixed(1)}" y="${vpTop.toFixed(1)}" width="16" height="${visH.toFixed(1)}"
+    rx="3" fill="rgba(83,58,183,0.07)" stroke="rgba(83,58,183,0.18)" stroke-width="0.5"/>`;
+
+  // Ministring
+  html+=`<line x1="${CX}" y1="${MINI_TOP}" x2="${CX}" y2="${MINI_BOT}"
+    stroke="rgba(128,128,128,0.3)" stroke-width="2" stroke-linecap="round"/>`;
+  html+=`<line x1="${CX-5}" y1="${MINI_TOP}" x2="${CX+5}" y2="${MINI_TOP}"
+    stroke="rgba(128,128,128,0.4)" stroke-width="1.5"/>`;
+  html+=`<line x1="${CX-5}" y1="${MINI_BOT}" x2="${CX+5}" y2="${MINI_BOT}"
+    stroke="rgba(128,128,128,0.4)" stroke-width="1.5"/>`;
+
+  // Home node icons — segment-restricted when a sub-node is active
+  let homeFracs=getHomeNodeFracs();
+  const isSeg=(node&&node.segment);
+  const segCf=isSeg?node.cf:null;
+  const segType=isSeg?node.segment:null;
+  // In segment mode: restrict ministring to segment range and map home fracs
+  let segMin=0, segMax=1;
+  if(isSeg&&segType==='lower'){ segMin=0; segMax=segCf; }
+  if(isSeg&&segType==='upper'){ segMin=segCf; segMax=1; }
+  // Re-map miniY to segment range: miniY maps [segMin,segMax] to [MINI_BOT,MINI_TOP]
+  const miniYseg=isSeg?(f=>{
+    const norm=(f-segMin)/(segMax-segMin||1);
+    return MINI_BOT-norm*MINI_H;
+  }):miniY;
+  // Filter home fracs to those within segment, express as normalised within segment
+  if(isSeg){
+    homeFracs=homeFracs
+      .filter(hf=>hf>=segMin&&hf<=segMax)
+      .map(hf=>(hf-segMin)/(segMax-segMin||1));
+  }
+  // Use segFrac for dot if sub-node
+  const dotFrac=isSeg?node.segFrac:frac;
+  const activeMiniY=isSeg?(f=>miniYseg(f)):miniY;
+  homeFracs.forEach(hf=>{
+    const hy=activeMiniY(hf).toFixed(1);
+    html+=`<circle cx="${CX}" cy="${hy}" r="7" fill="none" stroke="#533AB7" stroke-width="1.4" opacity="0.35"/>`;
+    html+=`<circle cx="${CX}" cy="${hy}" r="4" fill="#EEEDFE" stroke="#533AB7" stroke-width="1.4"/>`;
+    html+=`<circle cx="${CX}" cy="${hy}" r="1.8" fill="#533AB7"/>`;
+  });
+
+  // Spans + interval labels + dot
+  if(frac!==null){
+    const dy=activeMiniY(dotFrac);
+// higher frac = higher on screen (miniY=MINI_BOT-f*MINI_H)
+    const upperHomes=homeFracs.filter(f=>f>dotFrac); // visually above dot
+    const lowerHomes=homeFracs.filter(f=>f<dotFrac); // visually below dot
+    const upperFrac=upperHomes.length?Math.min(...upperHomes):null; // nearest above
+    const lowerFrac=lowerHomes.length?Math.max(...lowerHomes):null; // nearest below
+
+    if(upperFrac!==null){
+      const uy=activeMiniY(upperFrac);
+      html+=`<line x1="${CX}" y1="${uy.toFixed(1)}" x2="${CX}" y2="${dy.toFixed(1)}"
+        stroke="#533AB7" stroke-width="3" stroke-linecap="round"/>`;
+      const uHomeRatio=upperFrac===0?1:(NODES.find(n=>Math.abs(n.frac-upperFrac)<0.001)||{ratio:1}).ratio;
+      const itvl=intervalName(node.ratio/uHomeRatio);
+      const lblY=uy-12;
+      html+=`<rect x="${CX-10}" y="${lblY-10}" width="20" height="13" rx="2" fill="rgba(255,255,255,0.92)"/>`;
+      html+=`<text x="${CX}" y="${lblY}" text-anchor="middle" font-size="12" font-weight="800" fill="#533AB7">${itvl}</text>`;
+    }
+
+    if(lowerFrac!==null){
+      const ly=activeMiniY(lowerFrac);
+      html+=`<line x1="${CX}" y1="${dy.toFixed(1)}" x2="${CX}" y2="${ly.toFixed(1)}"
+        stroke="#533AB7" stroke-width="3" stroke-linecap="round"/>`;
+      const lHomeRatio=(NODES.find(n=>Math.abs(n.frac-lowerFrac)<0.001)||{ratio:2}).ratio;
+      const itvl=intervalName(lHomeRatio/node.ratio);
+      // label BELOW lower home icon (outer edge at ly+7), so label at ly+10
+      html+=`<rect x="${CX-10}" y="${ly+10}" width="20" height="13" rx="2" fill="rgba(255,255,255,0.92)"/>`;
+      html+=`<text x="${CX}" y="${ly+20}" text-anchor="middle" font-size="12" font-weight="800" fill="#533AB7">${itvl}</text>`;
+    }
+
+    // Dot (color by segment)
+    const dotCol=isSeg?(segType==='lower'?SUB_COL_LOWER:SUB_COL_UPPER):'#533AB7';
+    html+=`<circle cx="${CX}" cy="${dy.toFixed(1)}" r="5" fill="${dotCol}" stroke="#fff" stroke-width="2"/>`;
+  }
+
+  // Top inset
+  if(frac!==null){
+    const upperFracStr=compFrac(node.fs);
+    // Upper ratio: invert the complement fraction (e.g. "2/3" → "3:2")
+    const _uf=upperFracStr.split('/');
+    const upperRatioStr=_uf.length===2?`${_uf[1]}:${_uf[0]}`:'—';
+    // Lower ratio: node.rs (e.g. "3:2")
+    const lowerRatioStr=node.rs;
+    html+=`<text x="${CX}" y="11" text-anchor="middle" font-size="7.5" fill="#aaa">nut</text>`;
+    html+=`<text x="${CX}" y="23" text-anchor="middle" font-size="9" fill="#533AB7" font-weight="700">${upperFracStr}</text>`;
+    html+=`<text x="${CX}" y="35" text-anchor="middle" font-size="8" fill="#888">${upperRatioStr}</text>`;
+    html+=`<text x="${CX}" y="${H-41}" text-anchor="middle" font-size="8" fill="#888">${lowerRatioStr}</text>`;
+    html+=`<text x="${CX}" y="${H-29}" text-anchor="middle" font-size="9" fill="#533AB7" font-weight="700">${node.fs}</text>`;
+    html+=`<text x="${CX}" y="${H-17}" text-anchor="middle" font-size="7.5" fill="#aaa">bridge</text>`;
+  } else {
+    html+=`<text x="${CX}" y="11" text-anchor="middle" font-size="7.5" fill="#aaa">nut</text>`;
+    html+=`<text x="${CX}" y="${H-17}" text-anchor="middle" font-size="7.5" fill="#aaa">bridge</text>`;
+  }
+
+  // Direction arrows
+  if(frac!==null){
+    const dotY=miniY(frac);
+    const AX=CX+14;
+    if(dotY>MINI_TOP+20){
+      const ay1=MINI_TOP+4, ay2=dotY-4;
+      html+=`<line x1="${AX}" y1="${ay1+6}" x2="${AX}" y2="${ay2}"
+        stroke="rgba(128,128,128,0.35)" stroke-width="1.5" stroke-linecap="round"/>`;
+      html+=`<polyline points="${AX-3},${ay1+6} ${AX},${ay1} ${AX+3},${ay1+6}"
+        fill="none" stroke="rgba(128,128,128,0.35)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+    }
+    if(MINI_BOT-dotY>20){
+      const ay1=dotY+4, ay2=MINI_BOT-4;
+      html+=`<line x1="${AX}" y1="${ay1}" x2="${AX}" y2="${ay2-6}"
+        stroke="rgba(128,128,128,0.35)" stroke-width="1.5" stroke-linecap="round"/>`;
+      html+=`<polyline points="${AX-3},${ay2-6} ${AX},${ay2} ${AX+3},${ay2-6}"
+        fill="none" stroke="rgba(128,128,128,0.35)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+    }
+  }
+
+  svg.innerHTML=html;
+}
+
+// ── Sidebar builder ───────────────────────────────────────────────
+function showLabel(node){
+  // If pinned to a different node, don't update the display
+  if(_pinnedFrac!==null && Math.abs(_pinnedFrac-node.frac)>0.001) return;
+  _activeFrac=node.frac; _activeNode=node;
+  window._activeRatioFund=node.ratio||1;
+  setRowHL(node.frac);
+  drawRulerSVG(node);
+  const fund=fundFreq(), esl=effectiveSpeakingLength();
+  const lowerIn=(node.frac*esl).toFixed(1);
+  const upperIn=((1-node.frac)*esl).toFixed(1);
+  const lowerHz=Math.round(fund*node.ratio);
+  const upperHz=Math.round(fund/(1-node.frac));
+  const lNi=noteInfo(fund*node.ratio), uNi=noteInfo(fund/(1-node.frac));
+  const lNote=lNi.snapped?lNi.name+lNi.octave:'—';
+  const uNote=uNi.snapped?uNi.name+uNi.octave:'—';
+  const lCol=lNi.snapped&&isInKey(lNi.midi)?'#0F6E56':'#993C1D';
+  const uCol=uNi.snapped&&isInKey(uNi.midi)?'#0F6E56':'#993C1D';
+  const upper=document.getElementById('sb-upper');
+  const lower=document.getElementById('sb-lower');
+  // Compute dot position as fraction of rrail height to align h-rule with dot
+  const _rr=document.getElementById('rrail');
+  const _H=_rr?(_rr.clientHeight||300):300;
+  const _TOP=66, _BOT=54, _MH=_H-_TOP-_BOT;
+  const _dotY=(_H-_BOT)-node.frac*_MH; // miniY with corrected formula
+  const _dotFrac=_dotY/_H;
+  if(upper){
+    upper.style.flex=String(_dotFrac);
+    upper.innerHTML=`<div class="sb-len">${upperIn}"</div><div class="sb-hz">${upperHz} Hz</div><div class="sb-note" style="color:${uCol};">${uNote}</div>`;
+  }
+  if(lower){
+    lower.style.flex=String(1-_dotFrac);
+    lower.innerHTML=`<div class="sb-note" style="color:${lCol};">${lNote}</div><div class="sb-hz">${lowerHz} Hz</div><div class="sb-len">${lowerIn}"</div>`;
+  }
 }
 
 function hideLabel(){
-  const panel=document.getElementById('label-panel');
-  if(panel) panel.style.opacity='0';
-  _activeFrac=null;
+  _activeFrac=null; _activeNode=null; _activeSegment=null;
   setRowHL(null);
-  const dot=document.getElementById('rr-dot');
-  if(dot) dot.style.display='none';
-  const fan=document.getElementById('rr-fan');
-  if(fan) fan.innerHTML='';
+  drawRulerSVG(null);
+  const upper=document.getElementById('sb-upper');
+  const lower=document.getElementById('sb-lower');
+  if(upper){ upper.style.flex='1'; upper.innerHTML=''; }
+  if(lower){ lower.style.flex='0'; lower.innerHTML=''; }
 }
 
-// ── Ruler dot ────────────────────────────────────────────────────
-function updateRulerDot(frac){
-  const dot=document.getElementById('rr-dot');
-  if(!dot) return;
-  dot.style.display='block';
-  dot.style.top=((1-frac)*100)+'%';
-}
-
-// ── Fan line: vertical line in ruler from dot to panel centre ─────
-function drawFanLine(frac){
-  const fan=document.getElementById('rr-fan');
-  const track=document.getElementById('rr-track');
-  if(!fan||!track) return;
-  fan.innerHTML='';
-  const trackH=track.offsetHeight||1;
-  const dotY=(1-frac)*trackH;
-  const midY=trackH/2;
-  const line=document.createElementNS(svgNS_v4,'line');
-  Object.entries({
-    x1:1,y1:Math.min(dotY,midY),
-    x2:1,y2:Math.max(dotY,midY),
-    stroke:'#3C3489','stroke-width':'3',
-    'stroke-linecap':'round',opacity:'0.85'
-  }).forEach(([k,v])=>line.setAttribute(k,v));
-  fan.appendChild(line);
-}
-
-// ── Viewport indicator ────────────────────────────────────────────
+// ── Viewport / applyT ─────────────────────────────────────────────
 function updateVP(){
-  const track=document.getElementById('rr-track');
-  const vp=document.getElementById('rr-viewport');
-  if(!track||!vp) return;
-  const trackH=track.offsetHeight||1;
-  const diagH=canvas.clientHeight||1;
-  const visH=Math.max(6,Math.min(trackH,trackH/sc));
-  const maxScroll=diagH*(sc-1);
-  const scrollFrac=maxScroll>0?Math.min(1,Math.max(0,-ty/maxScroll)):0;
-  vp.style.height=visH+'px';
-  vp.style.top=(scrollFrac*(trackH-visH))+'px';
-  // keep fan line in sync if a node is active
-  if(_activeFrac!==null) drawFanLine(_activeFrac);
+  if(_activeNode) drawRulerSVG(_activeNode);
+  else drawRulerSVG(null);
 }
 
-// Patch applyT to also update viewport indicator
 const _applyT_orig=applyT;
-applyT = function(){
-  _applyT_orig();
-  updateVP();
-};
+applyT = function(){ _applyT_orig(); updateVP(); };
 
-// ── Viewport drag ─────────────────────────────────────────────────
-let _vpDrag=false,_vpStartY=0,_vpStartTy=0;
-document.getElementById('rr-viewport').addEventListener('mousedown',e=>{
-  e.stopPropagation();
-  _vpDrag=true; _vpStartY=e.clientY; _vpStartTy=ty;
-});
-window.addEventListener('mousemove',e=>{
-  if(!_vpDrag) return;
-  const track=document.getElementById('rr-track');
-  const trackH=track.offsetHeight||1;
-  const diagH=canvas.clientHeight||1;
-  const maxScroll=diagH*(sc-1);
-  const delta=(e.clientY-_vpStartY)/trackH*maxScroll;
-  ty=Math.min(0,Math.max(-maxScroll,_vpStartTy-delta));
-  applyT();
-});
-window.addEventListener('mouseup',()=>{ _vpDrag=false; });
-
-// ── Hook showStrip / clearStrip to show/hide label panel ──────────
-// We further wrap the already-patched showStrip/clearStrip to also
-// drive the label panel. We look up the matching NODES entry by frac.
+// ── Hook showStrip / clearStrip ───────────────────────────────────
 const _origShowStrip_step5=showStrip;
 showStrip = function(freq, frac, nodeLabel, color){
+  // If something is pinned, only allow updates for the pinned node itself
+  if(_pinnedFrac!==null && Math.abs(_pinnedFrac-frac)>0.001) return;
   _origShowStrip_step5(freq, frac, nodeLabel, color);
-  // Find the matching node by frac (nut row has frac=1.0 — no node entry)
+  _lastStripArgs={frac, nodeLabel, color};
   const node=NODES.find(n=>Math.abs(n.frac-frac)<0.001);
-  if(node) showLabel(node);
-  else hideLabel(); // nut row — hide panel (nut row has its own travelling annotation)
+  if(node) showLabel(node); else hideLabel();
 };
 
 const _origClearStrip_step5=clearStrip;
 clearStrip = function(){
-  _origClearStrip_step5();
-  hideLabel();
+  if(_pinnedFrac!==null) return; // don't clear while something is pinned
+  _origClearStrip_step5(); hideLabel();
 };
 
-// ── Clear row-hl on render (nodes redrawn) ────────────────────────
+// Explicit unpin + clear (used by unpin logic)
+
+// Clear pin on structural changes (key/mode/homeNode/string length)
+function _clearPin(){
+  if(_pinnedFrac!==null){ _pinnedFrac=null; _lastStripArgs=null; }
+}
+
+function unpinAndClear(){
+  _pinnedFrac=null; _lastStripArgs=null;
+  _origClearStrip_step5(); hideLabel();
+}
+
+// ── Patch render ──────────────────────────────────────────────────
 const _render_orig=render;
 render = function(){
   _render_orig();
-  // Restore row highlight if a node is still active after redraw
-  if(_activeFrac!==null) setRowHL(_activeFrac);
-  updateVP();
+  if(_activeNode){
+    if(_activeNode.segment){
+      // Capo segment node: re-run the appropriate renderer with fresh physics
+      const _cf=_activeNode.cf;
+      if(_activeNode.segFrac===1.0){
+        _showCapoEndNode(_activeNode.segment, _cf);
+      } else if(_activeNode._origNode){
+        const _pKey=_activeNode.segment==='lower'
+          ?_activeNode._origNode.frac*_cf
+          :_cf+_activeNode._origNode.frac*(1-_cf);
+        const _diagY=TY-_activeNode.frac*SPX;
+        _showSubNode(_activeNode._origNode, _activeNode.segment,
+          fundFreq()*window._activeRatioFund, _cf, _diagY);
+      }
+    } else {
+      showLabel(_activeNode);
+    }
+    if(_lastStripArgs){
+      const freshFreq=fundFreq()*(window._activeRatioFund||1);
+      _origShowStrip_step5(freshFreq, _lastStripArgs.frac, _lastStripArgs.nodeLabel, _lastStripArgs.color);
+    }
+  } else updateVP();
 };
 
-// ── End Step 5 label panel + ruler wiring ═════════════════════════
+setTimeout(()=>{
+  drawRulerSVG(null);
+  // TODO: remove old ruler SVG elements completely in cleanup pass
+  const oldRuler=document.getElementById('dyn-ruler');
+  if(oldRuler) oldRuler.style.display='none';
+  // Hide pitch axis lines/labels (inline SVG elements at top of main-svg)
+  // They are the first children: 4 lines + 1 horizontal + 4 text labels
+  // Simplest: set opacity=0 on the containing groups
+  // Since they're loose elements, wrap approach: just zero opacity on main-svg children up to dyn-ruler
+  // Actually easiest: add a CSS rule to hide them
+},0);
+
+// ── End Step 5 ruler + sidebar wiring ═════════════════════════════
 
 // ── v4 BOTTOM RAIL STATE MACHINE (Steps 6–12) ═════════════════════
 
 // State: which node-view and which right panel are active
 let brNodeView = 'full';   // 'full' | 'nut' | 'capo'
 let brRightPanel = null;   // null | 'audio' | 'phys' | 'lgnd'
+let showPitchBars = false; // show/hide pitch bars + secondary info columns
 let overflowOpen = false;
 
 // ── isMobile helper ───────────────────────────────────────────────
@@ -1131,6 +1328,12 @@ function renderNodeViewCtx(view){
 }
 
 // ── Right panel contexts ──────────────────────────────────────────
+function togglePitchBars(){
+  showPitchBars=!showPitchBars;
+  render();
+  renderBRCtx();
+}
+
 function renderRightPanel(panel){
   if(panel==='audio') return renderAudioPanel();
   if(panel==='phys')  return renderPhysPanel();
@@ -1186,6 +1389,8 @@ function renderPhysPanel(){
             <span class="br-chip-lbl">density</span>
             <span class="br-chip">${densVal}</span>
             <span class="br-chip-lbl" style="font-size:7.5px;">kg/m</span>
+            <div style="width:0.5px;background:rgba(128,128,128,0.2);align-self:stretch;margin:0 2px;"></div>
+            <div class="br-btn${showPitchBars?' on':''}" onclick="togglePitchBars()" title="show/hide pitch bars and detail columns">show pitch bars</div>
           </div>
           <div class="br-ctx-row" onclick="toggleOverflow()" style="cursor:pointer;">
             <div class="br-more-bar"></div>
@@ -1525,51 +1730,64 @@ function drawCoF(){
   const outerR=78, innerR=34, gap=0.018;
   ctx.clearRect(0,0,W,W);
 
-  // Which position is currently under the selector dot (12 o'clock)
+  // White background circle — covers diagram content behind wheel
+  ctx.beginPath(); ctx.arc(cx,cy,outerR+2,0,Math.PI*2);
+  ctx.fillStyle='#fff'; ctx.fill();
+
   const selPos=cofKeyAtTop();
 
   COF_ORDER.forEach((chromIdx,pos)=>{
-    const distFromSel=Math.min(
-      Math.abs(pos-selPos),
-      12-Math.abs(pos-selPos)
-    );
+    const distFromSel=Math.min(Math.abs(pos-selPos),12-Math.abs(pos-selPos));
     const atDot=(distFromSel===0);
-
     const midA=(pos/12)*2*Math.PI - Math.PI/2 + cofAngle;
     const sliceAngle=(2*Math.PI/12);
     const startA=midA - sliceAngle/2 + gap;
     const endA  =midA + sliceAngle/2 - gap;
 
-    // Lighting follows dot position, not homeKey
     let fillColor, textColor;
-    if(atDot){
-      fillColor='#533AB7'; textColor='#fff';
-    } else if(distFromSel===1){
-      fillColor='rgba(83,58,183,0.18)'; textColor='rgba(83,58,183,0.9)';
-    } else if(distFromSel===2){
-      fillColor='rgba(83,58,183,0.07)'; textColor='rgba(83,58,183,0.55)';
-    } else {
-      fillColor='rgba(83,58,183,0.04)'; textColor='rgba(83,58,183,0.32)';
-    }
+    if(atDot){fillColor='#533AB7'; textColor='#fff';}
+    else if(distFromSel===1){fillColor='#E0DCF5'; textColor='#4A33A8';}
+    else if(distFromSel===2){fillColor='#F0EEF9'; textColor='#8E7FCC';}
+    else{fillColor='#F7F6FD'; textColor='#B3ABDB';}
 
-    // Draw slice
     ctx.beginPath();
     ctx.arc(cx,cy,outerR,startA,endA);
     ctx.arc(cx,cy,innerR,endA,startA,true);
-    ctx.closePath();
-    ctx.fillStyle=fillColor;
-    ctx.fill();
+    ctx.closePath(); ctx.fillStyle=fillColor; ctx.fill();
 
-    // Label at midpoint radius
     const labelR=(innerR+outerR)/2;
-    const lx=cx+labelR*Math.cos(midA);
-    const ly=cy+labelR*Math.sin(midA);
-    ctx.font=(atDot?'bold ':'')+(atDot?'14':'12')+'px system-ui,sans-serif';
-    ctx.fillStyle=textColor;
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
+    const lx=cx+labelR*Math.cos(midA), ly=cy+labelR*Math.sin(midA);
+    ctx.font=(atDot?'bold ':'')+(atDot?'17':'15')+'px system-ui,sans-serif';
+    ctx.fillStyle=textColor; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText(NOTES[chromIdx],lx,ly);
   });
+
+  // Selector dot — exactly at top centre of wheel
+  ctx.beginPath(); ctx.arc(cx, cy-outerR, 4, 0, Math.PI*2);
+  ctx.fillStyle='#533AB7'; ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+
+  // ── Donut hole with mode label ──
+  ctx.beginPath(); ctx.arc(cx,cy,innerR-2,0,Math.PI*2);
+  ctx.fillStyle='#fff'; ctx.fill();
+  ctx.strokeStyle='#C4BEE8'; ctx.lineWidth=1; ctx.stroke();
+
+  // Mode number (line 1) + abbreviated name (line 2)
+  const abbrev=MODE_ABBREV[currentMode]||'';
+  const modeNum={'ionian':'1','dorian':'2','phrygian':'3','lydian':'4',
+    'mixolydian':'5','aeolian':'6','locrian':'7',
+    'harmonic_minor':'','melodic_minor':''}[currentMode]||'';
+
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  if(modeNum){
+    ctx.font='bold 15px system-ui,sans-serif'; ctx.fillStyle='#533AB7';
+    ctx.fillText(modeNum, cx, cy-18);
+    ctx.font='bold 10px system-ui,sans-serif'; ctx.fillStyle='#6B58C4';
+    ctx.fillText(abbrev, cx, cy-4);
+  } else {
+    ctx.font='bold 11px system-ui,sans-serif'; ctx.fillStyle='#533AB7';
+    ctx.fillText(abbrev, cx, cy-10);
+  }
 }
 
 function cofKeyAtTop(){
@@ -1600,6 +1818,7 @@ function snapCoF(){
     else{
       cofAngle=targetAngle;
       const newKey=COF_ORDER[pos];
+      _clearPin();
       homeKey=newKey;
       drawCoF(); // redraw with updated homeKey so highlight reflects new selection
       document.querySelectorAll('.kbtn').forEach((b,bi)=>{
@@ -1644,36 +1863,242 @@ toggleCoF = function(){
   wrap.style.display=cofVisible?'block':'none';
   if(cofVisible){ initCoF(); }
   closePickers();
+  updateLeftRailChips(); // update chip open/closed state
 };
+
+// Add center-tap detection to CoF canvas — tap inside innerR opens mode picker
+(function(){
+  const cv=document.getElementById('cof-canvas');
+  if(!cv) return;
+  let _tapStartX=0, _tapStartY=0, _tapMoved=false;
+  cv.addEventListener('mousedown',e=>{_tapStartX=e.clientX;_tapStartY=e.clientY;_tapMoved=false;},{capture:true});
+  cv.addEventListener('mousemove',e=>{if(Math.hypot(e.clientX-_tapStartX,e.clientY-_tapStartY)>4)_tapMoved=true;},{capture:true});
+  cv.addEventListener('click',e=>{
+    if(_tapMoved) return;
+    const r=cv.getBoundingClientRect();
+    const dx=e.clientX-r.left-COF_CX, dy=e.clientY-r.top-COF_CY;
+    const dist=Math.hypot(dx,dy);
+    const innerR=34;
+    if(dist<innerR){
+      e.stopPropagation();
+      openModePicker();
+    }
+  });
+  cv.addEventListener('touchend',e=>{
+    if(e.changedTouches.length===0) return;
+    const r=cv.getBoundingClientRect();
+    const dx=e.changedTouches[0].clientX-r.left-COF_CX;
+    const dy=e.changedTouches[0].clientY-r.top-COF_CY;
+    if(Math.hypot(dx,dy)<34){
+      e.stopPropagation();
+      openModePicker();
+    }
+  });
+})();
 
 // ── Scale picker ──────────────────────────────────────────────────
 const MODES_ORDER=[
-  {key:'ionian',label:'1 Ionian'},{key:'dorian',label:'2 Dorian'},
-  {key:'phrygian',label:'3 Phrygian'},{key:'lydian',label:'4 Lydian'},
-  {key:'mixolydian',label:'5 Mixolydian'},{key:'aeolian',label:'6 Aeolian'},
-  {key:'locrian',label:'7 Locrian'},null,
+  {key:'ionian',label:'1 — Ionian'},{key:'dorian',label:'2 — Dorian'},
+  {key:'phrygian',label:'3 — Phrygian'},{key:'lydian',label:'4 — Lydian'},
+  {key:'mixolydian',label:'5 — Mixolydian'},{key:'aeolian',label:'6 — Aeolian'},
+  {key:'locrian',label:'7 — Locrian'},null,
   {key:'harmonic_minor',label:'Harmonic Minor'},
   {key:'melodic_minor',label:'Melodic Minor'},
 ];
+
+
+
+// ── Continuous tone while dragging tension slider ─────────────────
+let _cOsc=null, _cGain=null, _cCtx=null, _cDragging=false;
+
+function _tenStartTone(){
+  if(_cDragging) return;
+  _cDragging=true;
+  try{
+    if(_cOsc){try{_cOsc.stop();}catch(e){} _cOsc=null;}
+    _cCtx=getCtx();
+    if(_cCtx.state==='suspended') _cCtx.resume();
+    const freq=_tenCurrentFreq();
+    _cOsc=_cCtx.createOscillator();
+    const _cFilter=_cCtx.createBiquadFilter();
+    _cGain=_cCtx.createGain();
+    // Match playTone signal chain exactly
+    if(waveform==='sine'){
+      _cOsc.type='sine';
+      _cFilter.type='lowpass'; _cFilter.frequency.value=20000; _cFilter.Q.value=0.5;
+    } else if(waveform==='warm'){
+      _cOsc.type='triangle';
+      _cFilter.type='lowpass'; _cFilter.frequency.value=Math.min(1000,freq*8); _cFilter.Q.value=0.7;
+    } else {
+      _cOsc.type='sawtooth';
+      _cFilter.type='lowpass'; _cFilter.frequency.value=Math.min(900,freq*6); _cFilter.Q.value=0.8;
+    }
+    _cOsc.connect(_cFilter); _cFilter.connect(_cGain); _cGain.connect(_cCtx.destination);
+    _cOsc.frequency.value=freq;
+    const t=_cCtx.currentTime;
+    _cGain.gain.setValueAtTime(0,t);
+    _cGain.gain.linearRampToValueAtTime(volume,t+0.04);
+    _cOsc.start();
+  }catch(e){_cDragging=false;}
+}
+
+function _tenCurrentFreq(){
+  // Use stored true ratio (accounts for segment perspective in capo mode)
+  const ratio=(typeof window._activeRatioFund==='number'&&window._activeRatioFund>0)
+    ? window._activeRatioFund : 1;
+  return fundFreq()*ratio;
+}
+
+function _tenUpdateTone(){
+  if(!_cOsc||!_cCtx||!_cDragging) return;
+  try{ _cOsc.frequency.setTargetAtTime(_tenCurrentFreq(),_cCtx.currentTime,0.015); }catch(e){}
+}
+
+function _tenStopTone(){
+  if(!_cDragging) return;
+  _cDragging=false;
+  if(!_cGain||!_cCtx) return;
+  try{
+    const t=_cCtx.currentTime;
+    _cGain.gain.cancelScheduledValues(t);
+    _cGain.gain.setValueAtTime(_cGain.gain.value,t);
+    _cGain.gain.linearRampToValueAtTime(0,t+0.08);
+    const o=_cOsc; _cOsc=null; _cGain=null;
+    setTimeout(()=>{try{o.stop();}catch(e){}},150);
+  }catch(e){}
+}
+
+// Patch syncSlider to update continuous tone on tension changes
+const _syncSlider_orig=syncSlider;
+syncSlider=function(key,sv){
+  _syncSlider_orig(key,sv);
+  if(key==='ten') _tenUpdateTone();
+};
+
+setTimeout(()=>{
+  // ── Custom tension thumb drag ─────────────────────────────────
+  const tenTrack=document.getElementById('lr-ten-track-inner');
+  const tenThumb=document.getElementById('lr-ten-thumb');
+  const tenFill =document.getElementById('lr-ten-fill');
+  const tenMin=10, tenMax=150;
+
+  function tenSlToFrac(slVal){ return (slVal-tenMin)/(tenMax-tenMin); }
+  function tenFracToSl(f){ return Math.round(tenMin+f*(tenMax-tenMin)); }
+
+  function updateTenUI(){
+    const f=tenSlToFrac(tenValToSl(tensionLbs)); // use existing tenValToSl
+    const pct=(f*100).toFixed(1)+'%';
+    if(tenFill)  { tenFill.style.height=pct; }
+    if(tenThumb) { tenThumb.style.bottom=pct; }
+  }
+
+  // Patch syncSlider + render to keep thumb in sync
+  const _ss2=syncSlider;
+  syncSlider=function(key,sv){
+    _ss2(key,sv);
+    if(key==='ten'){ updateTenUI(); _tenUpdateTone(); }
+  };
+  const _r2=render;
+  render=function(){ _r2(); updateTenUI(); };
+
+  // Drag logic
+  let _tDrag=false, _tStartY=0, _tStartLbs=0;
+
+  function tenPointerMove(clientY){
+    if(!_tDrag||!tenTrack) return;
+    const rect=tenTrack.getBoundingClientRect();
+    const h=rect.height||1;
+    const dy=_tStartY-clientY; // up = increase
+    const dfrac=dy/h;
+    const dsl=Math.round(dfrac*(tenMax-tenMin));
+    const newSl=Math.max(tenMin,Math.min(tenMax, tenValToSl(_tStartLbs)+dsl));
+    // apply
+    syncSlider('ten', newSl);
+    document.getElementById('ten-sl').value=newSl;
+    document.getElementById('ten-sl-v').value=newSl;
+  }
+
+  function tenStart(clientY){
+    _tDrag=true; _tStartY=clientY; _tStartLbs=tensionLbs;
+    _tenStartTone();
+  }
+  function tenEnd(){ _tDrag=false; _tenStopTone(); }
+
+  if(tenThumb){
+    tenThumb.addEventListener('pointerdown',e=>{
+      e.stopPropagation(); e.preventDefault();
+      tenThumb.setPointerCapture(e.pointerId);
+      tenStart(e.clientY);
+    });
+    tenThumb.addEventListener('pointermove',e=>{
+      if(!_tDrag) return;
+      tenPointerMove(e.clientY);
+    });
+    tenThumb.addEventListener('pointerup',  ()=>tenEnd());
+    tenThumb.addEventListener('pointercancel',()=>tenEnd());
+  }
+
+  // Also allow clicking anywhere on the track to jump
+  if(tenTrack){
+    tenTrack.addEventListener('pointerdown',e=>{
+      if(e.target===tenThumb) return;
+      e.stopPropagation();
+      const rect=tenTrack.getBoundingClientRect();
+      const f=1-(e.clientY-rect.top)/rect.height;
+      const sl=Math.round(tenMin+Math.max(0,Math.min(1,f))*(tenMax-tenMin));
+      syncSlider('ten',sl);
+      document.getElementById('ten-sl').value=sl;
+      document.getElementById('ten-sl-v').value=sl;
+      // then start drag from here
+      tenThumb.setPointerCapture(e.pointerId);
+      tenStart(e.clientY); _tStartLbs=tensionLbs;
+    });
+    tenTrack.addEventListener('pointermove',e=>{
+      if(!_tDrag) return;
+      tenPointerMove(e.clientY);
+    });
+    tenTrack.addEventListener('pointerup',()=>tenEnd());
+    tenTrack.addEventListener('pointercancel',()=>tenEnd());
+  }
+
+  updateTenUI();
+  window.addEventListener('pointerup', tenEnd);
+},0);
+
+// Mode abbreviations for CoF slices and combined chip
+const MODE_ABBREV={
+  ionian:'ION', dorian:'DOR', phrygian:'PHR', lydian:'LYD',
+  mixolydian:'MIX', aeolian:'AEO', locrian:'LOC',
+  harmonic_minor:'H.min', melodic_minor:'M.min'
+};
 
 function setModeByName(mode){
   const btn=document.querySelector(`#legacy-controls .mode-btn[onclick*="'${mode}'"]`);
   if(btn) setMode(mode,btn);
   else{ currentMode=mode; render(); }
   updateScaleStrip(); updateLeftRailChips();
+  drawCoF(); // update donut label immediately
 }
 
-openScalePicker = function(){
+openScalePicker = function(){ openModePicker(); }; // redirect old call
+
+function openModePicker(){
   closeHomePicker();
   const sp=document.getElementById('scale-picker');
   if(!sp) return;
   if(sp.classList.contains('visible')){sp.classList.remove('visible');return;}
-  const chip=document.getElementById('chip-scale');
-  if(chip){
-    const r=chip.getBoundingClientRect();
-    const pr=document.getElementById('app-shell').getBoundingClientRect();
-    sp.style.top=(r.top-pr.top)+'px';
-    sp.style.left=(r.right-pr.left+4)+'px';
+  // Anchor above the CoF donut — CoF is at bottom:0 left:0 of app-shell
+  // Donut center is at ~(COF_CX, COF_CY) from cof-wrap bottom-left
+  // Position picker above the wheel
+  const wrap=document.getElementById('cof-wrap');
+  const shell=document.getElementById('app-shell');
+  if(wrap&&shell){
+    const wr=wrap.getBoundingClientRect(), sr=shell.getBoundingClientRect();
+    // left-align picker to CoF centre x
+    sp.style.left=(wr.left-sr.left+COF_CX)+'px';
+    sp.style.transform='none';
+    sp.style.bottom=(sr.bottom-wr.top+4)+'px';
+    sp.style.top='auto';
   }
   sp.innerHTML=MODES_ORDER.map(m=>
     m===null?'<div class="sp-sep"></div>'
@@ -1693,13 +2118,24 @@ openHomePicker = function(){
   if(chip){
     const r=chip.getBoundingClientRect();
     const pr=document.getElementById('app-shell').getBoundingClientRect();
-    hp.style.top=(r.top-pr.top)+'px';
-    hp.style.left=(r.right-pr.left+4)+'px';
+    // align left edge to CoF centre when CoF visible, else to chip right
+    const wrap=document.getElementById('cof-wrap');
+    if(wrap&&cofVisible){
+      const wr=wrap.getBoundingClientRect();
+      hp.style.left=(wr.left-pr.left+COF_CX)+'px';
+      hp.style.bottom=(pr.bottom-wr.top+4)+'px';
+    } else {
+      hp.style.left=(r.right-pr.left+4)+'px';
+      hp.style.bottom=(pr.bottom-r.bottom)+'px';
+    }
+    hp.style.top='auto';
   }
-  hp.innerHTML=[1,2,3,4,5,6,7].map(d=>
-    `<div class="hp-item${homeNode===d?' on':''}"
-       onclick="setHomeNode(${d});closePickers()">${d}</div>`
-  ).join('');
+  hp.innerHTML=
+    `<div style="font-size:9px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.05em;padding:3px 10px 4px;">Home Node</div>`+
+    [1,2,3,4,5,6,7].map(d=>
+      `<div class="hp-item${homeNode===d?' on':''}"
+         onclick="setHomeNode(${d});closePickers()">${d}</div>`
+    ).join('');
   hp.classList.add('visible');
 };
 
@@ -1749,6 +2185,7 @@ function effectiveSpeakingLength(){
 }
 
 function setNodeView(view, btn){
+  _clearPin();
   nodeView=view;
   document.querySelectorAll('#view-full,#view-nut,#view-capo').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
@@ -1819,6 +2256,207 @@ function buildCapoSnapBtns(){
   });
 }
 
+// Show ruler for capo segment endpoint (nut=upper fund, capo=lower fund)
+function _showCapoEndNode(seg, cf){
+  // Pseudo-node representing the full-length open segment
+  // sub_frac=1.0 = full segment = fundamental
+  const pseudoNode={
+    frac: seg==='lower' ? cf : 1.0,  // main string frac
+    segFrac: 1.0,  // at the "nut" end of the segment (full length = fundamental)
+    ratio: 1,
+    fs:'1/1', rs:'1:1',
+    desc: seg==='lower'?'lower segment fundamental':'upper segment fundamental',
+    label:'1', primary:true,
+    segment: seg, cf: cf, freq: seg==='lower'?fundFreq()/cf:fundFreq()/(1-cf)
+  };
+  _activeFrac=pseudoNode.frac; _activeNode=pseudoNode;
+  _activeSegment=seg;
+  window._activeRatioFund = seg==='lower' ? 1/cf : 1/(1-cf);
+  const rowHl=document.getElementById('row-hl');
+  if(rowHl){
+    rowHl.innerHTML='';
+    const y=TY-pseudoNode.frac*SPX;
+    const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    Object.entries({x:0,y:y-16,width:SVG_W,height:32,
+      fill:`rgba(${seg==='lower'?'29,122,107':'122,58,29'},0.12)`,rx:2})
+      .forEach(([k,v])=>rect.setAttribute(k,v));
+    rowHl.appendChild(rect);
+  }
+  drawRulerSVG(pseudoNode);
+  // Sidebar
+  const esl=effectiveSpeakingLength();
+  const segLen=seg==='lower'?cf*esl:(1-cf)*esl;
+  const segFund=seg==='lower'?fundFreq()/cf:fundFreq()/(1-cf);
+  const ni=noteInfo(segFund);
+  const note=ni.snapped?ni.name+ni.octave:'—';
+  const upper=document.getElementById('sb-upper');
+  const lower=document.getElementById('sb-lower');
+  const col=seg==='lower'?SUB_COL_LOWER:SUB_COL_UPPER;
+  if(upper){ upper.style.flex='0'; upper.innerHTML=''; }
+  if(lower){ lower.style.flex='1';
+    lower.innerHTML=`<div class="sb-note" style="color:${col};">${note}</div>`+
+      `<div class="sb-hz">${Math.round(segFund)} Hz</div>`+
+      `<div class="sb-len">${segLen.toFixed(1)}"</div>`; }
+}
+
+// ── Capo sub-node layer ──────────────────────────────────────────
+const SUB_COL_LOWER='#1D7A6B'; // teal — lower segment (bridge→capo)
+const SUB_COL_UPPER='#7A3A1D'; // dark amber — upper segment (capo→nut)
+
+function updateCapoSubNodes(){
+  const g=document.getElementById('capo-sub-nodes');
+  if(!g) return;
+  g.innerHTML='';
+  if(nodeView!=='capo'){return;}
+
+  const fund=fundFreq();
+  const phi=CAPO_NODES[capoNodeIdx].phi; // fraction from NUT
+  const cf=1-phi;  // capo fraction from BRIDGE (matches our frac coord system)
+  const nutY=nutEffY(), speakingIn=effectiveSpeakingLength();
+  const mkS=(tag,attrs,txt)=>{
+    const el=document.createElementNS('http://www.w3.org/2000/svg',tag);
+    for(const[k,v]of Object.entries(attrs)) el.setAttribute(k,v);
+    if(txt!==undefined) el.textContent=txt;
+    return el;
+  };
+
+  NODES.forEach(node=>{
+    // ── Lower sub-node ──
+    const lFrac = node.frac * cf;
+    const lFreq = node.ratio * fund / cf;
+    const lY    = TY - lFrac * SPX;
+    const lCol  = SUB_COL_LOWER;
+    const lIsPri= node.primary;
+    const lR    = lIsPri ? 6 : 4;
+    const lFS   = lIsPri ? 20 : 15;
+
+    // circle
+    g.appendChild(mkS('line',{x1:SX-(lIsPri?12:8),x2:SX+(lIsPri?12:8),y1:lY,y2:lY,
+      stroke:lCol,'stroke-width':lIsPri?1.8:1.2,opacity:0.7}));
+    const lCa={cx:SX,cy:lY,r:lR,fill:lIsPri?'rgba(29,122,107,0.12)':'none',
+      stroke:lCol,'stroke-width':lIsPri?1.8:1.4,opacity:0.8};
+    g.appendChild(mkS('circle',lCa));
+    if(lIsPri) g.appendChild(mkS('circle',{cx:SX,cy:lY,r:2.5,fill:lCol,opacity:0.8}));
+
+    // label (primary only)
+    if(lIsPri){
+      g.appendChild(mkS('text',{x:SDEG_X,y:lY+lFS*0.38,'font-size':lFS,'font-weight':'500',
+        'text-anchor':'middle',fill:lCol,opacity:0.75},node.label));
+    }
+
+    // hit rect
+    const lRowH=lFS+8;
+    const lHit=mkS('rect',{x:0,y:lY-lRowH/2,width:SVG_W,height:lRowH,
+      fill:'transparent',class:'row-hit'});
+    lHit.addEventListener('mousedown',()=>{
+      const pKey=node.frac*cf;
+      if(_togglePin(pKey, false)){ playTone(lFreq); _showSubNode(node,'lower',lFreq,cf,lY); }
+    });
+    lHit.addEventListener('mouseenter',()=>{ if(_pinnedFrac!==null&&_pinnedFrac!==node.frac*cf) return; _showSubNode(node,'lower',lFreq,cf,lY); });
+    lHit.addEventListener('mouseleave',()=>{ clearStrip(); if(!_pinnedFrac) { clearRuler(); hideLabel(); } });
+    lHit.addEventListener('touchstart',()=>{
+      const pKey=node.frac*cf;
+      if(_togglePin(pKey, true)){ playTone(lFreq); _showSubNode(node,'lower',lFreq,cf,lY); }
+    },{passive:true});
+    lHit.addEventListener('touchend',()=>{ clearStrip(); if(!_pinnedFrac) hideLabel(); },{passive:true});
+    g.appendChild(lHit);
+
+    // ── Upper sub-node ──
+    const uFrac = cf + node.frac * (1-cf);
+    const uFreq = node.ratio * fund / (1-cf);
+    const uY    = TY - uFrac * SPX;
+    const uCol  = SUB_COL_UPPER;
+    const uIsPri= node.primary;
+    const uR    = uIsPri ? 6 : 4;
+    const uFS   = uIsPri ? 20 : 15;
+
+    g.appendChild(mkS('line',{x1:SX-(uIsPri?12:8),x2:SX+(uIsPri?12:8),y1:uY,y2:uY,
+      stroke:uCol,'stroke-width':uIsPri?1.8:1.2,opacity:0.7}));
+    const uCa={cx:SX,cy:uY,r:uR,fill:uIsPri?'rgba(122,58,29,0.1)':'none',
+      stroke:uCol,'stroke-width':uIsPri?1.8:1.4,opacity:0.8};
+    g.appendChild(mkS('circle',uCa));
+    if(uIsPri) g.appendChild(mkS('circle',{cx:SX,cy:uY,r:2.5,fill:uCol,opacity:0.8}));
+
+    if(uIsPri){
+      g.appendChild(mkS('text',{x:SDEG_X,y:uY+uFS*0.38,'font-size':uFS,'font-weight':'500',
+        'text-anchor':'middle',fill:uCol,opacity:0.75},node.label));
+    }
+
+    const uRowH=uFS+8;
+    const uHit=mkS('rect',{x:0,y:uY-uRowH/2,width:SVG_W,height:uRowH,
+      fill:'transparent',class:'row-hit'});
+    uHit.addEventListener('mousedown',()=>{
+      const pKey=cf+node.frac*(1-cf);
+      if(_togglePin(pKey, false)){ playTone(uFreq); _showSubNode(node,'upper',uFreq,cf,uY); }
+    });
+    uHit.addEventListener('mouseenter',()=>{ if(_pinnedFrac!==null&&_pinnedFrac!==(cf+node.frac*(1-cf))) return; _showSubNode(node,'upper',uFreq,cf,uY); });
+    uHit.addEventListener('mouseleave',()=>{ clearStrip(); if(!_pinnedFrac) { clearRuler(); hideLabel(); } });
+    uHit.addEventListener('touchstart',()=>{
+      const pKey=cf+node.frac*(1-cf);
+      if(_togglePin(pKey, true)){ playTone(uFreq); _showSubNode(node,'upper',uFreq,cf,uY); }
+    },{passive:true});
+    uHit.addEventListener('touchend',()=>{ clearStrip(); if(!_pinnedFrac) hideLabel(); },{passive:true});
+    g.appendChild(uHit);
+  });
+}
+
+// Show ruler/sidebar for a capo sub-node
+function _showSubNode(node, seg, freq, cf, diagY){
+  _activeSegment=seg;
+  const col=seg==='lower'?SUB_COL_LOWER:SUB_COL_UPPER;
+  // Build a pseudo-node for the ruler (frac within segment, ratio, etc)
+  const segFrac = seg==='lower'
+    ? node.frac  // sub_frac within [0,cf]
+    : node.frac; // sub_frac within [0,1-cf]
+  const pseudoNode={
+    frac: seg==='lower' ? node.frac*cf : cf+node.frac*(1-cf),
+    segFrac: node.frac,
+    _origNode: node,  // reference to original NODES entry for refresh
+    ratio: node.ratio,
+    fs: node.fs, rs: node.rs, desc: node.desc,
+    label: node.label, primary: node.primary,
+    segment: seg, cf: cf, freq: freq
+  };
+  _activeFrac=pseudoNode.frac; _activeNode=pseudoNode;
+  // True ratio of this node's freq to fundFreq() — for tension tone
+  window._activeRatioFund = seg==='lower' ? node.ratio/cf : node.ratio/(1-cf);
+  _lastStripArgs={frac:pseudoNode.frac, nodeLabel:node.label, color:col};
+  // Row highlight at diagram y
+  const rowHl=document.getElementById('row-hl');
+  if(rowHl){
+    rowHl.innerHTML='';
+    const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    Object.entries({x:0,y:diagY-16,width:SVG_W,height:32,
+      fill:`rgba(${seg==='lower'?'29,122,107':'122,58,29'},0.12)`,rx:2})
+      .forEach(([k,v])=>rect.setAttribute(k,v));
+    rowHl.appendChild(rect);
+  }
+  drawRulerSVG(pseudoNode);
+  // Sidebar
+  const esl=effectiveSpeakingLength();
+  const segLen = seg==='lower' ? cf*esl : (1-cf)*esl;
+  const lowerIn=(node.frac*segLen).toFixed(1);
+  const upperIn=((1-node.frac)*segLen).toFixed(1);
+  const fund=fundFreq();
+  const segFund = seg==='lower' ? fund/cf : fund/(1-cf);
+  const lHz=Math.round(segFund*node.ratio);
+  const uHz=Math.round(segFund/(1-node.frac));
+  const lNi=noteInfo(segFund*node.ratio), uNi=noteInfo(segFund/(1-node.frac));
+  const lNote=lNi.snapped?lNi.name+lNi.octave:'—';
+  const uNote=uNi.snapped?uNi.name+uNi.octave:'—';
+  const upper=document.getElementById('sb-upper');
+  const lower=document.getElementById('sb-lower');
+  const _rr=document.getElementById('rrail');
+  const _H=_rr?(_rr.clientHeight||300):300;
+  const _TOP=66,_BOT=54,_MH=_H-_TOP-_BOT;
+  const _dotY=(_H-_BOT)-node.frac*_MH;
+  const _dotFrac=_dotY/_H;
+  if(upper){ upper.style.flex=String(_dotFrac);
+    upper.innerHTML=`<div class="sb-len">${upperIn}"</div><div class="sb-hz">${uHz} Hz</div><div class="sb-note">${uNote}</div>`; }
+  if(lower){ lower.style.flex=String(1-_dotFrac);
+    lower.innerHTML=`<div class="sb-note">${lNote}</div><div class="sb-hz">${lHz} Hz</div><div class="sb-len">${lowerIn}"</div>`; }
+}
+
 // ── Capo layer render ─────────────────────────────────────────────
 function updateCapoLayer(){
   updateColHeaders();
@@ -1831,6 +2469,7 @@ function updateCapoLayer(){
   const nutY=nutEffY();
   const cy=capoYpx();
   const cn=CAPO_NODES[capoNodeIdx];
+  const cf=1-cn.phi; // capo frac from bridge
   const mainFS=30;
 
   // Update drag marker position
@@ -1890,20 +2529,27 @@ function updateCapoLayer(){
   annG.appendChild(mkA('text',{x:346,y:cy+mainFS*0.95,'font-size':mainFS,'text-anchor':'end',fill:CAPO_COL,opacity:0.7},cn.itvl));
 
   // ── Travelling play buttons — right up against drag marker left edge ──
-  const BTN_X=350, BTN_W=86, BTN_H=22, BTN_R=4, BTN_GAP=3;
-  const totalBtnH=BTN_H*3+BTN_GAP*2;
-  const btnDefs=[
-    {label:'▲ top',    action:()=>playTone(capoUpperFreq()), strip:()=>showStrip(capoUpperFreq(), cn.phi, '↑ '+cn.label, CAPO_COL)},
-    {label:'▲▼ both',  action:()=>playCapoBoth(),            strip:()=>showStripBoth()},
-    {label:'▼ bottom', action:()=>playTone(capoLowerFreq()), strip:()=>showStrip(capoLowerFreq(), 1-cn.phi, '↓ '+cn.label, CAPO_COL)},
+  // ── Capo buttons: ▲ top (above), center label=both, ▼ bottom (below)
+  const BTN_X=346, BTN_W=104, BTN_H=28, BTN_R=5, BTN_GAP=18;
+  const buttons=[
+    {label:'▲  top',   dy:-(BTN_H+BTN_GAP),
+     action:()=>{ playTone(capoUpperFreq()); _showCapoEndNode('upper',cf); },
+     strip:()=>showStrip(capoUpperFreq(), cn.phi, '↑ '+cn.label, CAPO_COL)},
+    {label:cn.label+' · '+cn.itvl, dy:0,
+     action:()=>{ playCapoBoth(); showStripBoth(); },
+     strip:()=>showStripBoth()},
+    {label:'▼  bottom',dy:BTN_H+BTN_GAP,
+     action:()=>{ playTone(capoLowerFreq()); _showCapoEndNode('lower',cf); },
+     strip:()=>showStrip(capoLowerFreq(), 1-cn.phi, '↓ '+cn.label, CAPO_COL)},
   ];
-  btnDefs.forEach(({label,action,strip},i)=>{
-    const bY=cy - totalBtnH/2 + i*(BTN_H+BTN_GAP);
+  buttons.forEach(({label,dy,action,strip})=>{
+    const bY=cy - BTN_H/2 + dy;
     const bg=mkA('rect',{x:BTN_X,y:bY,width:BTN_W,height:BTN_H,rx:BTN_R,
       fill:'rgba(200,130,26,0.15)',stroke:CAPO_COL,'stroke-width':0.75,style:'cursor:pointer;'});
-    const txt=mkA('text',{x:BTN_X+BTN_W/2,y:bY+BTN_H*0.68,'font-size':11,
+    const txt=mkA('text',{x:BTN_X+BTN_W/2,y:bY+BTN_H*0.65,'font-size':11,
       'text-anchor':'middle',fill:CAPO_COL,'font-weight':'500',style:'pointer-events:none;'},label);
     bg.addEventListener('click',e=>{e.stopPropagation();action();strip();});
+    bg.addEventListener('touchstart',e=>{e.stopPropagation();action();strip();},{passive:true});
     bg.addEventListener('mouseenter',()=>strip());
     bg.addEventListener('mouseleave',clearStrip);
     bg.addEventListener('mousedown',e=>e.stopPropagation());
@@ -2247,7 +2893,7 @@ function syncSlider(key,sv){
   const n=parseFloat(sv);
   if(key==='dur'){toneDuration=n;document.getElementById('dur-ro').value=n.toFixed(1)+' s';}
   else if(key==='vol'){volume=n/100;document.getElementById('vol-ro').value=Math.round(n)+'%';}
-  else if(key==='len'){
+  else if(key==='len'){ _clearPin();
     const n=parseFloat(sv);
     if(nodeView==='nut'){
       // In nut height mode, slider controls effective speaking length
@@ -2262,14 +2908,14 @@ function syncSlider(key,sv){
     render();
   }
   else if(key==='ten'){tensionLbs=tenSlToVal(n);document.getElementById('ten-ro').value=tensionLbs.toFixed(1)+' lbs';render();}
-  else if(key==='mu'){muKgM=muSlToVal(n);document.getElementById('mu-ro').value=muKgM.toFixed(6);render();}
+  else if(key==='mu'){ _clearPin(); muKgM=muSlToVal(n);document.getElementById('mu-ro').value=muKgM.toFixed(6);render();}
 }
 function syncReadout(key,raw){
   let v=parseFloat(raw);
   if(isNaN(v)) return;
   if(key==='dur'){v=Math.max(0.2,Math.min(4,v));toneDuration=v;document.getElementById('dur-sl').value=v;document.getElementById('dur-ro').value=v.toFixed(1)+' s';}
   else if(key==='vol'){v=Math.max(0,Math.min(100,v));volume=v/100;document.getElementById('vol-sl').value=v;document.getElementById('vol-ro').value=Math.round(v)+'%';}
-  else if(key==='len'){
+  else if(key==='len'){ _clearPin();
     // handle cm input if metric mode
     if(!useInches) v=v/2.54;
     if(nodeView==='nut'){
@@ -2361,6 +3007,7 @@ function isTonalCenter(nodeRatio){
 
 // Core home node setter (called by UI and internally)
 function setHomeNode(deg){
+  _clearPin();
   homeNode=deg;
   // Sync buttons
   document.getElementById('hn-fund').classList.toggle('on',deg===1);
@@ -2488,7 +3135,7 @@ function updateNutMarker(){
   hitEl.setAttribute('fill','transparent');hitEl.setAttribute('class','row-hit');
   hitEl.style.cursor='ns-resize';
   hitEl.addEventListener('click',()=>{if(!nutDidDrag) playTone(fund);});
-  hitEl.addEventListener('mouseenter',()=>showStrip(fund,1.0,remapDegree(1)||'1','#533AB7'));
+  hitEl.addEventListener('mouseenter',()=>{ if(_pinnedFrac!==null&&_pinnedFrac!==1.0) return; showStrip(fund,1.0,remapDegree(1)||'1','#533AB7'); });
   hitEl.addEventListener('mouseleave',clearStrip);
   hitEl.addEventListener('touchstart',()=>{playTone(fund);showStrip(fund,1.0,'1','#533AB7');},{passive:true});
   hitEl.addEventListener('touchend',clearStrip,{passive:true});
@@ -2546,8 +3193,20 @@ window.addEventListener('touchend',()=>{
 
 // ── Capo drag ─────────────────────────────────────────────────────
 let capoDragging=false, capoDragStartY=0, capoDragStartPhi=0;
+// Capo handle tap (click = not a drag)
+let _capoDragMoved=false;
+document.getElementById('capo-drag-marker').addEventListener('click',e=>{
+  if(nodeView!=='capo'||_capoDragMoved) return;
+  e.stopPropagation();
+  const cf2=1-CAPO_NODES[capoNodeIdx].phi;
+  playTone(capoLowerFreq());
+  _showCapoEndNode('lower',cf2);
+  _togglePin(cf2, false);
+  if(_pinnedFrac===cf2){ playTone(capoLowerFreq()); _showCapoEndNode('lower',cf2); }
+});
 document.getElementById('capo-drag-marker').addEventListener('mousedown',e=>{
   if(nodeView!=='capo') return;
+  _capoDragMoved=false;
   capoDragging=true; e.stopPropagation(); e.preventDefault();
   capoDragStartY=e.clientY;
   capoDragStartPhi=CAPO_NODES[capoNodeIdx].phi;
@@ -2775,11 +3434,35 @@ function render(){
   updateCapoLayer();
   document.getElementById('dyn-nodes').innerHTML='';
   document.getElementById('dyn-nut').innerHTML='';
+  if(nodeView==='capo') updateCapoSubNodes();
   document.getElementById('dyn-home-rings').innerHTML='';
   document.getElementById('dyn-ruler').innerHTML='';
   hideHoldPanel();
   if(nodeView==='capo'){
     const cn=CAPO_NODES[capoNodeIdx];
+    const _cf=1-cn.phi;
+    const uFreq=capoUpperFreq();
+    const uNi=noteInfo(uFreq);
+    const uNote=uNi.snapped?uNi.name+uNi.octave:'—';
+    // Nut label for upper segment fundamental
+    const nutG2=document.getElementById('dyn-nut');
+    const nutYc=nutEffY(), nutFS2=26, nutInfoFS2=15, nutRowH2=nutFS2+10;
+    nutG2.appendChild(mk('text',{x:SDEG_X,y:nutYc+9,'font-size':nutFS2,'font-weight':'500',
+      'text-anchor':'middle',fill:SUB_COL_UPPER,opacity:0.75},'↑'));
+    nutG2.appendChild(mk('text',{x:HOME_X,y:nutYc+9,'font-size':nutFS2,'font-weight':'500',
+      fill:SUB_COL_UPPER},uNote));
+    nutG2.appendChild(mk('text',{x:NOTE_X,y:nutYc+9,'font-size':nutInfoFS2,
+      fill:SUB_COL_UPPER,opacity:0.7},Math.round(uFreq)+' Hz'));
+    const nutHitC=mk('rect',{x:0,y:nutYc-nutFS2*0.65,width:SVG_W,height:nutRowH2,
+      fill:'transparent',class:'row-hit'});
+    nutHitC.addEventListener('mousedown',()=>{
+      if(_togglePin(1.0, false)){ playTone(uFreq); _showCapoEndNode('upper',_cf); }
+    });
+    nutHitC.addEventListener('touchstart',()=>{
+      if(_togglePin(1.0, true)){ playTone(uFreq); _showCapoEndNode('upper',_cf); }
+    },{passive:true});
+    nutHitC.addEventListener('touchend',()=>{ if(!_pinnedFrac) hideLabel(); },{passive:true});
+    nutG2.appendChild(nutHitC);
     showRuler(capoYpx(), capoUpperIn(), capoLowerIn(), '1\u2212'+cn.phiStr, capoLowerFreq(), cn.phiStr, CAPO_COL);
     return;
   }
@@ -2807,7 +3490,7 @@ function render(){
     if(nutIsHome){
       nutG.appendChild(mk('circle',{cx:SX,cy:NY,r:16,fill:'none',stroke:'#533AB7','stroke-width':2,opacity:0.35}));
     }
-    nutG.appendChild(mk('rect',{x:BR-barW(1),y:nutY-5,width:barW(1),height:10,rx:2,fill:nutColor,opacity:0.55}));
+    if(showPitchBars) nutG.appendChild(mk('rect',{x:BR-barW(1),y:nutY-5,width:barW(1),height:10,rx:2,fill:nutColor,opacity:0.55}));
     // Fixed string degree — dark grey bold, left of string
     nutG.appendChild(mk('text',{x:SDEG_X,y:nutY+9,'font-size':nutFS,'font-weight':'500','text-anchor':'middle',fill:'#5F5E5A'},'1'));
     // home degree — right of string
@@ -2821,14 +3504,24 @@ function render(){
       nutG.appendChild(mk('text',{x:KD_RX,y:nutY+9,'font-size':nutInfoFS,'text-anchor':'end',fill:GRAY,opacity:0.4},'—'));
       nutG.appendChild(mk('text',{x:NOTE_X,y:nutY+9,'font-size':nutInfoFS,fill:GRAY,opacity:0.4},'—'));
     }
-    nutG.appendChild(mk('text',{x:INFO_X,y:nutY+9,'font-size':nutInfoFS,fill:nutColor,opacity:0.8},'1/1  ·  1:1  ·  fundamental'));
-    nutG.appendChild(mk('text',{x:SEG_X,y:nutY+9,'font-size':nutInfoFS,fill:nutColor,opacity:0.65},'— | '+fmtLen(speakingIn)));
+    if(showPitchBars){
+      nutG.appendChild(mk('text',{x:INFO_X,y:nutY+9,'font-size':nutInfoFS,fill:nutColor,opacity:0.8},'1/1  ·  1:1  ·  fundamental'));
+      nutG.appendChild(mk('text',{x:SEG_X,y:nutY+9,'font-size':nutInfoFS,fill:nutColor,opacity:0.65},'— | '+fmtLen(speakingIn)));
+    }
     const nutHit=mk('rect',{x:0,y:nutY-nutFS*0.65,width:SVG_W,height:nutRowH,fill:'transparent',class:'row-hit'});
-    nutHit.addEventListener('mousedown',()=>{playTone(fund);showStrip(fund,1.0,nutHomeLabel,nutColor);});
-    nutHit.addEventListener('mouseenter',()=>{showStrip(fund,1.0,nutHomeLabel,nutColor);showRuler(NY,0,speakingIn,'1/1',fund);});
-    nutHit.addEventListener('mouseleave',()=>{clearStrip();clearRuler();});
-    nutHit.addEventListener('touchstart',()=>{playTone(fund);showStrip(fund,1.0,nutHomeLabel,nutColor);showRuler(NY,0,speakingIn,'1/1',fund);},{passive:true});
-    nutHit.addEventListener('touchend',()=>{clearStrip();clearRuler();},{passive:true});
+    const _nutNode={frac:1.0,ratio:1,fs:'1/1',rs:'1:1',desc:'fundamental',label:'1',primary:true,tonic:false};
+    nutHit.addEventListener('mousedown',()=>{
+      if(_togglePin(1.0, false)){ playTone(fund); showStrip(fund,1.0,nutHomeLabel,nutColor); showLabel(_nutNode); }
+    });
+    nutHit.addEventListener('mouseenter',()=>{
+      if(_pinnedFrac!==null&&_pinnedFrac!==1.0) return;
+      showStrip(fund,1.0,nutHomeLabel,nutColor); showLabel(_nutNode);
+    });
+    nutHit.addEventListener('mouseleave',()=>{ clearStrip(); if(!_pinnedFrac) clearRuler(); });
+    nutHit.addEventListener('touchstart',()=>{
+      if(_togglePin(1.0, true)){ playTone(fund); showStrip(fund,1.0,nutHomeLabel,nutColor); showLabel(_nutNode); }
+    },{passive:true});
+    nutHit.addEventListener('touchend',()=>{ clearStrip(); clearRuler(); },{passive:true});
     nutG.appendChild(nutHit);
   }
 
@@ -2864,7 +3557,7 @@ function render(){
       homeRingsG.appendChild(mk('circle',{cx:SX,cy:y,r:16,fill:'none',stroke:'#533AB7','stroke-width':2,opacity:0.35}));
     }
 
-    g.appendChild(mk('rect',{x:BR-bw,y:y-(isT||isPri?7:5),width:bw,
+    if(showPitchBars) g.appendChild(mk('rect',{x:BR-bw,y:y-(isT||isPri?7:5),width:bw,
       height:isT||isPri?14:10,rx:2,fill:c.bar,opacity:isT?0.65:isPri?0.55:0.35}));
     const hw=isT?18:isPri?14:10;
     g.appendChild(mk('line',{x1:SX-hw,x2:SX+hw,y1:y,y2:y,stroke:c.stroke,'stroke-width':isT?2.5:isPri?2:1}));
@@ -2885,17 +3578,27 @@ function render(){
       g.appendChild(mk('text',{x:KD_RX,y:y+yOff,'font-size':infoFS,'text-anchor':'end',fill:GRAY,opacity:0.3},'—'));
       g.appendChild(mk('text',{x:NOTE_X,y:y+yOff,'font-size':infoFS,fill:GRAY,opacity:0.3},'—'));
     }
-    g.appendChild(mk('text',{x:INFO_X,y:y+yOff,'font-size':infoFS,fill:c.text,opacity:0.8},
-      `${node.fs}  ·  ${node.rs}  ·  ${node.desc}`));
-    g.appendChild(mk('text',{x:SEG_X,y:y+yOff,'font-size':infoFS,fill:c.text,opacity:0.7},
-      fmtLen(upperIn)+' | '+fmtLen(lowerIn)));
+    if(showPitchBars){
+      g.appendChild(mk('text',{x:INFO_X,y:y+yOff,'font-size':infoFS,fill:c.text,opacity:0.8},
+        `${node.fs}  ·  ${node.rs}  ·  ${node.desc}`));
+      g.appendChild(mk('text',{x:SEG_X,y:y+yOff,'font-size':infoFS,fill:c.text,opacity:0.7},
+        fmtLen(upperIn)+' | '+fmtLen(lowerIn)));
+    }
 
     const hitRect=mk('rect',{x:0,y:y-rowH/2,width:SVG_W,height:rowH,fill:'transparent',class:'row-hit'});
-    hitRect.addEventListener('mousedown',()=>{playTone(freq);showStrip(freq,node.frac,displayLabel,c.text);});
-    hitRect.addEventListener('mouseenter',()=>{showStrip(freq,node.frac,displayLabel,c.text);showRuler(y,upperIn,lowerIn,node.fs,freq);});
-    hitRect.addEventListener('mouseleave',()=>{clearStrip();clearRuler();});
-    hitRect.addEventListener('touchstart',()=>{playTone(freq);showStrip(freq,node.frac,displayLabel,c.text);showRuler(y,upperIn,lowerIn,node.fs,freq);},{passive:true});
-    hitRect.addEventListener('touchend',()=>{clearStrip();clearRuler();},{passive:true});
+    // Pin toggle: second tap on same node unpins; tap different node switches pin
+    hitRect.addEventListener('mousedown',()=>{
+      if(_togglePin(node.frac, false)){ playTone(freq); showStrip(freq,node.frac,displayLabel,c.text); }
+    });
+    hitRect.addEventListener('mouseenter',()=>{
+      if(_pinnedFrac!==null&&_pinnedFrac!==node.frac) return; // don't override a different pin
+      showStrip(freq,node.frac,displayLabel,c.text); showRuler(y,upperIn,lowerIn,node.fs,freq);
+    });
+    hitRect.addEventListener('mouseleave',()=>{ clearStrip(); if(!_pinnedFrac) clearRuler(); });
+    hitRect.addEventListener('touchstart',()=>{
+      if(_togglePin(node.frac, true)){ playTone(freq); showStrip(freq,node.frac,displayLabel,c.text); showRuler(y,upperIn,lowerIn,node.fs,freq); }
+    },{passive:true});
+    hitRect.addEventListener('touchend',()=>{ clearStrip(); if(!_pinnedFrac) clearRuler(); },{passive:true});
     g.appendChild(hitRect);
   });
 }
@@ -2907,7 +3610,7 @@ COF_ORDER.forEach(i=>{
   const b=document.createElement('button');
   b.className='kbtn'+(i===7?' on':'');
   b.textContent=NOTES[i];
-  b.onclick=()=>{homeKey=i;document.querySelectorAll('.kbtn').forEach(x=>x.classList.remove('on'));b.classList.add('on');updateTuneBtn();updateScaleSpelling();render();};
+  b.onclick=()=>{_clearPin();homeKey=i;document.querySelectorAll('.kbtn').forEach(x=>x.classList.remove('on'));b.classList.add('on');updateTuneBtn();updateScaleSpelling();render();};
   kg.appendChild(b);
 });
 
@@ -2925,12 +3628,38 @@ function clamp(){
   tx=Math.min(0,Math.max(tx,ww-sw));
   ty=Math.min(0,Math.max(ty,wh-sh));
 }
-function zoom(f){sc=Math.min(scMx,Math.max(scMn,sc*f));clamp();applyT();}
-function zoomTo1(){sc=1;tx=0;ty=0;clamp();applyT();}
+
+// ── smartPan: pin string horizontally, centre active node vertically ──
+// SVG string x = SX=480. Target: string at 38% from canvas left.
+// If a node is active, centre its SVG y in the canvas vertically.
+// If no node active, preserve current vertical scroll fraction.
+function smartPan(){
+  const cw=canvas.clientWidth, ch=canvas.clientHeight;
+  // Horizontal: pin string column
+  tx=cw*0.38 - SX*sc;
+  // Vertical
+  if(_activeFrac!==null){
+    // Node SVG y (string runs NY→TY, frac measured from TY upward)
+    const nodeSvgY=TY - _activeFrac*SPX;
+    // Centre in canvas
+    ty=ch/2 - nodeSvgY*sc;
+  }
+  // else: leave ty unchanged (user may have panned)
+  clamp();
+}
+
+function zoom(f){
+  const oldSc=sc;
+  sc=Math.min(scMx,Math.max(scMn,sc*f));
+  smartPan();
+  applyT();
+}
+function zoomTo1(){sc=1;smartPan();clamp();applyT();}
 function zoomFit(){
   setTimeout(()=>{
     sc=canvas.clientHeight/1440;
-    tx=0; ty=0;
+    ty=0;
+    smartPan(); // pins string horizontally, resets ty if no active node
     applyT();
   },0);
 }
@@ -2947,9 +3676,10 @@ window.addEventListener('mousemove',e=>{
 window.addEventListener('mouseup',()=>{dragging=false;canvas.classList.remove('dragging');});
 canvas.addEventListener('wheel',e=>{
   e.preventDefault();
-  const r=canvas.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
-  const f=e.deltaY>0?0.85:1.18, ns=Math.min(scMx,Math.max(scMn,sc*f));
-  tx=mx-(mx-tx)*(ns/sc);ty=my-(my-ty)*(ns/sc);sc=ns;clamp();applyT();
+  const f=e.deltaY>0?0.85:1.18;
+  sc=Math.min(scMx,Math.max(scMn,sc*f));
+  smartPan();
+  applyT();
 },{passive:false});
 // ── Canvas touch: single-finger pan + two-finger pinch zoom ──────
 // Single-finger on a non-hit area pans. Two-finger pinch zooms.
@@ -2985,13 +3715,9 @@ canvas.addEventListener('touchstart',e=>{
 canvas.addEventListener('touchmove',e=>{
   if(e.touches.length===2){
     const m=_t2Mid(e);
-    const ns=Math.min(scMx,Math.max(scMn,_t2StartSc*(m.dist/_t2StartDist)));
-    const dx=m.x-_t2MidX, dy=m.y-_t2MidY;
-    const r=canvas.getBoundingClientRect();
-    const mx=_t2MidX-r.left, my=_t2MidY-r.top;
-    tx=mx-(mx-_t2StartTx)*(ns/_t2StartSc)+dx;
-    ty=my-(my-_t2StartTy)*(ns/_t2StartSc)+dy;
-    sc=ns; clamp(); applyT();
+    sc=Math.min(scMx,Math.max(scMn,_t2StartSc*(m.dist/_t2StartDist)));
+    smartPan();
+    clamp(); applyT();
     e.preventDefault();
   } else if(dragging&&e.touches.length===1){
     tx=dtx+(e.touches[0].clientX-dsx);
