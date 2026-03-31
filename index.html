@@ -141,7 +141,7 @@ input[type=range]{width:110px;cursor:pointer;}
 /* ruler rail — wider, SVG-based */
 #rrail{width:42px;flex-shrink:0;border-left:0.5px solid rgba(128,128,128,0.15);background:rgba(248,247,244,0.97);position:relative;z-index:13;overflow:visible;}
 @media(prefers-color-scheme:dark){#rrail{background:rgba(40,40,40,0.97);}}
-#rr-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
+#rr-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;}
 
 /* sidebar */
 #sidebar{width:72px;flex-shrink:0;border-left:0.5px solid rgba(128,128,128,0.15);background:#fff;display:flex;flex-direction:column;overflow:hidden;position:relative;}
@@ -217,21 +217,46 @@ input[type=range]{width:110px;cursor:pointer;}
 #cof-wrap{position:absolute;left:0;bottom:0;width:170px;height:170px;z-index:14;pointer-events:auto;}
 #cof-canvas{display:block;cursor:grab;}
 #cof-canvas.spinning{cursor:grabbing;}
-#scale-picker{position:absolute;left:44px;top:50px;z-index:50;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,0.14);padding:6px 0;min-width:220px;display:none;}
+#scale-picker{position:absolute;left:44px;top:50px;z-index:50;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,0.14);padding:4px 0;min-width:160px;display:none;}
 @media(prefers-color-scheme:dark){#scale-picker{background:#2a2a2a;}}
 #scale-picker.visible{display:block;}
-.sp-item{padding:8px 18px;font-size:28px;cursor:pointer;color:#1a1a1a;text-align:left;}
+.sp-item{padding:5px 12px;font-size:19px;cursor:pointer;color:#1a1a1a;text-align:left;}
 .sp-item:hover{background:rgba(83,58,183,0.07);}
 .sp-item.on{color:#533AB7;font-weight:700;background:rgba(83,58,183,0.05);}
-.sp-sep{height:0.5px;background:rgba(128,128,128,0.2);margin:4px 0;}
+.sp-sep{height:0.5px;background:rgba(128,128,128,0.2);margin:3px 0;}
 @media(prefers-color-scheme:dark){.sp-item{color:#e0e0e0;}}
-#home-picker{position:absolute;left:44px;top:100px;z-index:50;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.12);padding:5px;display:none;flex-direction:column;gap:2px;min-width:80px;}
+#home-picker{position:absolute;left:44px;top:100px;z-index:50;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.12);padding:4px;display:none;flex-direction:column;gap:1px;min-width:56px;}
 @media(prefers-color-scheme:dark){#home-picker{background:#2a2a2a;}}
 #home-picker.visible{display:flex;}
-.hp-item{padding:8px 18px;font-size:28px;cursor:pointer;color:#1a1a1a;border-radius:4px;text-align:center;}
+.hp-item{padding:5px 12px;font-size:19px;cursor:pointer;color:#1a1a1a;border-radius:4px;text-align:center;}
 .hp-item:hover{background:rgba(83,58,183,0.07);}
 .hp-item.on{color:#533AB7;font-weight:700;background:rgba(83,58,183,0.06);}
 @media(prefers-color-scheme:dark){.hp-item{color:#e0e0e0;}}
+/* ── README panel ── */
+#readme-panel{display:none;position:absolute;left:0;right:0;bottom:76px;z-index:20;background:#fff;border-top:0.5px solid rgba(128,128,128,0.2);box-shadow:0 -4px 20px rgba(0,0,0,0.08);flex-direction:column;max-height:70vh;}
+@media(prefers-color-scheme:dark){#readme-panel{background:#1e1e1e;}}
+#readme-panel.visible{display:flex;}
+#readme-panel-header{display:flex;align-items:center;padding:8px 12px;border-bottom:0.5px solid rgba(128,128,128,0.15);gap:8px;flex-shrink:0;}
+#readme-panel-title{font-size:12px;font-weight:600;color:#533AB7;flex:1;}
+#readme-panel-close{font-size:16px;color:#aaa;cursor:pointer;padding:0 4px;line-height:1;}
+#readme-panel-body{flex:1;overflow-y:auto;padding:14px 16px;font-size:13px;line-height:1.6;color:#1a1a1a;}
+@media(prefers-color-scheme:dark){#readme-panel-body{color:#e0e0e0;}}
+#readme-panel-body h2{font-size:15px;font-weight:700;color:#533AB7;margin:16px 0 6px;border-bottom:0.5px solid rgba(83,58,183,0.2);padding-bottom:4px;}
+#readme-panel-body h3{font-size:13px;font-weight:600;color:#1a1a1a;margin:12px 0 4px;}
+@media(prefers-color-scheme:dark){#readme-panel-body h3{color:#e0e0e0;}}
+#readme-panel-body p{margin:0 0 8px;}
+#readme-panel-body ul{margin:4px 0 8px;padding-left:18px;}
+#readme-panel-body li{margin-bottom:3px;}
+#readme-panel-body table{border-collapse:collapse;font-size:11px;margin:8px 0;width:100%;overflow-x:auto;display:block;}
+#readme-panel-body th,#readme-panel-body td{border:0.5px solid rgba(128,128,128,0.25);padding:3px 7px;text-align:left;white-space:nowrap;}
+#readme-panel-body th{background:rgba(83,58,183,0.06);font-weight:600;}
+#readme-panel-body hr{border:none;border-top:0.5px solid rgba(128,128,128,0.2);margin:12px 0;}
+#readme-panel-body strong{font-weight:600;}
+#readme-panel-body em{font-style:italic;color:#888;}
+.br-readme-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:48px;height:48px;border:0.5px solid rgba(128,128,128,0.25);border-radius:6px;background:#fff;cursor:pointer;flex-shrink:0;}
+@media(prefers-color-scheme:dark){.br-readme-btn{background:#333;}}
+.br-readme-btn:active{background:rgba(83,58,183,0.08);border-color:#533AB7;}
+.br-readme-btn-lbl{font-size:7px;color:#888;text-transform:uppercase;letter-spacing:0.04em;}
 /* ══ end v4 APP SHELL CSS ═══════════════════════════════════════════ */
 </style>
 </head>
@@ -463,7 +488,8 @@ input[type=range]{width:110px;cursor:pointer;}
 <text x="398" y="1302" text-anchor="start" font-size="12" fill="currentColor" opacity="0.5">resonator</text>
 <text x="480" y="1325" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.5">bridge</text>
 
-<!-- Legend — right of washtub, two columns -->
+<!-- Legend — right of washtub, two columns — TODO: remove from DOM in cleanup pass -->
+<g id="svg-legend" style="display:none;">
 <rect x="630" y="1300" width="380" height="150" rx="6" fill="rgba(128,128,128,0.05)" stroke="rgba(128,128,128,0.18)" stroke-width="0.5"/>
 <text x="820" y="1320" text-anchor="middle" font-size="13" font-weight="500" fill="currentColor">legend</text>
 <!-- Column 1: primary family -->
@@ -484,11 +510,14 @@ input[type=range]{width:110px;cursor:pointer;}
 <circle cx="650" cy="1398" r="16" fill="none" stroke="#533AB7" stroke-width="2" opacity="0.5"/>
 <text x="664" y="1402" font-size="11" fill="currentColor" opacity="0.7">home node ring</text>
 <text x="630" y="1432" font-size="10" fill="currentColor" opacity="0.3">upper | lower = length from nut | from tub</text>
+</g>
 
 <!-- Dynamic -->
 <g id="dyn-ruler" style="display:none;"></g>
 <g id="row-hl"></g>
+<g id="dyn-home-shade"></g>
 <g id="dyn-home-rings"></g>
+<g id="dyn-chrom-ticks"></g>
 <g id="dyn-nut"></g>
 <g id="dyn-nodes"></g>
 <g id="hold-panel" opacity="0" pointer-events="none"></g>
@@ -574,6 +603,15 @@ input[type=range]{width:110px;cursor:pointer;}
   <div id="cof-wrap" style="display:none;">
     <canvas id="cof-canvas" width="160" height="160"></canvas>
     <div id="cof-dot"></div>
+  </div>
+
+  <!-- README slideup panel -->
+  <div id="readme-panel">
+    <div id="readme-panel-header">
+      <div id="readme-panel-title">README</div>
+      <div id="readme-panel-close" onclick="closeReadme()">✕</div>
+    </div>
+    <div id="readme-panel-body"></div>
   </div>
 
 </div><!-- end app-shell -->
@@ -675,7 +713,7 @@ function updateFundDisplay(){
   const tenEl=document.getElementById('lr-ten-val');
   if(noteEl) noteEl.textContent=fi.name+(fi.octave!==undefined?fi.octave:'');
   if(numEl)  numEl.textContent=Math.round(fund);
-  if(tenEl)  tenEl.textContent=tensionLbs.toFixed(1)+' lbs';
+  if(tenEl)  tenEl.innerHTML=tensionLbs.toFixed(1)+'<br><span style="font-size:6.5px;color:#aaa;font-weight:400;line-height:1.2;">lbs</span>';
 }
 
 // ── Left rail chip labels ─────────────────────────────────────────
@@ -718,7 +756,8 @@ function fitH(){
 function fitV(){
   sc=canvas.clientHeight/1440;
   tx=0; ty=0;
-  clamp(); applyT();
+  smartPan();
+  applyT();
 }
 
 // ── Vertical tension slider sync ──────────────────────────────────
@@ -917,7 +956,7 @@ function setRowHL(nodeFrac){
   if(!g) return;
   g.innerHTML='';
   if(nodeFrac===null) return;
-  const y=TY-nodeFrac*SPX;
+  const y=nY(nodeFrac); // use nY() so nut view positions match rendered nodes
   const rect=document.createElementNS(svgNS_v4,'rect');
   Object.entries({x:0,y:y-16,width:SVG_W,height:32,fill:'rgba(200,150,20,0.14)',rx:2})
     .forEach(([k,v])=>rect.setAttribute(k,v));
@@ -935,7 +974,7 @@ function _setPin(frac, fromTouch){
 }
 function _togglePin(frac, fromTouch){
   if(!fromTouch && Date.now()-_lastPinTouch < 400) return false;
-  if(_pinnedFrac===frac){ unpinAndClear(); return false; }
+  if(_pinnedFrac===frac){ unpinAndClear(); _lastPinTouch=Date.now(); return false; }
   _setPin(frac, fromTouch); return true;
 }
 let _activeSegment=null; // 'lower'|'upper'|null — set when a capo sub-node is active // frac of pinned node, null when nothing pinned
@@ -953,7 +992,10 @@ function drawRulerSVG(node){
   const frac=node?node.frac:null;
   const miniY=f=>MINI_BOT-f*MINI_H; // frac=1=nut=top, frac=0=bridge=bottom
 
-  // Viewport indicator
+  // Always compute fanX2 — needed for home lines even after soft-unpin
+  const fanX2=(tx+SX*sc)-canvas.clientWidth;
+
+  // Viewport indicator geometry
   const diagH=canvas.clientHeight||1;
   const visH=Math.max(6,Math.min(MINI_H,MINI_H/sc));
   const maxScroll=diagH*(sc-1);
@@ -961,19 +1003,64 @@ function drawRulerSVG(node){
   const vpTop=MINI_TOP+scrollFrac*(MINI_H-visH);
 
   let html='';
+  let bgHtml=''; // background layer — rendered first (behind everything)
 
-  // Fan line FIRST (behind everything)
+  // Home fracs needed for both fan lines and icons — compute once up front
+  const homeFracs=getHomeNodeFracs();
+
+  // Active node fan line
   if(frac!==null){
     const nodeSvgY=TY-frac*SPX;
     const nodeScreenY=ty+nodeSvgY*sc;
-    const fanX2=(tx+SX*sc)-canvas.clientWidth;
     html+=`<line x1="${CX}" y1="${miniY(frac).toFixed(1)}" x2="${fanX2.toFixed(1)}" y2="${nodeScreenY.toFixed(1)}"
       stroke="#533AB7" stroke-width="1" stroke-dasharray="3 3" opacity="0.4"/>`;
+  }
+
+  // Home fan lines + shade — only when a node is pinned
+  if(_pinnedFrac!==null && frac!==null && homeFracs.length>=1){
+    const upperHome=homeFracs.filter(hf=>hf>frac);
+    const lowerHome=homeFracs.filter(hf=>hf<frac);
+    const nearAbove=upperHome.length?Math.min(...upperHome):null;
+    const nearBelow=lowerHome.length?Math.max(...lowerHome):null;
+    // Shade in main SVG — proper trapezoid following fan lines
+    const shadeG=document.getElementById('dyn-home-shade');
+    if(shadeG){
+      shadeG.innerHTML='';
+      if(nearAbove!==null && nearBelow!==null){
+        const x_str=SX;
+        const y_strAbove=TY-nearAbove*SPX;
+        const y_strBelow=TY-nearBelow*SPX;
+        const x_rul=(canvas.clientWidth+CX-tx)/sc;
+        const y_rulAbove=(miniY(nearAbove)-ty)/sc;
+        const y_rulBelow=(miniY(nearBelow)-ty)/sc;
+        const poly=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+        poly.setAttribute('points',
+          `${x_str},${y_strAbove} ${x_str},${y_strBelow} ${x_rul.toFixed(1)},${y_rulBelow.toFixed(1)} ${x_rul.toFixed(1)},${y_rulAbove.toFixed(1)}`);
+        poly.setAttribute('fill','rgba(83,58,183,0.07)');
+        poly.setAttribute('pointer-events','none');
+        shadeG.appendChild(poly);
+      }
+    }
+    // Home fan lines
+    homeFracs.forEach(hf=>{
+      const hmSvgY=TY-hf*SPX;
+      const hmScreenY=(ty+hmSvgY*sc).toFixed(1);
+      html+=`<line x1="${CX}" y1="${miniY(hf).toFixed(1)}" x2="${fanX2.toFixed(1)}" y2="${hmScreenY}"
+        stroke="#533AB7" stroke-width="1" stroke-dasharray="3 4" opacity="0.45"/>`;
+    });
+  } else {
+    const shadeG=document.getElementById('dyn-home-shade');
+    if(shadeG) shadeG.innerHTML='';
   }
 
   // Viewport indicator
   html+=`<rect x="${(CX-8).toFixed(1)}" y="${vpTop.toFixed(1)}" width="16" height="${visH.toFixed(1)}"
     rx="3" fill="rgba(83,58,183,0.07)" stroke="rgba(83,58,183,0.18)" stroke-width="0.5"/>`;
+
+  // Capo segment state — hoisted so capo tick can reference before home icon block
+  const isSeg=(node&&node.segment);
+  const segCf=isSeg?node.cf:null;
+  const segType=isSeg?node.segment:null;
 
   // Ministring
   html+=`<line x1="${CX}" y1="${MINI_TOP}" x2="${CX}" y2="${MINI_BOT}"
@@ -982,30 +1069,18 @@ function drawRulerSVG(node){
     stroke="rgba(128,128,128,0.4)" stroke-width="1.5"/>`;
   html+=`<line x1="${CX-5}" y1="${MINI_BOT}" x2="${CX+5}" y2="${MINI_BOT}"
     stroke="rgba(128,128,128,0.4)" stroke-width="1.5"/>`;
-
-  // Home node icons — segment-restricted when a sub-node is active
-  let homeFracs=getHomeNodeFracs();
-  const isSeg=(node&&node.segment);
-  const segCf=isSeg?node.cf:null;
-  const segType=isSeg?node.segment:null;
-  // In segment mode: restrict ministring to segment range and map home fracs
-  let segMin=0, segMax=1;
-  if(isSeg&&segType==='lower'){ segMin=0; segMax=segCf; }
-  if(isSeg&&segType==='upper'){ segMin=segCf; segMax=1; }
-  // Re-map miniY to segment range: miniY maps [segMin,segMax] to [MINI_BOT,MINI_TOP]
-  const miniYseg=isSeg?(f=>{
-    const norm=(f-segMin)/(segMax-segMin||1);
-    return MINI_BOT-norm*MINI_H;
-  }):miniY;
-  // Filter home fracs to those within segment, express as normalised within segment
-  if(isSeg){
-    homeFracs=homeFracs
-      .filter(hf=>hf>=segMin&&hf<=segMax)
-      .map(hf=>(hf-segMin)/(segMax-segMin||1));
+  // Capo tick — shown when a capo sub-node is active
+  if(isSeg && segCf!==null){
+    const capoY=miniY(segCf).toFixed(1);
+    html+=`<line x1="${(CX-9).toFixed(1)}" y1="${capoY}" x2="${(CX+9).toFixed(1)}" y2="${capoY}"
+      stroke="#C8821A" stroke-width="2" stroke-linecap="round"/>`;
+    html+=`<text x="${(CX+11).toFixed(1)}" y="${(parseFloat(capoY)+3).toFixed(1)}"
+      font-size="7" fill="#C8821A" opacity="0.85">capo</text>`;
   }
-  // Use segFrac for dot if sub-node
-  const dotFrac=isSeg?node.segFrac:frac;
-  const activeMiniY=isSeg?(f=>miniYseg(f)):miniY;
+  // Home node icons — always full-string perspective (no segment filtering)
+  // Full string perspective: always use miniY for dot and home icons
+  const activeMiniY=miniY;
+  const dotFrac=frac; // pseudoNode.frac is already a main-string frac
   homeFracs.forEach(hf=>{
     const hy=activeMiniY(hf).toFixed(1);
     html+=`<circle cx="${CX}" cy="${hy}" r="7" fill="none" stroke="#533AB7" stroke-width="1.4" opacity="0.35"/>`;
@@ -1088,7 +1163,7 @@ function drawRulerSVG(node){
     }
   }
 
-  svg.innerHTML=html;
+  svg.innerHTML=bgHtml+html;
 }
 
 // ── Sidebar builder ───────────────────────────────────────────────
@@ -1284,8 +1359,49 @@ function renderBRCtx(){
 // ── Node view context rows ────────────────────────────────────────
 function renderNodeViewCtx(view){
   if(view==='full'){
-    return `<div class="br-ctx-row"><span class="br-ctx-idle">no view controls</span></div>
-            <div class="br-ctx-row"></div>
+    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">readme</span></div>
+            <div class="br-ctx-row" style="gap:5px;justify-content:center;">
+              <div class="br-readme-btn" onclick="openReadme('app')">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="5" y="2" width="12" height="18" rx="2" stroke="#533AB7" stroke-width="1.4"/>
+                  <line x1="8" y1="7" x2="14" y2="7" stroke="#533AB7" stroke-width="1.2" stroke-linecap="round"/>
+                  <line x1="8" y1="10" x2="14" y2="10" stroke="#533AB7" stroke-width="1.2" stroke-linecap="round"/>
+                  <line x1="8" y1="13" x2="11" y2="13" stroke="#533AB7" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+                <div class="br-readme-btn-lbl">app</div>
+              </div>
+              <div class="br-readme-btn" onclick="openReadme('instrument')">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- inverted tub: short, narrow top, wider rim at bottom -->
+                  <path d="M7 17 L15 17 L17 21 L5 21 Z" stroke="#533AB7" stroke-width="1.3" stroke-linejoin="round"/>
+                  <line x1="4.5" y1="21" x2="17.5" y2="21" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/>
+                  <!-- vertical pole from top-left of tub -->
+                  <line x1="7" y1="17" x2="7" y2="2" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/>
+                  <!-- diagonal string from pole top to tub center top -->
+                  <line x1="7" y1="2" x2="11" y2="17" stroke="#533AB7" stroke-width="1" stroke-linecap="round"/>
+                </svg>
+                <div class="br-readme-btn-lbl">instrument</div>
+              </div>
+              <div class="br-readme-btn" onclick="openReadme('physics')">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 11 C4 11 5 5 7 5 C9 5 10 17 12 17 C14 17 15 11 17 11 C18.5 11 19.5 8 20 8" stroke="#533AB7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div class="br-readme-btn-lbl">physics</div>
+              </div>
+              <div class="br-readme-btn" onclick="openReadme('theory')">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- note stems -->
+                  <line x1="8" y1="5" x2="8" y2="14" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round"/>
+                  <line x1="14" y1="3" x2="14" y2="12" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round"/>
+                  <!-- beam -->
+                  <line x1="8" y1="5" x2="14" y2="3" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round"/>
+                  <!-- note heads -->
+                  <ellipse cx="7" cy="14.5" rx="2.5" ry="1.8" transform="rotate(-15 7 14.5)" fill="#533AB7"/>
+                  <ellipse cx="13" cy="12.5" rx="2.5" ry="1.8" transform="rotate(-15 13 12.5)" fill="#533AB7"/>
+                </svg>
+                <div class="br-readme-btn-lbl">theory</div>
+              </div>
+            </div>
             <div class="br-ctx-row"></div>`;
   }
   if(view==='nut'){
@@ -1977,7 +2093,7 @@ syncSlider=function(key,sv){
 
 setTimeout(()=>{
   // ── Custom tension thumb drag ─────────────────────────────────
-  const tenTrack=document.getElementById('lr-ten-track-inner');
+  const tenTrack=document.getElementById('lr-tension-track'); // full 28px hit area
   const tenThumb=document.getElementById('lr-ten-thumb');
   const tenFill =document.getElementById('lr-ten-fill');
   const tenMin=10, tenMax=150;
@@ -2087,18 +2203,17 @@ function openModePicker(){
   const sp=document.getElementById('scale-picker');
   if(!sp) return;
   if(sp.classList.contains('visible')){sp.classList.remove('visible');return;}
-  // Anchor above the CoF donut — CoF is at bottom:0 left:0 of app-shell
-  // Donut center is at ~(COF_CX, COF_CY) from cof-wrap bottom-left
-  // Position picker above the wheel
-  const wrap=document.getElementById('cof-wrap');
   const shell=document.getElementById('app-shell');
-  if(wrap&&shell){
-    const wr=wrap.getBoundingClientRect(), sr=shell.getBoundingClientRect();
-    // left-align picker to CoF centre x
-    sp.style.left=(wr.left-sr.left+COF_CX)+'px';
+  const lr=document.getElementById('left-rail');
+  if(shell&&lr){
+    const sr=shell.getBoundingClientRect(), lrr=lr.getBoundingClientRect();
+    sp.style.left=(lrr.right-sr.left)+'px'; // flush with left rail right edge
     sp.style.transform='none';
-    sp.style.bottom=(sr.bottom-wr.top+4)+'px';
+    sp.style.bottom='80px'; // above bottom rail
     sp.style.top='auto';
+    const maxH=sr.height-80-8;
+    sp.style.maxHeight=Math.max(80,maxH)+'px';
+    sp.style.overflowY='auto';
   }
   sp.innerHTML=MODES_ORDER.map(m=>
     m===null?'<div class="sp-sep"></div>'
@@ -2114,24 +2229,18 @@ openHomePicker = function(){
   const hp=document.getElementById('home-picker');
   if(!hp) return;
   if(hp.classList.contains('visible')){hp.classList.remove('visible');return;}
-  const chip=document.getElementById('chip-home');
-  if(chip){
-    const r=chip.getBoundingClientRect();
-    const pr=document.getElementById('app-shell').getBoundingClientRect();
-    // align left edge to CoF centre when CoF visible, else to chip right
-    const wrap=document.getElementById('cof-wrap');
-    if(wrap&&cofVisible){
-      const wr=wrap.getBoundingClientRect();
-      hp.style.left=(wr.left-pr.left+COF_CX)+'px';
-      hp.style.bottom=(pr.bottom-wr.top+4)+'px';
-    } else {
-      hp.style.left=(r.right-pr.left+4)+'px';
-      hp.style.bottom=(pr.bottom-r.bottom)+'px';
-    }
+  const shell=document.getElementById('app-shell');
+  const lr=document.getElementById('left-rail');
+  if(shell&&lr){
+    const sr=shell.getBoundingClientRect(), lrr=lr.getBoundingClientRect();
+    hp.style.left=(lrr.right-sr.left)+'px';
+    hp.style.bottom='80px';
     hp.style.top='auto';
+    hp.style.maxHeight=Math.max(80,sr.height-80-8)+'px';
+    hp.style.overflowY='auto';
   }
   hp.innerHTML=
-    `<div style="font-size:9px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.05em;padding:3px 10px 4px;">Home Node</div>`+
+    `<div style="font-size:9px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px 3px;">Home Node</div>`+
     [1,2,3,4,5,6,7].map(d=>
       `<div class="hp-item${homeNode===d?' on':''}"
          onclick="setHomeNode(${d});closePickers()">${d}</div>`
@@ -2297,6 +2406,24 @@ function _showCapoEndNode(seg, cf){
     lower.innerHTML=`<div class="sb-note" style="color:${col};">${note}</div>`+
       `<div class="sb-hz">${Math.round(segFund)} Hz</div>`+
       `<div class="sb-len">${segLen.toFixed(1)}"</div>`; }
+  // Update top tone strip right panel
+  const _kd=ni.snapped?chromDeg(ni.midi,homeKey):'—';
+  const _inKey=ni.snapped?isInKey(ni.midi):false;
+  const _keyCol=_inKey?'#0F6E56':'rgba(153,60,29,0.6)';
+  const _dst=document.getElementById('nts-right');
+  if(_dst) _dst.innerHTML=
+    `<div style="display:flex;align-items:baseline;gap:4px;line-height:1;">
+       <span style="font-size:18px;font-weight:500;color:${col};">1</span>
+       <span style="font-size:10px;color:#999;">·</span>
+       <span style="font-size:18px;font-weight:500;color:${_keyCol};">${_kd}</span>
+       <span style="font-size:10px;color:#999;">·</span>
+       <span style="font-size:18px;font-weight:500;color:${_keyCol};">${note}</span>
+     </div>
+     <div style="display:flex;align-items:center;gap:4px;margin-top:1px;">
+       <span style="font-size:10px;font-weight:500;color:${col};">${Math.round(segFund)} Hz</span>
+       <span style="font-size:9px;color:#999;">·</span>
+       <span style="font-size:10px;color:#888;">${fmtLen(segLen)}</span>
+     </div>`;
 }
 
 // ── Capo sub-node layer ──────────────────────────────────────────
@@ -2337,6 +2464,10 @@ function updateCapoSubNodes(){
       stroke:lCol,'stroke-width':lIsPri?1.8:1.4,opacity:0.8};
     g.appendChild(mkS('circle',lCa));
     if(lIsPri) g.appendChild(mkS('circle',{cx:SX,cy:lY,r:2.5,fill:lCol,opacity:0.8}));
+    // Home node ring — teal ring when this sub-node is a tonal center
+    if(isTonalCenter(node.ratio)){
+      g.appendChild(mkS('circle',{cx:SX,cy:lY,r:16,fill:'none',stroke:lCol,'stroke-width':2,opacity:0.55}));
+    }
 
     // label (primary only)
     if(lIsPri){
@@ -2353,11 +2484,12 @@ function updateCapoSubNodes(){
       if(_togglePin(pKey, false)){ playTone(lFreq); _showSubNode(node,'lower',lFreq,cf,lY); }
     });
     lHit.addEventListener('mouseenter',()=>{ if(_pinnedFrac!==null&&_pinnedFrac!==node.frac*cf) return; _showSubNode(node,'lower',lFreq,cf,lY); });
-    lHit.addEventListener('mouseleave',()=>{ clearStrip(); if(!_pinnedFrac) { clearRuler(); hideLabel(); } });
+    lHit.addEventListener('mouseleave',()=>{ clearStrip(); if(!_pinnedFrac) hideLabel(); });
     lHit.addEventListener('touchstart',()=>{
       const pKey=node.frac*cf;
       if(_togglePin(pKey, true)){ playTone(lFreq); _showSubNode(node,'lower',lFreq,cf,lY); }
     },{passive:true});
+    lHit.addEventListener('touchend',()=>{ clearStrip(); if(!_pinnedFrac) hideLabel(); },{passive:true});
     lHit.addEventListener('touchend',()=>{ clearStrip(); if(!_pinnedFrac) hideLabel(); },{passive:true});
     g.appendChild(lHit);
 
@@ -2376,6 +2508,10 @@ function updateCapoSubNodes(){
       stroke:uCol,'stroke-width':uIsPri?1.8:1.4,opacity:0.8};
     g.appendChild(mkS('circle',uCa));
     if(uIsPri) g.appendChild(mkS('circle',{cx:SX,cy:uY,r:2.5,fill:uCol,opacity:0.8}));
+    // Home node ring — amber ring when this sub-node is a tonal center
+    if(isTonalCenter(node.ratio)){
+      g.appendChild(mkS('circle',{cx:SX,cy:uY,r:16,fill:'none',stroke:uCol,'stroke-width':2,opacity:0.55}));
+    }
 
     if(uIsPri){
       g.appendChild(mkS('text',{x:SDEG_X,y:uY+uFS*0.38,'font-size':uFS,'font-weight':'500',
@@ -2390,7 +2526,7 @@ function updateCapoSubNodes(){
       if(_togglePin(pKey, false)){ playTone(uFreq); _showSubNode(node,'upper',uFreq,cf,uY); }
     });
     uHit.addEventListener('mouseenter',()=>{ if(_pinnedFrac!==null&&_pinnedFrac!==(cf+node.frac*(1-cf))) return; _showSubNode(node,'upper',uFreq,cf,uY); });
-    uHit.addEventListener('mouseleave',()=>{ clearStrip(); if(!_pinnedFrac) { clearRuler(); hideLabel(); } });
+    uHit.addEventListener('mouseleave',()=>{ clearStrip(); if(!_pinnedFrac) hideLabel(); });
     uHit.addEventListener('touchstart',()=>{
       const pKey=cf+node.frac*(1-cf);
       if(_togglePin(pKey, true)){ playTone(uFreq); _showSubNode(node,'upper',uFreq,cf,uY); }
@@ -2455,6 +2591,28 @@ function _showSubNode(node, seg, freq, cf, diagY){
     upper.innerHTML=`<div class="sb-len">${upperIn}"</div><div class="sb-hz">${uHz} Hz</div><div class="sb-note">${uNote}</div>`; }
   if(lower){ lower.style.flex=String(1-_dotFrac);
     lower.innerHTML=`<div class="sb-note">${lNote}</div><div class="sb-hz">${lHz} Hz</div><div class="sb-len">${lowerIn}"</div>`; }
+  // Update top tone strip right panel
+  const _ni=noteInfo(freq);
+  const _kd=_ni.snapped?chromDeg(_ni.midi,homeKey):'—';
+  const _noteStr=_ni.snapped?_ni.name+_ni.octave:'—';
+  const _inKey=_ni.snapped?isInKey(_ni.midi):false;
+  const _keyCol=_inKey?'#0F6E56':'rgba(153,60,29,0.6)';
+  const _dst=document.getElementById('nts-right');
+  if(_dst) _dst.innerHTML=
+    `<div style="display:flex;align-items:baseline;gap:4px;line-height:1;">
+       <span style="font-size:18px;font-weight:500;color:${col};">${node.label}</span>
+       <span style="font-size:10px;color:#999;">·</span>
+       <span style="font-size:18px;font-weight:500;color:${_keyCol};">${_kd}</span>
+       <span style="font-size:10px;color:#999;">·</span>
+       <span style="font-size:18px;font-weight:500;color:${_keyCol};">${_noteStr}</span>
+     </div>
+     <div style="display:flex;align-items:center;gap:4px;margin-top:1px;">
+       <span style="font-size:10px;font-weight:500;color:${col};">${freq.toFixed(1)} Hz</span>
+       <span style="font-size:9px;color:#999;">·</span>
+       <span style="font-size:10px;color:#1a1a1a;">↑ ${upperIn}"</span>
+       <span style="font-size:9px;color:#999;">·</span>
+       <span style="font-size:10px;color:#888;">${uHz} Hz</span>
+     </div>`;
 }
 
 // ── Capo layer render ─────────────────────────────────────────────
@@ -2957,6 +3115,31 @@ const NODES=[
 // ── Layout constants ──────────────────────────────────────────────
 const SX=480, TY=1310, NY=78, SPX=1232, SVG_W=1380;
 const BR=425, BMW=240, BMR=4;           // pitch bars shifted left to make room for string degree
+
+// ── Chromatic passing-note ticks ──────────────────────────────────
+// One ET semitone above each lower-pitch (higher-frac) node neighbour
+// in the six M2 gaps: nut→str°2, str°4→5, str°6→7 (both octaves).
+const _SEMI=Math.pow(2,-1/12);
+const CHROM_TICKS=[1.0, 3/4, 3/5, 1/2, 3/8, 3/10].map(f=>f*_SEMI);
+
+// Patch render() to populate dyn-chrom-ticks after each full render
+const _render_chromTicks=render;
+render=function(){
+  _render_chromTicks();
+  const ctG=document.getElementById('dyn-chrom-ticks');
+  if(!ctG) return;
+  ctG.innerHTML='';
+  if(nodeView==='capo') return; // sub-node layers fill this space in capo mode
+  const nutY=nutEffY();
+  CHROM_TICKS.forEach(frac=>{
+    const y=nY(frac);
+    if(y<nutY-2||y>TY+2) return; // outside visible string zone
+    ctG.appendChild(mk('line',{
+      x1:SX-7,x2:SX+7,y1:y,y2:y,
+      stroke:GRAY,'stroke-width':'1.5',opacity:'0.65'
+    }));
+  });
+};
 const SDEG_X=438;                        // string degree — fixed, left of string, dark grey bold
 const HOME_X=502, KD_RX=592, NOTE_X=618, INFO_X=680, SEG_X=1060;
 const HP_RX=450, HP_W=230;
@@ -3065,6 +3248,13 @@ function updateNutMarker(){
 
   // Dynamic annotation row travelling with the nut marker
   const ann=document.getElementById('nut-drag-ann');
+  // Do NOT clear ann while a drag is in progress — removing the touched
+  // DOM element mid-sequence causes iOS to stop delivering touchmove events.
+  // Instead, only update the marker's visual position; rebuild ann on drag end.
+  if(nutDragging){
+    // Just reposition existing elements by updating the marker group (already done above).
+    return;
+  }
   ann.innerHTML='';
   const fund=fundFreq();
   const fi=noteInfo(fund);
@@ -3187,8 +3377,11 @@ window.addEventListener('mouseup',()=>{
   nutDragging=false; nutDidDrag=false;
 });
 window.addEventListener('touchend',()=>{
-  if(nutDragging && nutDidDrag) playTone(fundFreq());
-  nutDragging=false; nutDidDrag=false;
+  if(nutDragging){
+    if(nutDidDrag) playTone(fundFreq());
+    nutDragging=false; nutDidDrag=false;
+    render(); // rebuild ann now that drag is done
+  }
 });
 
 // ── Capo drag ─────────────────────────────────────────────────────
@@ -3517,11 +3710,11 @@ function render(){
       if(_pinnedFrac!==null&&_pinnedFrac!==1.0) return;
       showStrip(fund,1.0,nutHomeLabel,nutColor); showLabel(_nutNode);
     });
-    nutHit.addEventListener('mouseleave',()=>{ clearStrip(); if(!_pinnedFrac) clearRuler(); });
+    nutHit.addEventListener('mouseleave',()=>{ clearStrip(); });
     nutHit.addEventListener('touchstart',()=>{
       if(_togglePin(1.0, true)){ playTone(fund); showStrip(fund,1.0,nutHomeLabel,nutColor); showLabel(_nutNode); }
     },{passive:true});
-    nutHit.addEventListener('touchend',()=>{ clearStrip(); clearRuler(); },{passive:true});
+    nutHit.addEventListener('touchend',()=>{ clearStrip(); },{passive:true});
     nutG.appendChild(nutHit);
   }
 
@@ -3594,11 +3787,11 @@ function render(){
       if(_pinnedFrac!==null&&_pinnedFrac!==node.frac) return; // don't override a different pin
       showStrip(freq,node.frac,displayLabel,c.text); showRuler(y,upperIn,lowerIn,node.fs,freq);
     });
-    hitRect.addEventListener('mouseleave',()=>{ clearStrip(); if(!_pinnedFrac) clearRuler(); });
+    hitRect.addEventListener('mouseleave',()=>{ clearStrip(); });
     hitRect.addEventListener('touchstart',()=>{
       if(_togglePin(node.frac, true)){ playTone(freq); showStrip(freq,node.frac,displayLabel,c.text); showRuler(y,upperIn,lowerIn,node.fs,freq); }
     },{passive:true});
-    hitRect.addEventListener('touchend',()=>{ clearStrip(); if(!_pinnedFrac) clearRuler(); },{passive:true});
+    hitRect.addEventListener('touchend',()=>{ clearStrip(); },{passive:true});
     g.appendChild(hitRect);
   });
 }
@@ -3620,6 +3813,9 @@ const inner=document.getElementById('svg-inner');
 let sc=0.38, scMn=0.2, scMx=3, tx=0, ty=0, dragging=false, dsx, dsy, dtx, dty;
 
 function applyT(){
+  if(!isFinite(sc)||sc<=0) sc=0.38; // guard against NaN/Infinity from pinch divide-by-zero
+  if(!isFinite(tx)) tx=0;
+  if(!isFinite(ty)) ty=0;
   inner.style.transform=`translate(${tx}px,${ty}px) scale(${sc})`;
   document.getElementById('zoom-label').textContent=Math.round(sc*100)+'%';
 }
@@ -3762,6 +3958,7 @@ document.addEventListener('touchmove', e=>{
   let el=e.target;
   while(el && el!==document.body){
     if(el.id==='overflow-panel') return; // let overflow panel scroll
+    if(el.id==='readme-panel-body') return; // let readme panel scroll
     el=el.parentElement;
   }
   e.preventDefault();
@@ -3777,6 +3974,360 @@ setTimeout(()=>{
   initBR();
   initCoF();
 },0);
+// ── README panel ──────────────────────────────────────────────────
+
+// Simple markdown → HTML converter (headers, bold, lists, tables, hr)
+function mdToHtml(md){
+  const lines=md.split('\n');
+  let html='', inList=false, inTable=false;
+  const flushList=()=>{ if(inList){html+='</ul>';inList=false;} };
+  const flushTable=()=>{ if(inTable){html+='</table>';inTable=false;} };
+  // Extract {#id} anchor from header text
+  const hdr=(text,tag)=>{
+    const m=text.match(/\{#([^}]+)\}$/);
+    const id=m?` id="${m[1]}"` :'';
+    const clean=m?text.slice(0,text.lastIndexOf('{#')).trim():text;
+    return `<${tag}${id}>${fmt(clean)}</${tag}>`;
+  };
+  lines.forEach(line=>{
+    if(/^### /.test(line)){flushList();flushTable();html+=hdr(line.slice(4),'h3');return;}
+    if(/^## /.test(line)){flushList();flushTable();html+=hdr(line.slice(3),'h2');return;}
+    if(/^# /.test(line)){flushList();flushTable();html+=hdr(line.slice(2),'h2');return;}
+    if(/^\|/.test(line)){
+      flushList();
+      const cells=line.split('|').slice(1,-1).map(c=>c.trim());
+      if(cells.every(c=>/^[-:]+$/.test(c))){return;}
+      if(!inTable){html+='<table>';inTable=true;}
+      const tag=cells.some(c=>c.startsWith('**'))?'th':'td';
+      html+=`<tr>${cells.map(c=>`<${tag}>${fmt(c)}</${tag}>`).join('')}</tr>`;
+      return;
+    }
+    if(/^---/.test(line)){flushList();flushTable();html+='<hr>';return;}
+    if(/^- /.test(line)){
+      flushTable();
+      if(!inList){html+='<ul>';inList=true;}
+      html+=`<li>${fmt(line.slice(2))}</li>`;return;
+    }
+    flushList(); flushTable();
+    if(line.trim()===''){return;}
+    html+=`<p>${fmt(line)}</p>`;
+  });
+  flushList(); flushTable();
+  return html;
+}
+function fmt(s){
+  return s
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>');
+}
+
+const README_FULL_MD=`## Part 1: The Physics of String Vibration {#physics}
+
+### The Fundamental Formula
+
+A vibrating string under tension produces sound. The frequency depends on three physical properties:
+
+**f = (1 / 2L) × √(T / μ)**
+
+- **f** is frequency in Hz (cycles per second)
+- **L** is the speaking length of the string in meters
+- **T** is the tension in Newtons
+- **μ** (mu) is the linear density of the string in kg/m (mass per unit length)
+
+Pitch goes up when tension increases (pull harder = higher note), and pitch goes down when the string gets longer (longer string = lower note).
+
+### Calibration
+
+For this instrument — a 69" plastic-coated aviation cable — the calibration point is G1 (49 Hz) at approximately 5 lbs tension. This gives a linear density of 0.000754 kg/m.
+
+This value is stored as the default in the diagram. With it, the tension slider accurately predicts the pitch you'll hear for any tension setting within the playable range.
+
+### The Harmonic Series
+
+When a string vibrates at its fundamental frequency, it also vibrates at integer multiples simultaneously. These harmonics arise because a string can vibrate in multiple patterns at once — as a single arch (fundamental), two arches (second harmonic), three arches (third harmonic), etc. Each pattern requires a node (a point of zero movement) at a specific position along the string — exactly the points depicted in the diagram.
+
+Touching the string gently at a node point while plucking produces a pure, bell-like flageolet tone.
+
+### Node Positions and Frequency Ratios
+
+Node positions are fractions of the string length. The relationship between position and pitch is inverted: a node at 1/2 the string produces 2/1 (one octave up). A node at 1/3 produces 3/1, at 2/3 produces 3/2, and so on.
+
+The fraction column shows position from the nut. The ratio column shows the frequency ratio produced. These are reciprocals of each other.
+
+### Just Intonation
+
+The harmonic series produces frequency ratios that are simple integer fractions — called just intonation. It differs from equal temperament (12th root of 2 per semitone) used on pianos and guitars. Just intonation produces pure intervals that do not beat when two notes are played together.
+
+The diagram uses just intonation throughout. The snap threshold is 25 cents (100 cents = one semitone).
+
+---
+
+## Part 2: Music Theory Concepts {#theory}
+
+### Scale Degrees
+
+A major scale has seven distinct pitches. Each is assigned a scale degree number: 1 (tonic), 2, 3, 4, 5, 6, 7. The interval pattern in semitones is 2-2-1-2-2-2-1.
+
+The Nashville Number System refers to chords and melody notes by scale degree rather than letter name, making transposition easy. Developed in Nashville in the late 1950s by Neal Matthews Jr. of the Jordanaires, it has spread to country, bluegrass, folk, pop, rock, jazz, and contemporary worship music.
+
+The key° column uses chromatic degree names for notes outside the major scale: ♭2, ♭3, ♯4, ♭6, ♭7.
+
+### Intervals
+
+The intervals produced by the harmonic series nodes (measured from the fundamental):
+
+- 2:1 ratio — octave (8th)
+- 3:2 ratio — perfect fifth
+- 4:3 ratio — perfect fourth
+- 5:4 ratio — major third
+- 5:3 ratio — major sixth
+- 9:8 ratio — major second
+- 15:8 ratio — major seventh
+
+### Interval Inversion
+
+When an interval is inverted, the two intervals add up to 9. A perfect fifth inverted is a perfect fourth (5+4=9). When the 5th node is the tonal center, the fundamental becomes the 4th degree — the structure underlying the circle of fifths.
+
+### The Circle of Fifths
+
+The circle of fifths arranges the 12 major keys where each adjacent key is a perfect fifth apart. Moving clockwise adds one sharp; counterclockwise adds one flat: C – G – D – A – E – B – F# – C# – Ab – Eb – Bb – F.
+
+### Tonal Center and the Home Node
+
+The tonal center is the pitch functioning as "home" in a given passage. The home node is its physical location on the string. Setting the 5th node as home makes D the tonal center when the fundamental is G — and G becomes the 4th of D.
+
+The diagram remaps all degree labels relative to the chosen home node. str° labels never change (fixed physics); home° labels change to show each node's relationship to the designated home.
+
+For any node with ratio R and home node ratio HN: interval = R/HN, reduced to within one octave, then matched against the just intonation degree ratios.
+
+### Modes
+
+A mode is a scale built by treating a different degree of the major scale as the tonal center. No notes change — only where you start counting from.
+
+**1 Ionian** (major) — sequence: 2-2-1-2-2-2-1
+Degrees: 1 2 3 4 5 6 7 — Notes (C): C D E F G A B
+
+| | step 1 | step 2 | step 3 | step 4 | step 5 | step 6 | step 7 |
+|---|---|---|---|---|---|---|---|
+| **interval** | 2 | 2 | 1 | 2 | 2 | 2 | 1 |
+| **degrees** | 1 2 | 2 3 | 3 4 | 4 5 | 5 6 | 6 7 | 7 1 |
+| **notes (C)** | C D | D E | E F | F G | G A | A B | B C |
+
+**2 Dorian** — sequence: 2-1-2-2-2-1-2
+Degrees: 1 2 ♭3 4 5 6 ♭7 — Notes (C): C D E♭ F G A B♭
+
+| | step 1 | step 2 | step 3 | step 4 | step 5 | step 6 | step 7 |
+|---|---|---|---|---|---|---|---|
+| **interval** | 2 | 1 | 2 | 2 | 2 | 1 | 2 |
+| **degrees** | 1 2 | 2 ♭3 | ♭3 4 | 4 5 | 5 6 | 6 ♭7 | ♭7 1 |
+| **notes (C)** | C D | D E♭ | E♭ F | F G | G A | A B♭ | B♭ C |
+
+**3 Phrygian** — sequence: 1-2-2-2-1-2-2
+Degrees: 1 ♭2 ♭3 4 5 ♭6 ♭7 — Notes (C): C D♭ E♭ F G A♭ B♭
+
+| | step 1 | step 2 | step 3 | step 4 | step 5 | step 6 | step 7 |
+|---|---|---|---|---|---|---|---|
+| **interval** | 1 | 2 | 2 | 2 | 1 | 2 | 2 |
+| **degrees** | 1 ♭2 | ♭2 ♭3 | ♭3 4 | 4 5 | 5 ♭6 | ♭6 ♭7 | ♭7 1 |
+| **notes (C)** | C D♭ | D♭ E♭ | E♭ F | F G | G A♭ | A♭ B♭ | B♭ C |
+
+**4 Lydian** — sequence: 2-2-2-1-2-2-1
+Degrees: 1 2 3 ♯4 5 6 7 — Notes (C): C D E F♯ G A B
+
+| | step 1 | step 2 | step 3 | step 4 | step 5 | step 6 | step 7 |
+|---|---|---|---|---|---|---|---|
+| **interval** | 2 | 2 | 2 | 1 | 2 | 2 | 1 |
+| **degrees** | 1 2 | 2 3 | 3 ♯4 | ♯4 5 | 5 6 | 6 7 | 7 1 |
+| **notes (C)** | C D | D E | E F♯ | F♯ G | G A | A B | B C |
+
+**5 Mixolydian** — sequence: 2-2-1-2-2-1-2
+Degrees: 1 2 3 4 5 6 ♭7 — Notes (C): C D E F G A B♭
+
+| | step 1 | step 2 | step 3 | step 4 | step 5 | step 6 | step 7 |
+|---|---|---|---|---|---|---|---|
+| **interval** | 2 | 2 | 1 | 2 | 2 | 1 | 2 |
+| **degrees** | 1 2 | 2 3 | 3 4 | 4 5 | 5 6 | 6 ♭7 | ♭7 1 |
+| **notes (C)** | C D | D E | E F | F G | G A | A B♭ | B♭ C |
+
+**6 Aeolian** (natural minor) — sequence: 2-1-2-2-1-2-2
+Degrees: 1 2 ♭3 4 5 ♭6 ♭7 — Notes (C): C D E♭ F G A♭ B♭
+
+| | step 1 | step 2 | step 3 | step 4 | step 5 | step 6 | step 7 |
+|---|---|---|---|---|---|---|---|
+| **interval** | 2 | 1 | 2 | 2 | 1 | 2 | 2 |
+| **degrees** | 1 2 | 2 ♭3 | ♭3 4 | 4 5 | 5 ♭6 | ♭6 ♭7 | ♭7 1 |
+| **notes (C)** | C D | D E♭ | E♭ F | F G | G A♭ | A♭ B♭ | B♭ C |
+
+**7 Locrian** — sequence: 1-2-2-1-2-2-2
+Degrees: 1 ♭2 ♭3 4 ♭5 ♭6 ♭7 — Notes (C): C D♭ E♭ F G♭ A♭ B♭
+
+| | step 1 | step 2 | step 3 | step 4 | step 5 | step 6 | step 7 |
+|---|---|---|---|---|---|---|---|
+| **interval** | 1 | 2 | 2 | 1 | 2 | 2 | 2 |
+| **degrees** | 1 ♭2 | ♭2 ♭3 | ♭3 4 | 4 ♭5 | ♭5 ♭6 | ♭6 ♭7 | ♭7 1 |
+| **notes (C)** | C D♭ | D♭ E♭ | E♭ F | F G♭ | G♭ A♭ | A♭ B♭ | B♭ C |
+
+### Modified Scales: Harmonic and Melodic Minor
+
+Harmonic and melodic minor are not modes — they are genuinely modified scales with interval sequences that cannot be derived by rotating the major scale pattern.
+
+**Harmonic minor** raises the 7th degree of natural minor, creating a leading tone and a characteristic augmented second (3 semitones) between degrees 6 and 7.
+Sequence: 2-1-2-2-1-3-1 — Degrees: 1 2 ♭3 4 5 ♭6 7 — Notes (C): C D E♭ F G A♭ B
+
+| | step 1 | step 2 | step 3 | step 4 | step 5 | step 6 | step 7 |
+|---|---|---|---|---|---|---|---|
+| **interval** | 2 | 1 | 2 | 2 | 1 | 3 | 1 |
+| **degrees** | 1 2 | 2 ♭3 | ♭3 4 | 4 5 | 5 ♭6 | ♭6 7 | 7 1 |
+| **notes (C)** | C D | D E♭ | E♭ F | F G | G A♭ | A♭ B | B C |
+
+**Melodic minor** raises both the 6th and 7th degrees of natural minor, smoothing the augmented second while keeping the leading tone.
+Sequence: 2-1-2-2-2-2-1 — Degrees: 1 2 ♭3 4 5 6 7 — Notes (C): C D E♭ F G A B
+
+| | step 1 | step 2 | step 3 | step 4 | step 5 | step 6 | step 7 |
+|---|---|---|---|---|---|---|---|
+| **interval** | 2 | 1 | 2 | 2 | 2 | 2 | 1 |
+| **degrees** | 1 2 | 2 ♭3 | ♭3 4 | 4 5 | 5 6 | 6 7 | 7 1 |
+| **notes (C)** | C D | D E♭ | E♭ F | F G | G A | A B | B C |
+
+---
+
+## Part 3: The Washtub Bass in Practice {#instrument}
+
+### Technique
+
+The washtub bass is played by plucking and controlling tension simultaneously. The player holds the pole at an angle against the tub rim and varies the angle — and thus the tension — with one hand while plucking with the other.
+
+Increasing the pole angle away from the body tightens the string, raising the pitch. This is a purely kinesthetic skill with no frets or keys to guide the fingers.
+
+A second method is to pinch the string lightly at a specific node point while plucking, producing a harmonic (flageolet) tone at that frequency. The clearest nodes are typically the midpoint (octave) and the fourth and fifth degree nodes.
+
+### Using Alternate Nuts
+
+When playing in lower keys, the open string at low tension can be floppy and quiet. An alternate nut — a fixed contact point clamped lower on the pole — shortens the speaking length without tying up either hand, improving tone and playability.
+
+The three preset positions (6", 12", 19" offset) are based on the actual positions of alternate nuts on this specific instrument.
+
+### Playing Through Changes
+
+Understanding which nodes correspond to chord tones in any given key — and finding those nodes by feel — is the core technique this diagram supports. The tonal center feature lets you see the diagram from the perspective of the chord currently being played.
+
+---
+
+## Part 4: The String Map Diagram {#app}
+
+### What the Diagram Shows
+
+The vertical line represents the string, with the nut at the top and the tub (bridge) at the bottom, drawn to scale.
+
+Each node is shown as a circle. Size and fill encodes the node type:
+
+- **Large filled circle** — primary node (4th, 5th, or tonic octave)
+- **Small outlined circle** — secondary node
+- **Purple** — home node (tonal center)
+
+### Column Structure (left to right)
+
+- **Pitch bars:** length encodes frequency ratio
+- **str°:** string degree — physics label, never changes
+- **TC°:** tonal center degree — changes with home node setting
+- **key°:** chromatic degree within home key
+- **note:** letter name and octave (within 25 cents)
+- **fraction · ratio · interval:** full physical description
+- **upper | lower:** segment lengths on each side of the node
+
+### Interaction
+
+**Tap/click:** plays the tone and pins the node — shows ruler, sidebar, and tone strip details. Tap again to unpin.
+
+**Drag (nut height view):** drag the purple nut marker to set the effective nut position. Sound plays on release.
+
+**Zoom/pan:** +/− buttons or pinch to zoom; drag the canvas to pan. ↕ fits the full string vertically.
+
+### Colors
+
+- **Green** — in key (diatonic to current home key and mode)
+- **Red/coral** — chromatic (snapped to a pitch but outside the current key)
+- **Grey dashed** — between named pitches (not snapped within 25 cents)
+- **Purple** — home node / tonal center`;
+
+// Anchor map: button key → h2 id attribute value
+const README_ANCHORS={
+  app:'app', instrument:'instrument', physics:'physics', theory:'theory', placeholder:'app'
+};
+const README_TITLES={
+  app:'Part 4 · The String Map App',
+  instrument:'Part 3 · The Washtub Bass',
+  physics:'Part 1 · String Physics',
+  theory:'Part 2 · Music Theory',
+  placeholder:'README'
+};
+
+// Reverse map: anchor id → title
+const README_ANCHOR_TITLES={
+  physics:'Part 1 · String Physics',
+  theory:'Part 2 · Music Theory',
+  instrument:'Part 3 · The Washtub Bass',
+  app:'Part 4 · The String Map App'
+};
+
+let _readmeOpen=false;
+let _readmeRendered=false;
+
+function _updateReadmeTitle(){
+  const body=document.getElementById('readme-panel-body');
+  const title=document.getElementById('readme-panel-title');
+  if(!body||!title) return;
+  // Find the last h2 whose top is at or above the midpoint of the panel
+  const mid=body.scrollTop+body.clientHeight*0.35;
+  const h2s=body.querySelectorAll('h2[id]');
+  let active=null;
+  h2s.forEach(h=>{
+    if(h.offsetTop<=mid) active=h;
+  });
+  if(active && README_ANCHOR_TITLES[active.id]){
+    title.textContent=README_ANCHOR_TITLES[active.id];
+  }
+}
+
+function openReadme(section){
+  const panel=document.getElementById('readme-panel');
+  const body=document.getElementById('readme-panel-body');
+  const title=document.getElementById('readme-panel-title');
+  if(!panel||!body) return;
+  title.textContent=README_TITLES[section]||'README';
+  // Render full doc once, cache it, wire scroll listener
+  if(!_readmeRendered){
+    body.innerHTML=mdToHtml(README_FULL_MD);
+    _readmeRendered=true;
+    body.addEventListener('scroll',_updateReadmeTitle,{passive:true});
+  }
+  panel.classList.add('visible');
+  _readmeOpen=true;
+  // Scroll to anchor
+  const anchorId=README_ANCHORS[section]||'physics';
+  setTimeout(()=>{
+    const target=body.querySelector('#'+anchorId);
+    if(target) target.scrollIntoView({block:'start'});
+    else body.scrollTop=0;
+  },0);
+}
+
+function closeReadme(){
+  const panel=document.getElementById('readme-panel');
+  if(panel) panel.classList.remove('visible');
+  _readmeOpen=false;
+}
+
+// Close readme on outside tap
+document.addEventListener('touchstart',e=>{
+  if(!_readmeOpen) return;
+  const panel=document.getElementById('readme-panel');
+  if(panel&&!panel.contains(e.target)) closeReadme();
+},{passive:true});
+
+
+// ── End README panel ───────────────────────────────────────────────
+
 window.addEventListener('resize',()=>{clamp();applyT();});
 </script>
 </body>
