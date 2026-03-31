@@ -1361,27 +1361,6 @@ function renderNodeViewCtx(view){
   if(view==='full'){
     return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">readme</span></div>
             <div class="br-ctx-row" style="gap:5px;justify-content:center;">
-              <div class="br-readme-btn" onclick="openReadme('app')">
-                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="5" y="2" width="12" height="18" rx="2" stroke="#533AB7" stroke-width="1.4"/>
-                  <line x1="8" y1="7" x2="14" y2="7" stroke="#533AB7" stroke-width="1.2" stroke-linecap="round"/>
-                  <line x1="8" y1="10" x2="14" y2="10" stroke="#533AB7" stroke-width="1.2" stroke-linecap="round"/>
-                  <line x1="8" y1="13" x2="11" y2="13" stroke="#533AB7" stroke-width="1.2" stroke-linecap="round"/>
-                </svg>
-                <div class="br-readme-btn-lbl">app</div>
-              </div>
-              <div class="br-readme-btn" onclick="openReadme('instrument')">
-                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <!-- inverted tub: short, narrow top, wider rim at bottom -->
-                  <path d="M7 17 L15 17 L17 21 L5 21 Z" stroke="#533AB7" stroke-width="1.3" stroke-linejoin="round"/>
-                  <line x1="4.5" y1="21" x2="17.5" y2="21" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/>
-                  <!-- vertical pole from top-left of tub -->
-                  <line x1="7" y1="17" x2="7" y2="2" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/>
-                  <!-- diagonal string from pole top to tub center top -->
-                  <line x1="7" y1="2" x2="11" y2="17" stroke="#533AB7" stroke-width="1" stroke-linecap="round"/>
-                </svg>
-                <div class="br-readme-btn-lbl">instrument</div>
-              </div>
               <div class="br-readme-btn" onclick="openReadme('physics')">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M2 11 C4 11 5 5 7 5 C9 5 10 17 12 17 C14 17 15 11 17 11 C18.5 11 19.5 8 20 8" stroke="#533AB7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1390,16 +1369,31 @@ function renderNodeViewCtx(view){
               </div>
               <div class="br-readme-btn" onclick="openReadme('theory')">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <!-- note stems -->
                   <line x1="8" y1="5" x2="8" y2="14" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round"/>
                   <line x1="14" y1="3" x2="14" y2="12" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round"/>
-                  <!-- beam -->
                   <line x1="8" y1="5" x2="14" y2="3" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round"/>
-                  <!-- note heads -->
                   <ellipse cx="7" cy="14.5" rx="2.5" ry="1.8" transform="rotate(-15 7 14.5)" fill="#533AB7"/>
                   <ellipse cx="13" cy="12.5" rx="2.5" ry="1.8" transform="rotate(-15 13 12.5)" fill="#533AB7"/>
                 </svg>
                 <div class="br-readme-btn-lbl">theory</div>
+              </div>
+              <div class="br-readme-btn" onclick="openReadme('instrument')">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7 17 L15 17 L17 21 L5 21 Z" stroke="#533AB7" stroke-width="1.3" stroke-linejoin="round"/>
+                  <line x1="4.5" y1="21" x2="17.5" y2="21" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/>
+                  <line x1="7" y1="17" x2="7" y2="2" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/>
+                  <line x1="7" y1="2" x2="11" y2="17" stroke="#533AB7" stroke-width="1" stroke-linecap="round"/>
+                </svg>
+                <div class="br-readme-btn-lbl">instrument</div>
+              </div>
+              <div class="br-readme-btn" onclick="openReadme('app')">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="5" y="2" width="12" height="18" rx="2" stroke="#533AB7" stroke-width="1.4"/>
+                  <line x1="8" y1="7" x2="14" y2="7" stroke="#533AB7" stroke-width="1.2" stroke-linecap="round"/>
+                  <line x1="8" y1="10" x2="14" y2="10" stroke="#533AB7" stroke-width="1.2" stroke-linecap="round"/>
+                  <line x1="8" y1="13" x2="11" y2="13" stroke="#533AB7" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+                <div class="br-readme-btn-lbl">app</div>
               </div>
             </div>
             <div class="br-ctx-row"></div>`;
@@ -4020,45 +4014,60 @@ function fmt(s){
     .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
     .replace(/\*(.+?)\*/g,'<em>$1</em>');
 }
+const README_FULL_MD=`# Washtub Bass: Music Theory, Physics, and the String Map
 
-const README_FULL_MD=`## Part 1: The Physics of String Vibration {#physics}
+*A reference document covering the physics of string vibration, music theory concepts as they apply to the washtub bass, and how all of it is depicted in the interactive string map diagram. Updated to reflect v5 of the app.*
+
+---
+
+## Part 1: The Physics of String Vibration {#physics}
 
 ### The Fundamental Formula
 
-A vibrating string under tension produces sound. The frequency depends on three physical properties:
+A vibrating string under tension produces sound. The frequency it produces depends on three physical properties:
 
 **f = (1 / 2L) × √(T / μ)**
+
+Where:
 
 - **f** is frequency in Hz (cycles per second)
 - **L** is the speaking length of the string in meters
 - **T** is the tension in Newtons
 - **μ** (mu) is the linear density of the string in kg/m (mass per unit length)
 
-Pitch goes up when tension increases (pull harder = higher note), and pitch goes down when the string gets longer (longer string = lower note).
+This formula tells us something immediately useful: pitch goes up when tension increases (pull harder = higher note), and pitch goes down when the string gets longer (longer string = lower note). It also tells us that a heavier string (higher μ) produces lower pitches at the same tension and length.
+
+Solving for tension given a target frequency: **T = (2 × L × f)² × μ**. This is what the app's Tune button uses to calculate the tension needed to bring the home node to the pitch of the selected key.
 
 ### Calibration
 
-For this instrument — a 69" plastic-coated aviation cable — the calibration point is G1 (49 Hz) at approximately 5 lbs tension. This gives a linear density of 0.000754 kg/m.
+For this specific instrument — a 69" plastic-coated aviation cable — the calibration point is G1 (49 Hz) at approximately 5 lbs tension. Using the formula in reverse (solving for μ), we get a linear density of 0.000754 kg/m.
 
-This value is stored as the default in the diagram. With it, the tension slider accurately predicts the pitch you'll hear for any tension setting within the playable range.
+This value is stored as the default in the app. With it, the tension slider and left-rail display accurately predict the pitch you'll hear for any tension setting within the playable range.
 
 ### The Harmonic Series
 
-When a string vibrates at its fundamental frequency, it also vibrates at integer multiples simultaneously. These harmonics arise because a string can vibrate in multiple patterns at once — as a single arch (fundamental), two arches (second harmonic), three arches (third harmonic), etc. Each pattern requires a node (a point of zero movement) at a specific position along the string — exactly the points depicted in the diagram.
+When a string vibrates at its fundamental frequency, it also vibrates at integer multiples of that frequency simultaneously. These are called harmonics (or partials). The first harmonic is the fundamental itself, the second harmonic is twice the frequency (one octave up), the third is three times the frequency, and so on.
 
-Touching the string gently at a node point while plucking produces a pure, bell-like flageolet tone.
+These harmonics arise because a string can vibrate in multiple patterns at once — as a single arch (fundamental), two arches (second harmonic), three arches (third harmonic), etc. Each pattern requires a node (a point of zero movement) at a specific position along the string.
+
+The positions of these nodes are exactly the points depicted in the string map diagram. Touching the string gently at a node point while plucking it suppresses all harmonics except those that also have a node at that point, producing a pure, bell-like tone called a harmonic or flageolet tone. On a washtub bass, you can produce these tones by lightly touching the string at the correct position while plucking.
 
 ### Node Positions and Frequency Ratios
 
-Node positions are fractions of the string length. The relationship between position and pitch is inverted: a node at 1/2 the string produces 2/1 (one octave up). A node at 1/3 produces 3/1, at 2/3 produces 3/2, and so on.
+The node positions are simply fractions of the string length. The relationship between position and pitch is inverted: a node at 1/2 the string length produces a frequency of 2/1 (twice the fundamental, one octave up). A node at 1/3 produces 3/1, at 2/3 produces 3/2, and so on.
 
-The fraction column shows position from the nut. The ratio column shows the frequency ratio produced. These are reciprocals of each other.
+This inversion is because the speaking length below the node (toward the tub) determines the pitch. If the node is at the 2/3 position from the nut, the lower segment is 2/3 of the full string — and a string 2/3 as long vibrates at 3/2 times the frequency (the ratio inverts).
+
+The diagram shows this explicitly: the fraction column (e.g. "2/3") shows the position of the node from the nut as a fraction of the full string, while the ratio column (e.g. "3:2") shows the frequency ratio of the pitch produced. These are reciprocals of each other.
 
 ### Just Intonation
 
-The harmonic series produces frequency ratios that are simple integer fractions — called just intonation. It differs from equal temperament (12th root of 2 per semitone) used on pianos and guitars. Just intonation produces pure intervals that do not beat when two notes are played together.
+The node positions in the harmonic series produce frequency ratios that are simple integer fractions. This system of tuning by exact integer ratios is called just intonation. It differs slightly from the equal temperament used in modern pianos and guitars, where every semitone is exactly the 12th root of 2 (approximately 1.0595).
 
-The diagram uses just intonation throughout. The snap threshold is 25 cents (100 cents = one semitone).
+Just intonation produces intervals that are physically "pure" — they do not beat (produce a warbling oscillation) when two notes are played together. The washtub bass, like other instruments that use harmonics directly, naturally produces just intonation pitches. This is one reason the instrument sounds resonant and rich when played in tune.
+
+The diagram uses just intonation ratios throughout. The snap threshold (25 cents, where 100 cents = one semitone) determines whether a node is close enough to a named pitch to be labeled with a note name and scale degree.
 
 ---
 
@@ -4066,15 +4075,17 @@ The diagram uses just intonation throughout. The snap threshold is 25 cents (100
 
 ### Scale Degrees
 
-A major scale has seven distinct pitches. Each is assigned a scale degree number: 1 (tonic), 2, 3, 4, 5, 6, 7. The interval pattern in semitones is 2-2-1-2-2-2-1.
+Western music organizes pitches into scales. A major scale has seven distinct pitches (plus the octave, which repeats the first). Each pitch is assigned a scale degree number: 1 (the root or tonic), 2, 3, 4, 5, 6, 7, and back to 1 an octave up.
 
-The Nashville Number System refers to chords and melody notes by scale degree rather than letter name, making transposition easy. Developed in Nashville in the late 1950s by Neal Matthews Jr. of the Jordanaires, it has spread to country, bluegrass, folk, pop, rock, jazz, and contemporary worship music.
+The interval pattern of a major scale (in semitones) is 2-2-1-2-2-2-1 — two whole steps, a half step, three whole steps, and a half step. This pattern is what gives each scale degree its character: the half step between degrees 3 and 4 is why the 4th feels like it wants to resolve back down, and the half step between 7 and 1 is what gives the 7th its strong pull toward the tonic.
 
-The key° column uses chromatic degree names for notes outside the major scale: ♭2, ♭3, ♯4, ♭6, ♭7.
+The Nashville Number System refers to chords and melody notes by their scale degree number rather than their letter name, making it easy to transpose a song to any key. Developed in Nashville in the late 1950s by Neal Matthews Jr. of the Jordanaires, the system has spread well beyond its origins to genres including country, bluegrass, folk, pop, rock, jazz, and contemporary worship music.
+
+The diagram uses scale degrees throughout. The **key°** column shows each node's degree within the current home key, using chromatic degree names for notes outside the major scale: ♭2, ♭3, ♯4, ♭6, ♭7 for the five chromatic tones between diatonic degrees.
 
 ### Intervals
 
-The intervals produced by the harmonic series nodes (measured from the fundamental):
+An interval is the distance in pitch between two notes. The intervals produced by the harmonic series nodes (measured from the fundamental) are:
 
 - 2:1 ratio — octave (8th)
 - 3:2 ratio — perfect fifth
@@ -4084,27 +4095,56 @@ The intervals produced by the harmonic series nodes (measured from the fundament
 - 9:8 ratio — major second
 - 15:8 ratio — major seventh
 
+These are all consonant intervals — they occur naturally in the harmonic series and sound stable and pleasing. The washtub bass's harmonic node positions are therefore a naturally consonant set of pitches, spanning about two octaves of a major scale.
+
 ### Interval Inversion
 
-When an interval is inverted, the two intervals add up to 9. A perfect fifth inverted is a perfect fourth (5+4=9). When the 5th node is the tonal center, the fundamental becomes the 4th degree — the structure underlying the circle of fifths.
+When an interval is inverted — flipped so the lower note becomes the higher note — it produces a complementary interval. The rule is: the two intervals always add up to 9 (for simple intervals within an octave).
+
+The most important inversion for washtub bass is: a perfect fifth inverted is a perfect fourth (5 + 4 = 9). This means that the 5th node, which is a perfect fifth above the fundamental, is also a perfect fourth below the next octave of the tonic. When we set the 5th node as the home node, the fundamental becomes the 4th degree of the new key, because the interval from the 5th down to the 1st is a fourth.
+
+A practical example: if you set your home node to D (the 5th of G major), then G becomes the 4th of D. This is not coincidental — it is the fundamental structure underlying the circle of fifths.
 
 ### The Circle of Fifths
 
-The circle of fifths arranges the 12 major keys where each adjacent key is a perfect fifth apart. Moving clockwise adds one sharp; counterclockwise adds one flat: C – G – D – A – E – B – F# – C# – Ab – Eb – Bb – F.
+The circle of fifths arranges the 12 major keys in a cycle where each adjacent key is a perfect fifth apart. Moving clockwise adds one sharp to the key signature; moving counterclockwise adds one flat. The circle is: C – G – D – A – E – B – F# – C# – Ab – Eb – Bb – F – (back to C).
+
+Keys that are adjacent on the circle share six of their seven scale tones, making them closely related harmonically. The key selector in the app (accessible by tapping the key/scale chip on the left rail, which opens the Circle of Fifths wheel) is arranged in circle of fifths order to reflect these relationships visually. Spinning the wheel snaps to the nearest key and updates the diagram immediately.
 
 ### Tonal Center and the Home Node
 
-The tonal center is the pitch functioning as "home" in a given passage. The home node is its physical location on the string. Setting the 5th node as home makes D the tonal center when the fundamental is G — and G becomes the 4th of D.
+The tonal center is the pitch that functions as "home" in a given musical passage — the root of whatever scale or mode is being played. In Western music, the tonal center is most often the root of the key, but modes and various musical traditions treat different degrees as the center of gravity.
 
-The diagram remaps all degree labels relative to the chosen home node. str° labels never change (fixed physics); home° labels change to show each node's relationship to the designated home.
+On the washtub bass, a practical question arises from this concept: which node on the string is currently functioning as the tonal center? This is what the home node setting addresses. The home node is the physical string node that the player designates as the tonal center for the scale or mode they are playing in. These are two distinct but related ideas — the tonal center is a musical concept, and the home node is its physical location on the string.
 
-For any node with ratio R and home node ratio HN: interval = R/HN, reduced to within one octave, then matched against the just intonation degree ratios.
+When the home node is the fundamental (the default), the open string pitch is the tonal center and the diagram labels everything relative to that. But the open string is not always the most prominent or useful pitch. A player in the key of D, for example, might be playing where the 5th harmonic node sounds D — in that case, setting the home node to the 5th means D becomes the tonal center even though the fundamental is G.
+
+The diagram remaps all degree labels relative to the chosen home node. The physical string degrees (**str°**) never change — they reflect the harmonic physics of the string and are shown in dark grey at the left of the string. The **home°** labels (shown in color immediately to the right of the string) change to show each node's relationship to the designated home node.
+
+### The Home Node Mapping Algorithm
+
+For any node with frequency ratio R relative to the fundamental, and a home node with ratio HN:
+
+**interval = R / HN**
+
+This interval is then reduced to within one octave (repeatedly dividing or multiplying by 2 until it falls between 1 and 2), and matched against the known just intonation ratios for the seven scale degrees [1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8].
+
+Example with home node = 5th node (ratio 3/2):
+
+- Fundamental (R=1): 1 ÷ 3/2 = 2/3 → ×2 → 4/3 → matches perfect fourth → degree 4
+- Octave node (R=2): 2 ÷ 3/2 = 4/3 → matches perfect fourth → degree 4 (one octave up from fundamental)
+- 5th node (R=3/2): 3/2 ÷ 3/2 = 1 → matches unison → degree 1 (the new tonic)
+- Downstring 5th (R=3): 3 ÷ 3/2 = 2 → ÷2 → 1 → degree 1 (two octaves above new tonic)
 
 ### Modes
 
-A mode is a scale built by treating a different degree of the major scale as the tonal center. No notes change — only where you start counting from.
+A mode is a scale built by treating a different degree of the major scale as the tonal center. The key insight is that no notes change — only where you start counting from. The major scale has the interval sequence 2-2-1-2-2-2-1 (in semitones). Every mode is that same sequence read starting from a different position, wrapping around when the end is reached. The resulting sequence has a distinct intervallic character, which is what gives each mode its unique sound.
 
-**1 Ionian** (major) — sequence: 2-2-1-2-2-2-1
+The conventional name for a mode is the root note followed by the mode name — for example, D Dorian or G Mixolydian. The root note is the tonal center of that mode: the note that functions as home, not the root of the parent major scale.
+
+The seven modes, their parent degree, interval sequence, numeric degree spelling relative to the mode root, and letter spelling in C:
+
+**1 Ionian** (major) — built on degree 1 — sequence: 2-2-1-2-2-2-1
 Degrees: 1 2 3 4 5 6 7 — Notes (C): C D E F G A B
 
 | | step 1 | step 2 | step 3 | step 4 | step 5 | step 6 | step 7 |
@@ -4113,7 +4153,7 @@ Degrees: 1 2 3 4 5 6 7 — Notes (C): C D E F G A B
 | **degrees** | 1 2 | 2 3 | 3 4 | 4 5 | 5 6 | 6 7 | 7 1 |
 | **notes (C)** | C D | D E | E F | F G | G A | A B | B C |
 
-**2 Dorian** — sequence: 2-1-2-2-2-1-2
+**2 Dorian** — built on degree 2 — sequence: 2-1-2-2-2-1-2
 Degrees: 1 2 ♭3 4 5 6 ♭7 — Notes (C): C D E♭ F G A B♭
 
 | | step 1 | step 2 | step 3 | step 4 | step 5 | step 6 | step 7 |
@@ -4122,7 +4162,7 @@ Degrees: 1 2 ♭3 4 5 6 ♭7 — Notes (C): C D E♭ F G A B♭
 | **degrees** | 1 2 | 2 ♭3 | ♭3 4 | 4 5 | 5 6 | 6 ♭7 | ♭7 1 |
 | **notes (C)** | C D | D E♭ | E♭ F | F G | G A | A B♭ | B♭ C |
 
-**3 Phrygian** — sequence: 1-2-2-2-1-2-2
+**3 Phrygian** — built on degree 3 — sequence: 1-2-2-2-1-2-2
 Degrees: 1 ♭2 ♭3 4 5 ♭6 ♭7 — Notes (C): C D♭ E♭ F G A♭ B♭
 
 | | step 1 | step 2 | step 3 | step 4 | step 5 | step 6 | step 7 |
@@ -4131,7 +4171,7 @@ Degrees: 1 ♭2 ♭3 4 5 ♭6 ♭7 — Notes (C): C D♭ E♭ F G A♭ B♭
 | **degrees** | 1 ♭2 | ♭2 ♭3 | ♭3 4 | 4 5 | 5 ♭6 | ♭6 ♭7 | ♭7 1 |
 | **notes (C)** | C D♭ | D♭ E♭ | E♭ F | F G | G A♭ | A♭ B♭ | B♭ C |
 
-**4 Lydian** — sequence: 2-2-2-1-2-2-1
+**4 Lydian** — built on degree 4 — sequence: 2-2-2-1-2-2-1
 Degrees: 1 2 3 ♯4 5 6 7 — Notes (C): C D E F♯ G A B
 
 | | step 1 | step 2 | step 3 | step 4 | step 5 | step 6 | step 7 |
@@ -4140,7 +4180,7 @@ Degrees: 1 2 3 ♯4 5 6 7 — Notes (C): C D E F♯ G A B
 | **degrees** | 1 2 | 2 3 | 3 ♯4 | ♯4 5 | 5 6 | 6 7 | 7 1 |
 | **notes (C)** | C D | D E | E F♯ | F♯ G | G A | A B | B C |
 
-**5 Mixolydian** — sequence: 2-2-1-2-2-1-2
+**5 Mixolydian** — built on degree 5 — sequence: 2-2-1-2-2-1-2
 Degrees: 1 2 3 4 5 6 ♭7 — Notes (C): C D E F G A B♭
 
 | | step 1 | step 2 | step 3 | step 4 | step 5 | step 6 | step 7 |
@@ -4149,7 +4189,7 @@ Degrees: 1 2 3 4 5 6 ♭7 — Notes (C): C D E F G A B♭
 | **degrees** | 1 2 | 2 3 | 3 4 | 4 5 | 5 6 | 6 ♭7 | ♭7 1 |
 | **notes (C)** | C D | D E | E F | F G | G A | A B♭ | B♭ C |
 
-**6 Aeolian** (natural minor) — sequence: 2-1-2-2-1-2-2
+**6 Aeolian** (natural minor) — built on degree 6 — sequence: 2-1-2-2-1-2-2
 Degrees: 1 2 ♭3 4 5 ♭6 ♭7 — Notes (C): C D E♭ F G A♭ B♭
 
 | | step 1 | step 2 | step 3 | step 4 | step 5 | step 6 | step 7 |
@@ -4158,7 +4198,7 @@ Degrees: 1 2 ♭3 4 5 ♭6 ♭7 — Notes (C): C D E♭ F G A♭ B♭
 | **degrees** | 1 2 | 2 ♭3 | ♭3 4 | 4 5 | 5 ♭6 | ♭6 ♭7 | ♭7 1 |
 | **notes (C)** | C D | D E♭ | E♭ F | F G | G A♭ | A♭ B♭ | B♭ C |
 
-**7 Locrian** — sequence: 1-2-2-1-2-2-2
+**7 Locrian** — built on degree 7 — sequence: 1-2-2-1-2-2-2
 Degrees: 1 ♭2 ♭3 4 ♭5 ♭6 ♭7 — Notes (C): C D♭ E♭ F G♭ A♭ B♭
 
 | | step 1 | step 2 | step 3 | step 4 | step 5 | step 6 | step 7 |
@@ -4167,12 +4207,16 @@ Degrees: 1 ♭2 ♭3 4 ♭5 ♭6 ♭7 — Notes (C): C D♭ E♭ F G♭ A♭ B�
 | **degrees** | 1 ♭2 | ♭2 ♭3 | ♭3 4 | 4 ♭5 | ♭5 ♭6 | ♭6 ♭7 | ♭7 1 |
 | **notes (C)** | C D♭ | D♭ E♭ | E♭ F | F G♭ | G♭ A♭ | A♭ B♭ | B♭ C |
 
+To find the parent major key for any mode: for Dorian, go down a whole step (D Dorian → C major); for Aeolian, go up a minor third (C Aeolian → E♭ major); and so on. But in practice, the most useful way to think about modes is as independent scales with their own root, rather than as derivatives of a parent key.
+
 ### Modified Scales: Harmonic and Melodic Minor
 
-Harmonic and melodic minor are not modes — they are genuinely modified scales with interval sequences that cannot be derived by rotating the major scale pattern.
+Harmonic and melodic minor are not modes in the classical sense. A mode is a rotation of an existing sequence — the same seven intervals rearranged. The harmonic and melodic minor scales are genuinely modified: they raise one or more degrees of the natural minor (Aeolian) scale, producing interval sequences that cannot be derived by rotating the major scale pattern. They are their own scales.
 
-**Harmonic minor** raises the 7th degree of natural minor, creating a leading tone and a characteristic augmented second (3 semitones) between degrees 6 and 7.
-Sequence: 2-1-2-2-1-3-1 — Degrees: 1 2 ♭3 4 5 ♭6 7 — Notes (C): C D E♭ F G A♭ B
+**Harmonic minor** raises the 7th degree of natural minor by a semitone, creating a leading tone that pulls strongly toward the root. This produces the characteristic augmented second (3 semitones) between degrees 6 and 7, which gives the scale its distinctive, slightly exotic sound.
+
+Sequence: 2-1-2-2-1-3-1
+Degrees: 1 2 ♭3 4 5 ♭6 7 — Notes (C): C D E♭ F G A♭ B
 
 | | step 1 | step 2 | step 3 | step 4 | step 5 | step 6 | step 7 |
 |---|---|---|---|---|---|---|---|
@@ -4180,8 +4224,10 @@ Sequence: 2-1-2-2-1-3-1 — Degrees: 1 2 ♭3 4 5 ♭6 7 — Notes (C): C D E♭
 | **degrees** | 1 2 | 2 ♭3 | ♭3 4 | 4 5 | 5 ♭6 | ♭6 7 | 7 1 |
 | **notes (C)** | C D | D E♭ | E♭ F | F G | G A♭ | A♭ B | B C |
 
-**Melodic minor** raises both the 6th and 7th degrees of natural minor, smoothing the augmented second while keeping the leading tone.
-Sequence: 2-1-2-2-2-2-1 — Degrees: 1 2 ♭3 4 5 6 7 — Notes (C): C D E♭ F G A B
+**Melodic minor** raises both the 6th and 7th degrees of natural minor (ascending form), smoothing out the augmented second of the harmonic minor while still providing a leading tone. It has a bright, slightly ambiguous quality that sits between minor and major.
+
+Sequence: 2-1-2-2-2-2-1
+Degrees: 1 2 ♭3 4 5 6 7 — Notes (C): C D E♭ F G A B
 
 | | step 1 | step 2 | step 3 | step 4 | step 5 | step 6 | step 7 |
 |---|---|---|---|---|---|---|---|
@@ -4189,77 +4235,196 @@ Sequence: 2-1-2-2-2-2-1 — Degrees: 1 2 ♭3 4 5 6 7 — Notes (C): C D E♭ F 
 | **degrees** | 1 2 | 2 ♭3 | ♭3 4 | 4 5 | 5 6 | 6 7 | 7 1 |
 | **notes (C)** | C D | D E♭ | E♭ F | F G | G A | A B | B C |
 
+In classical theory, melodic minor uses different notes ascending and descending (reverting to natural minor on the way down). In jazz and contemporary practice, the ascending form is used in both directions and treated as a standalone scale.
+
+### Modes and the Home Node Together
+
+The mode and home node settings work independently but complement each other. The **mode** determines which pitches are in key (diatonic) and which are chromatic — this governs the color coding in the diagram (green for in-key, red/coral for chromatic). The **home node** determines how degree numbers are assigned to each node — this governs the home° column labels.
+
+A natural starting point is home node = fundamental, mode = Ionian. This gives a standard major key view with the open string as the tonic. But many useful combinations exist:
+
+- Home node = 5th, mode = Mixolydian: the 5th node becomes degree 1 of a Mixolydian scale — useful when playing in a key whose root lies at the 5th harmonic node.
+- Home node = fundamental, mode = Dorian: the open string is degree 1 of a Dorian scale — the full string is now mapped as a minor context with a raised 6th.
+- Home node = 4th, mode = Ionian: the 4th node becomes the tonic, and the key° coloring reflects the major scale built on that pitch.
+
+In all cases, the str° column is unchanged — it is always the physics-grounded harmonic label. Only the home° labels and key° colors respond to these settings.
+
 ---
 
 ## Part 3: The Washtub Bass in Practice {#instrument}
 
-### Technique
+### The Instrument
 
-The washtub bass is played by plucking and controlling tension simultaneously. The player holds the pole at an angle against the tub rim and varies the angle — and thus the tension — with one hand while plucking with the other.
+The washtub bass consists of an inverted metal washtub (the resonating body, acting as the bridge for the lower end of the string), a wooden pole braced against the rim of the tub, and a single string running from the tub up to the top of the pole. The flat bottom of the inverted tub faces up, and the string attaches there; the open rim rests on the ground.
 
-Increasing the pole angle away from the body tightens the string, raising the pitch. This is a purely kinesthetic skill with no frets or keys to guide the fingers.
+The instrument is played by plucking the string with one hand while the other controls the pole. Changing the angle of the pole against the tub rim changes the tension of the string, and therefore its pitch.
 
-A second method is to pinch the string lightly at a specific node point while plucking, producing a harmonic (flageolet) tone at that frequency. The clearest nodes are typically the midpoint (octave) and the fourth and fifth degree nodes.
+### Tension-Based Playing
 
-### Using Alternate Nuts
+Increasing the pole angle away from the body tightens the string, raising the pitch. The player must develop the physical sense of where each interval lives in terms of pole angle and tension, which is challenging because it is a purely kinesthetic skill with no frets or keys to guide the fingers.
 
-When playing in lower keys, the open string at low tension can be floppy and quiet. An alternate nut — a fixed contact point clamped lower on the pole — shortens the speaking length without tying up either hand, improving tone and playability.
+The app's tension slider and left-rail display show the fundamental frequency in real time, letting you explore the relationship between tension and pitch before developing it by ear and feel.
 
-The three preset positions (6", 12", 19" offset) are based on the actual positions of alternate nuts on this specific instrument.
+### Node Pinching (Harmonics)
+
+A second method for producing distinct pitches is to pinch the string lightly at a specific point while plucking. When the string is touched at one of its vibrational nodes — the same points mapped in the string diagram — it vibrates in a higher mode, producing a harmonic or flageolet tone at the corresponding frequency.
+
+In practice, not all nodes produce equally clear tones. The clearest are typically:
+
+- The midpoint (the octave of the fundamental) — the strongest and most reliable harmonic
+- The 1/3 and 2/3 positions (perfect fifth above the octave and perfect fifth above the fundamental) — also quite reliable
+- The 3/4 and 1/4 positions (perfect fourth nodes) — usually good
+- The 3/5, 4/5, and other ratio positions — variable; clarity depends on the instrument and setup
+
+Node pinching and tension control complement each other. Tension shifts the fundamental and everything built on it. Node pinching produces fixed harmonic intervals relative to whatever the fundamental currently is at the moment of the pluck. The two methods can be combined: set the tension to a desired pitch area, then use node pinching to access the consonant harmonics at and around that pitch level.
+
+### Using Alternate Nuts (Nut Height View)
+
+When playing in lower keys, the open string at low tension can be floppy and quiet, producing a dull, indistinct tone. Shortening the speaking length of the string improves tone and playability by raising the fundamental at the same tension, making the string more taut and resonant.
+
+One way to shorten the speaking length on the fly is to hold the string against the pole with the fretting hand — but this keeps that hand occupied and precludes using it for node pinching. A better solution is an **alternate nut**: a fixed contact point (a clamp, knot, or wrap) at a lower position on the pole that shortens the speaking length without tying up either hand.
+
+Wrapping the string around an alternate nut positioned lower on the pole shortens the speaking length, increasing the fundamental frequency at the same tension. All the harmonic nodes compress into the shorter speaking length; their proportional positions are unchanged, but their physical positions on the string shift upward toward the pole.
+
+The app's **nut height view** depicts this. A draggable purple marker represents the effective nut. Moving it down the string (increasing the offset from the main nut) compresses all the harmonic nodes into the shorter speaking length. The physics recalculates automatically — all frequencies, fractions, and intervals remain accurate for the new speaking length. Three preset positions (6", 12", 19" offset) are saved in the app corresponding to the actual alternate nut positions on this specific instrument.
+
+**Tuning with alternate nuts:** the Tune button always targets the home node. When an alternate nut is active, it calculates the tension needed to bring the home node to the selected key root within the shorter speaking length. This means a given key can often be reached at higher tension (and thus better string feel) using an alternate nut than with the full string length.
+
+### Capo Mode: Two-Voice Playing
+
+The capo view represents a technique where the string is stopped at an intermediate point — a capo position — dividing it into two independently resonating segments: an upper segment (from the capo to the nut) and a lower segment (from the capo to the tub). Each segment can be plucked to produce its own pitch; the two pitches together form a specific harmonic interval.
+
+The capo position is chosen so that one segment produces the fundamental of the current tension setting (the "1" of the interval), and the other segment produces the interval note above it. For example, the perfect fifth capo position places the capo at 2/5 of the string length from the tub: the lower segment (2/5 of the string) produces a perfect fifth above the fundamental, and the upper segment (3/5) produces a perfect fourth above the fundamental — which is the octave of the original fundamental.
+
+The app's capo view shows both segment layers overlaid on the main string:
+
+- **Lower segment** (tub to capo) — shown in teal: all the harmonic nodes of the lower segment, calculated relative to the lower segment's length.
+- **Upper segment** (capo to nut) — shown in amber: all the harmonic nodes of the upper segment, calculated relative to the upper segment's length.
+
+Available capo intervals: minor 3rd, major 3rd, perfect 4th, perfect 5th, minor 6th, major 6th, and octave. The capo marker is draggable along the string and snaps to the nearest available interval position.
+
+Tapping a sub-node in capo mode plays its tone and shows its details — frequency, note name, and its position within its segment — in the tone strip. Tapping the capo handle plays the lower segment's fundamental. Tapping the nut row in capo mode plays the upper segment's fundamental.
 
 ### Playing Through Changes
 
-Understanding which nodes correspond to chord tones in any given key — and finding those nodes by feel — is the core technique this diagram supports. The tonal center feature lets you see the diagram from the perspective of the chord currently being played.
+A key challenge in playing washtub bass is navigating chord changes — keeping appropriate notes as the harmonic environment shifts. The harmonic nodes provide a useful framework: because they are all drawn from the natural harmonic series, they form a naturally consonant set of pitches that work well together and against a chord.
+
+Understanding which nodes correspond to chord tones in any given key — and being able to find those nodes by feel — is the core technique the diagram is designed to support.
+
+The **home node** setting is particularly useful here. Rather than always viewing the diagram from the perspective of the fundamental, you can set the home node to whichever node corresponds to the root of the chord currently being played. The degree labels in the home° column immediately reflect that new perspective, showing you the scale structure relative to the current chord root.
+
+In practice: if a song moves from G to D and back, you might keep the home node at the fundamental for the G section (where G is the open string), then switch to home node = 5th for the D section (where D is the 5th harmonic node). The diagram redraws its degree labels accordingly, and the Tune button can set tension so that the home node hits D in the right octave.
+
+The mode selector adds another layer. If the chord being played functions as a Mixolydian chord (common in rock and blues), selecting Mixolydian mode while the home node is on that chord's root will correctly show the ♭7 as an in-key (green) degree rather than a chromatic one.
 
 ---
 
 ## Part 4: The String Map Diagram {#app}
 
-### What the Diagram Shows
+### Overview
 
-The vertical line represents the string, with the nut at the top and the tub (bridge) at the bottom, drawn to scale.
+The string map is a mobile-first interactive diagram designed to be used in the hand during or before playing. It runs as a self-contained HTML file in any browser. The layout is optimized for left-hand grip (holding the phone) with right-hand tapping and plucking.
 
-Each node is shown as a circle. Size and fill encodes the node type:
+### The Diagram Canvas
 
-- **Large filled circle** — primary node (4th, 5th, or tonic octave)
-- **Small outlined circle** — secondary node
-- **Purple** — home node (tonal center)
+The central panel shows the string as a vertical line, with the nut at the top and the tub (bridge) at the bottom. The string is drawn to scale: a node at the midpoint of the string appears at the midpoint of the vertical line.
+
+Each node is represented as a circle on the string. Size and fill encode the node type:
+
+- **Large filled circle** — primary node (perfect 4th, perfect 5th, or octave tonic)
+- **Small outlined circle** — secondary node (major 2nd, major 3rd, major 6th, major 7th)
+- **Purple with outer ring** — home node (the designated tonal center)
+- **Grey dashed circle** — not snapped to a named pitch within 25 cents
+
+Horizontal pitch bars extend to the left of each node when enabled. Their length represents the frequency ratio — a longer bar means a higher pitch relative to the fundamental.
+
+Small grey tick marks appear between adjacent nodes that are a major second apart, indicating the chromatic passing tone at the equal-temperament semitone position between them.
 
 ### Column Structure (left to right)
 
-- **Pitch bars:** length encodes frequency ratio
-- **str°:** string degree — physics label, never changes
-- **TC°:** tonal center degree — changes with home node setting
-- **key°:** chromatic degree within home key
-- **note:** letter name and octave (within 25 cents)
-- **fraction · ratio · interval:** full physical description
-- **upper | lower:** segment lengths on each side of the node
+- **Pitch bars** — length encodes frequency ratio (togglable in the phys panel)
+- **str°** — string degree: the physics-grounded harmonic label, dark grey bold, never changes regardless of key, mode, or home node setting
+- **[string line]**
+- **home°** — home node degree: the musical label relative to the current home node, colored
+- **key°** — chromatic degree within the selected home key and mode (green = in key, red/coral = chromatic)
+- **note** — letter name and octave, shown when the node's pitch is within 25 cents of a named pitch
+- **fraction · ratio · interval** — the full physical description of the node
+- **upper | lower** — segment lengths from nut to node (upper) and from node to tub (lower)
 
-### Interaction
+The distinction between str° and home° is important: str° is fixed by physics and never changes. home° is a musical interpretation that changes whenever the home node or mode setting changes.
 
-**Tap/click:** plays the tone and pins the node — shows ruler, sidebar, and tone strip details. Tap again to unpin.
+### The Top Tone Strip
 
-**Drag (nut height view):** drag the purple nut marker to set the effective nut position. Sound plays on release.
+A fixed-height bar across the top of the screen shows the current key and scale on the left (always visible), and the selected node's details on the right (updates when a node is tapped or hovered).
 
-**Zoom/pan:** +/− buttons or pinch to zoom; drag the canvas to pan. ↕ fits the full string vertically.
+The right side shows: the home° degree, key° degree, note name, frequency in Hz, and the upper segment length. This solves the problem of needing to zoom in to read node labels — you can keep the whole string visible and read the detail from the strip.
 
-### Colors
+### The Left Rail
 
-- **Green** — in key (diatonic to current home key and mode)
-- **Red/coral** — chromatic (snapped to a pitch but outside the current key)
+A narrow column on the left edge of the screen contains the primary controls:
+
+- **Tune button** — calculates and sets the tension so the home node produces the pitch of the selected key root (nearest suitable octave)
+- **Key/scale chip** — shows the current key and mode abbreviation; tapping opens the **Circle of Fifths wheel**, which can be dragged to select a key and tapped in the center to open the **mode picker**
+- **Home chip** — shows the current home node degree (1–7); tapping opens the **home node picker**
+- **Zoom cluster** — +/−/fit buttons
+- **Tension slider** — vertical drag to adjust tension; plays a continuous tone during drag so you can hear the pitch in real time
+- **Fund display** — shows the fundamental frequency in Hz and the current tension in lbs; updates live during tension drag
+
+### Node Views
+
+Three node views are available from the lower-left of the bottom rail:
+
+**Full string view** — the default. All 14 harmonic nodes are shown at their standard positions along the full speaking length.
+
+**Nut height view** — shows the string with an effective nut at a lower position. A draggable purple marker represents the alternate nut. Dragging it changes the speaking length in real time; all node positions and frequencies update accordingly. Three preset positions can be saved and recalled. The string length display shows the current effective speaking length.
+
+**Capo view** — shows two overlaid sets of harmonic nodes, one for each segment created by the capo position. The capo marker (amber) is draggable and snaps to one of seven interval positions. Play buttons in the bottom rail play the upper segment, lower segment, or both simultaneously.
+
+### The Ruler and Sidebar
+
+When a node is tapped (pinned), a panel on the right side of the screen activates:
+
+- **Ruler rail** — a narrow column with a miniature representation of the full string. A dot marks the selected node's position. A fan line connects the dot to the actual node position in the main diagram. Dashed lines connect home node positions on the ministring to their corresponding positions on the main string, with a light purple trapezoidal shading between the nearest home nodes above and below the selected node. Span lines and interval labels (P4, P5, etc.) show the distance from the selected node to the nearest home nodes.
+- **Sidebar** — shows the upper segment (length, frequency, note name) above a dividing line, and the lower segment (note name, frequency, length) below it. The dividing line is aligned with the node's position on the ministring.
+
+Tapping a pinned node again unpins it, clearing the ruler and sidebar but playing the tone once more as confirmation.
+
+### The Bottom Rail
+
+A fixed panel at the bottom of the screen provides access to additional controls through a state machine. The left column selects the node view (full/nut/capo). The center area shows context-specific controls for the active view. The right column gives access to three panels:
+
+- **Audio** — waveform (sine/warm/string), polyphony, duration, volume
+- **Phys** — string length, density defaults, pitch bar toggle
+- **Lgnd** — color and symbol legend
+
+### The README
+
+In full string view, the bottom rail center area shows four buttons linking to sections of this document: **physics**, **theory**, **instrument**, and **app**. Tapping any button opens a scrollable panel with the relevant section. The title bar updates as you scroll through to show which section you are currently reading.
+
+### Color System
+
+Node colors encode two independent properties simultaneously: whether the node is primary or secondary (size and fill), and whether its pitch is in key or chromatic (color):
+
+- **Purple** — home node / tonal center, always, regardless of key
+- **Green (dark / light)** — primary / secondary, in key (diatonic to the current home key and mode)
+- **Red/coral** — primary / secondary, chromatic (snapped to a pitch but outside the current key)
 - **Grey dashed** — between named pitches (not snapped within 25 cents)
-- **Purple** — home node / tonal center`;
+
+The home° column labels match the node color. The key° column shows chromatic degree names (♭2, ♭3, ♯4, ♭6, ♭7) for chromatic nodes.
+
+In capo view, the two segment layers use their own colors: **teal** for the lower segment (tub to capo) and **amber** for the upper segment (capo to nut). Home nodes within each segment are highlighted with a ring in the segment's color.
+`;
+
 
 // Anchor map: button key → h2 id attribute value
 const README_ANCHORS={
-  app:'app', instrument:'instrument', physics:'physics', theory:'theory', placeholder:'app'
+  physics:'physics', theory:'theory', instrument:'instrument', app:'app'
 };
 const README_TITLES={
-  app:'Part 4 · The String Map App',
-  instrument:'Part 3 · The Washtub Bass',
   physics:'Part 1 · String Physics',
   theory:'Part 2 · Music Theory',
-  placeholder:'README'
+  instrument:'Part 3 · The Washtub Bass',
+  app:'Part 4 · The String Map App'
 };
 
 // Reverse map: anchor id → title
