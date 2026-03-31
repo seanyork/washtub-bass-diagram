@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Washtub Bass String Map</title>
+<title>Washtub Bass String Map · v5.7</title>
 <style>
 *{box-sizing:border-box;}
 body{margin:0;padding:0;font-family:system-ui,sans-serif;background:#fff;color:#1a1a1a;font-size:13px;overflow:hidden;overscroll-behavior:none;touch-action:none;}
@@ -80,20 +80,22 @@ input[type=range]{width:110px;cursor:pointer;}
 /* top tone strip */
 #new-tone-strip{height:50px;flex-shrink:0;display:flex;align-items:stretch;border-bottom:0.5px solid rgba(128,128,128,0.18);background:#fff;z-index:5;position:relative;}
 @media(prefers-color-scheme:dark){#new-tone-strip{background:#252525;}}
-#nts-left{flex:1 1 0%;display:flex;flex-direction:column;justify-content:center;padding:4px 10px;gap:1px;border-right:0.5px solid rgba(128,128,128,0.15);}
-#nts-scale{font-size:11px;font-weight:500;}
+#nts-left{flex:1 1 0%;display:flex;flex-direction:column;justify-content:center;padding:4px 10px;gap:2px;border-right:0.5px solid rgba(128,128,128,0.15);}
+#nts-scale{font-size:13px;font-weight:700;color:#1a1a1a;}
+@media(prefers-color-scheme:dark){#nts-scale{color:#e0e0e0;}}
 .nts-spell{display:flex;}
-.nts-spell span{display:inline-block;width:22px;font-size:9px;text-align:center;}
-#nts-num span{color:#533AB7;font-weight:500;}
-#nts-let span{color:#888;}
-#nts-right{width:140px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;padding:4px 8px;gap:2px;}
+.nts-spell span{display:inline-block;width:22px;font-size:11px;font-weight:600;text-align:center;}
+#nts-num span{color:#533AB7;}
+#nts-let span{color:#555;}
+@media(prefers-color-scheme:dark){#nts-let span{color:#aaa;}}
+#nts-right{width:170px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;padding:4px 8px;gap:2px;}
 .nts-idle{font-size:11px;color:#aaa;font-style:italic;}
 
 /* app body */
 #app-body{flex:1 1 0%;display:flex;overflow:hidden;position:relative;min-height:0;}
 
 /* left rail */
-#left-rail{width:56px;flex-shrink:0;border-right:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column-reverse;align-items:center;padding:6px 0;gap:4px;background:rgb(250,250,250);position:relative;z-index:15;}
+#left-rail{width:56px;flex-shrink:0;border-right:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column-reverse;align-items:center;padding:6px 0 6px 4px;gap:4px;background:rgb(250,250,250);position:relative;z-index:15;}
 @media(prefers-color-scheme:dark){#left-rail{background:#252525;}}
 #lr-tune-btn{width:46px;height:32px;background:#EEEDFE;border:0.5px solid #AFA9EC;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 .lr-icon{font-size:12px;color:#533AB7;}
@@ -143,8 +145,27 @@ input[type=range]{width:110px;cursor:pointer;}
 @media(prefers-color-scheme:dark){#rrail{background:rgba(40,40,40,0.97);}}
 #rr-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;}
 
+/* capo root toggle — top of sidebar, capo mode only */
+#capo-root-toggle{display:none;flex-shrink:0;flex-direction:column;align-items:stretch;padding:5px 5px 4px;gap:2px;border-bottom:0.5px solid rgba(128,128,128,0.15);}
+#capo-root-toggle.visible{display:flex;}
+.crt-lbl{font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:0.05em;line-height:1;text-align:center;margin-bottom:1px;}
+.crt-opt{font-size:10px;font-weight:600;height:20px;border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;background:transparent;color:#888;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 4px;width:100%;}
+.crt-opt.on{background:rgba(83,58,183,0.1);color:#533AB7;border-color:rgba(83,58,183,0.4);}
+.crt-seg-lo{color:#1D7A6B;}
+.crt-seg-hi{color:#7A3A1D;}
+.crt-opt.on .crt-seg-lo{color:#1D7A6B;}
+.crt-opt.on .crt-seg-hi{color:#7A3A1D;}
+@media(prefers-color-scheme:dark){.crt-opt{color:#aaa;}}
 /* sidebar */
 #sidebar{width:72px;flex-shrink:0;border-left:0.5px solid rgba(128,128,128,0.15);background:#fff;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+/* capo ruler perspective toggle — bottom of sidebar, capo mode only */
+#capo-ruler-persp{display:none;flex-shrink:0;flex-direction:column;align-items:stretch;padding:4px 5px 5px;gap:2px;border-top:0.5px solid rgba(128,128,128,0.15);}
+#capo-ruler-persp.visible{display:flex;}
+.crp-lbl{font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:0.05em;line-height:1;text-align:center;margin-bottom:1px;}
+.crp-row{display:flex;gap:2px;}
+.crp-btn{font-size:9px;font-weight:600;height:18px;flex:1;border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;background:transparent;color:#888;cursor:pointer;}
+.crp-btn.on{background:rgba(83,58,183,0.1);color:#533AB7;border-color:rgba(83,58,183,0.4);}
+@media(prefers-color-scheme:dark){.crp-btn{color:#aaa;}}
 @media(prefers-color-scheme:dark){#sidebar{background:#1e1e1e;}}
 #sb-upper{display:flex;flex-direction:column;justify-content:flex-end;padding:4px 5px;min-height:0;}
 #sb-lower{display:flex;flex-direction:column;justify-content:flex-start;padding:4px 5px;min-height:0;}
@@ -419,7 +440,7 @@ input[type=range]{width:110px;cursor:pointer;}
         <button class="lr-zb" onclick="zoom(1.3)" title="zoom in">+</button>
         <button class="lr-zb" onclick="zoom(1/1.3)" title="zoom out">−</button>
         <button class="lr-zb" onclick="fitV()" title="fit vertical" style="font-size:11px;">↕</button>
-        <button class="lr-zb lr-zb-pct" onclick="zoomTo1()" title="100%" style="font-size:8px;font-weight:600;">100%</button>
+        <button class="lr-zb lr-zb-pct" onclick="zoomTo1()" title="fit columns" style="font-size:8px;font-weight:600;">fit</button>
       </div>
       <div id="zoom-label" class="lr-zoom-pct">100%</div>
 
@@ -460,13 +481,12 @@ input[type=range]{width:110px;cursor:pointer;}
 </g>
 
 <!-- Column headers -->
-<text id="col-strdeg" x="438" y="22" text-anchor="middle" font-size="13" font-weight="500" fill="currentColor">str°</text>
-<text x="480" y="22" text-anchor="middle" font-size="14" font-weight="500" fill="currentColor">string</text>
-<text id="col-homedeg" x="502" y="22" text-anchor="start" font-size="13" font-weight="500" fill="currentColor">home°</text>
-<text id="col-keydeg" x="592" y="22" text-anchor="end" font-size="13" font-weight="500" fill="currentColor">key°</text>
-<text id="col-note" x="618" y="22" text-anchor="start" font-size="13" font-weight="500" fill="currentColor">note</text>
-<text id="col-info" x="680" y="22" text-anchor="start" font-size="13" font-weight="500" fill="currentColor">fraction · ratio · interval</text>
-<text id="col-segs" x="1060" y="22" text-anchor="start" font-size="13" font-weight="500" fill="currentColor">upper | lower</text>
+<text id="col-strdeg" x="438" y="22" text-anchor="middle" font-size="16" font-weight="600" fill="currentColor">str°</text>
+<text id="col-homedeg" x="502" y="22" text-anchor="start" font-size="16" font-weight="600" fill="currentColor">home°</text>
+<text id="col-keydeg" x="592" y="22" text-anchor="end" font-size="16" font-weight="600" fill="currentColor">key°</text>
+<text id="col-note" x="618" y="22" text-anchor="start" font-size="16" font-weight="600" fill="currentColor">note</text>
+<text id="col-info" x="680" y="22" text-anchor="start" font-size="16" font-weight="600" fill="currentColor">fraction · ratio · interval</text>
+<text id="col-segs" x="1060" y="22" text-anchor="start" font-size="16" font-weight="600" fill="currentColor">upper | lower</text>
 
 
 <!-- Nut -->
@@ -559,9 +579,25 @@ input[type=range]{width:110px;cursor:pointer;}
 
     <!-- sidebar: flex-ratio h-rule -->
     <div id="sidebar">
+      <div id="capo-root-toggle">
+        <div class="crt-lbl">tune to</div>
+        <button class="crt-opt on" id="crt-lower" onclick="setCapoTuneTarget('lower')">
+          <span class="crt-seg-lo" id="crt-lo-lo">↓G</span><span class="crt-seg-hi" id="crt-lo-hi">↑D</span>
+        </button>
+        <button class="crt-opt" id="crt-upper" onclick="setCapoTuneTarget('upper')">
+          <span class="crt-seg-lo" id="crt-up-lo">↓C</span><span class="crt-seg-hi" id="crt-up-hi">↑G</span>
+        </button>
+      </div>
       <div id="sb-upper"></div>
       <div id="sb-hrule"></div>
       <div id="sb-lower"></div>
+      <div id="capo-ruler-persp">
+        <div class="crp-lbl">ruler</div>
+        <div class="crp-row">
+          <button class="crp-btn on" id="crp-seg" onclick="setCapoRulerPerspective('segment')">seg</button>
+          <button class="crp-btn"    id="crp-str" onclick="setCapoRulerPerspective('fullstring')">str</button>
+        </div>
+      </div>
     </div>
 
   </div><!-- end app-body -->
@@ -821,10 +857,13 @@ function updateScaleStrip(){
   const scaleEl=document.getElementById('nts-scale');
   const numEl=document.getElementById('nts-num');
   const letEl=document.getElementById('nts-let');
-  if(scaleEl) scaleEl.textContent=NOTES[homeKey]+' '+MODE_NAMES[currentMode];
+  // Key name: render as inline spans so it aligns with the degree columns below
+  // Key name sits left of the degree row; mode name follows after a gap
+  if(scaleEl) scaleEl.innerHTML=
+    `<span style="display:inline-block;min-width:22px;text-align:center;">${NOTES[homeKey]}</span>`+
+    `<span style="font-size:11px;font-weight:500;color:#888;margin-left:4px;">${MODE_NAMES[currentMode]}</span>`;
   if(numEl)   numEl.innerHTML=si.degrees.map(d=>`<span>${d}</span>`).join('');
   if(letEl)   letEl.innerHTML=si.noteNames.map(n=>`<span>${n}</span>`).join('');
-  // also keep legacy scale-spelling in sync (used by frozen updateScaleSpelling)
 }
 
 // ── Right half: current tone (on hover/touch) ─────────────────────
@@ -835,7 +874,6 @@ function updateScaleStrip(){
 const _origShowStrip = showStrip;
 showStrip = function(freq, frac, nodeLabel, color){
   _origShowStrip(freq, frac, nodeLabel, color); // still writes legacy tone-row1
-  // Build nts-right directly from the same parameters
   const fund=fundFreq();
   const ni=noteInfo(freq);
   const kd=ni.snapped?chromDeg(ni.midi,homeKey):'—';
@@ -843,25 +881,29 @@ showStrip = function(freq, frac, nodeLabel, color){
   const noteStr=ni.snapped?ni.name+ni.octave:'—';
   const col=color||'#533AB7';
   const keyCol=inKey?'#0F6E56':'rgba(153,60,29,0.6)';
+  // str° label — look up the node's physics label by frac
+  const strNode=NODES.find(n=>Math.abs(n.frac-frac)<0.001);
+  const strLabel=strNode?strNode.label:(frac>=0.999?'1':'—');
+  // Upper segment fraction string — from node.fs complement
+  const upperFracStr=strNode?compFrac(strNode.fs):'—';
   const upperIn=((1-frac)*effectiveSpeakingLength()).toFixed(1);
-  const upperFreq=frac<1?fund/(1-frac):0;
-  const upperHz=upperFreq>0?upperFreq.toFixed(1)+' Hz':'—';
   const dst=document.getElementById('nts-right');
   if(!dst) return;
   dst.innerHTML=
     `<div style="display:flex;align-items:baseline;gap:4px;line-height:1;">
+       <span style="font-size:18px;font-weight:500;color:#5F5E5A;">${strLabel}</span>
+       <span style="font-size:10px;color:#ccc;">·</span>
        <span style="font-size:18px;font-weight:500;color:${col};">${nodeLabel}</span>
-       <span style="font-size:10px;color:#999;">·</span>
+       <span style="font-size:10px;color:#ccc;">·</span>
        <span style="font-size:18px;font-weight:500;color:${keyCol};">${kd}</span>
-       <span style="font-size:10px;color:#999;">·</span>
+       <span style="font-size:10px;color:#ccc;">·</span>
        <span style="font-size:18px;font-weight:500;color:${keyCol};">${noteStr}</span>
      </div>
-     <div style="display:flex;align-items:center;gap:4px;margin-top:1px;">
-       <span style="font-size:10px;font-weight:500;color:${col};">${freq.toFixed(1)} Hz</span>
-       <span style="font-size:9px;color:#999;">·</span>
-       <span style="font-size:10px;color:#1a1a1a;">↑ ${upperIn}"</span>
-       <span style="font-size:9px;color:#999;">·</span>
-       <span style="font-size:10px;color:#888;">${upperHz}</span>
+     <div style="display:flex;align-items:center;gap:3px;margin-top:2px;">
+       <span style="font-size:10px;color:#aaa;">↑</span>
+       <span style="font-size:11px;font-weight:600;color:${col};">${upperFracStr}</span>
+       <span style="font-size:10px;color:#ccc;">·</span>
+       <span style="font-size:11px;font-weight:500;color:#555;">${upperIn}"</span>
      </div>`;
 };
 
@@ -942,7 +984,76 @@ function intervalName(ratio){
   return best;
 }
 
-// ── Collect home node fracs (nut + tonic NODES) ──────────────────
+// Compound-interval version for cross-capo spans.
+// Normalizes to [1,4) to preserve octave context: M9, P12, etc.
+// Direction: r>1 = going upstring (toward nut = lower pitch), label includes direction.
+function intervalNameCompound(ratio){
+  let r=ratio;
+  // Normalize to [1,4) — allows simple and first compound range
+  while(r>=4) r/=2; while(r<1) r*=2;
+  const table=[
+    [1,'P1'],[9/8,'M2'],[5/4,'M3'],[4/3,'P4'],
+    [3/2,'P5'],[5/3,'M6'],[15/8,'M7'],
+    [2,'P8'],[9/4,'M9'],[5/2,'M10'],[8/3,'P11'],
+    [3,'P12'],[10/3,'M13'],[15/4,'M14'],[4,'P15']
+  ];
+  let best='?',bestD=Infinity;
+  table.forEach(([v,name])=>{const d=Math.abs(r-v);if(d<bestD){bestD=d;best=name;}});
+  return best;
+}
+
+// Returns segment-local home node {frac, freq} for a capo segment.
+// In capo mode, tonal-center sub-nodes live at compressed positions
+// within each segment — these differ from the full-string TC positions.
+function getCapoSegHomeFracsWithFreq(seg, cf){
+  const result=[];
+  const segFund=seg==='lower' ? fundFreq()/cf : fundFreq()/(1-cf);
+  // Segment "nut": capo position for lower, main nut for upper — ratio=1 (segment fundamental)
+  if(isTonalCenter(1)) result.push({frac:seg==='lower'?cf:1.0, freq:segFund, ratio:1});
+  NODES.forEach(n=>{
+    if(isTonalCenter(n.ratio)){
+      const hf=seg==='lower' ? n.frac*cf : cf+n.frac*(1-cf);
+      result.push({frac:hf, freq:segFund*n.ratio, ratio:n.ratio});
+    }
+  });
+  return result.sort((a,b)=>a.frac-b.frac);
+}
+
+// Returns ALL string positions across both segments where the key root (tonal center)
+// appears in any octave — for the full-string ruler perspective in capo mode.
+// Lower segment TC freq = lSegFund * homeNodeRatio(). A node belongs here if its
+// frequency is an octave-equivalent of that pitch.
+function getFullStringHomeFracsWithFreq(segCf){
+  const phi=1-segCf;
+  const hnR=homeNodeRatio();
+  const lSegFund=fundFreq()/segCf;
+  const uSegFund=fundFreq()/phi;
+  const result=[];
+
+  function isOct(r){
+    if(r<=0) return false;
+    while(r>=2) r/=2; while(r<1) r*=2;
+    return Math.abs(r-1)<0.006;
+  }
+
+  // Lower segment nut (frac=segCf): freq=lSegFund. isOct(lSegFund / (lSegFund*hnR)) = isOct(1/hnR)
+  if(isOct(1/hnR)) result.push({frac:segCf, freq:lSegFund, ratio:1});
+  // Lower segment nodes
+  NODES.forEach(n=>{
+    if(isOct(n.ratio/hnR))
+      result.push({frac:n.frac*segCf, freq:lSegFund*n.ratio, ratio:1});
+  });
+
+  // Upper segment nut (frac=1.0): freq=uSegFund. ratio rel to TC: uSegFund/(lSegFund*hnR)=segCf/(phi*hnR)
+  if(isOct(segCf/(phi*hnR))) result.push({frac:1.0, freq:uSegFund, ratio:1});
+  // Upper segment nodes: freq=uSegFund*n.ratio. ratio rel to TC: n.ratio*segCf/(phi*hnR)
+  NODES.forEach(n=>{
+    if(isOct(n.ratio*segCf/(phi*hnR)))
+      result.push({frac:segCf+n.frac*phi, freq:uSegFund*n.ratio, ratio:1});
+  });
+
+  return result.sort((a,b)=>a.frac-b.frac);
+}
 function getHomeNodeFracs(){
   const fracs=[];
   if(isTonalCenter(1)) fracs.push(1.0); // nut = frac=1 in the coordinate system
@@ -967,6 +1078,7 @@ function setRowHL(nodeFrac){
 let _activeFrac=null, _activeNode=null;
 let _pinnedFrac=null;
 let _lastPinTouch=0; // debounce synthetic mousedown after touchstart
+let _suppressHover=false; // true during canvas pan/scroll — prevents hover triggering ruler
 
 function _setPin(frac, fromTouch){
   _pinnedFrac=frac;
@@ -990,7 +1102,13 @@ function drawRulerSVG(node){
   const TOP_INSET=66, BOT_INSET=54;
   const MINI_TOP=TOP_INSET, MINI_BOT=H-BOT_INSET, MINI_H=MINI_BOT-MINI_TOP;
   const frac=node?node.frac:null;
-  const miniY=f=>MINI_BOT-f*MINI_H; // frac=1=nut=top, frac=0=bridge=bottom
+
+  // In nut view: frac=1.0 naturally maps to the effective nut (nY(1.0)=nutEffY()),
+  // and miniY(1.0)=MINI_TOP, so no coordinate remapping is needed.
+  // Only the label changes to reflect the effective nut.
+  const nutViewActive = nodeView==='nut' && nutOffsetInches>0;
+  const nutLabel = nutViewActive ? 'eff. nut' : 'nut';
+  const miniY=f=>MINI_BOT-f*MINI_H; // frac=1=top, frac=0=bottom — correct in all modes
 
   // Always compute fanX2 — needed for home lines even after soft-unpin
   const fanX2=(tx+SX*sc)-canvas.clientWidth;
@@ -1005,31 +1123,85 @@ function drawRulerSVG(node){
   let html='';
   let bgHtml=''; // background layer — rendered first (behind everything)
 
-  // Home fracs needed for both fan lines and icons — compute once up front
+  // Home fracs — correct in all modes with standard fracs (frac=1.0 = eff. nut in nut view)
   const homeFracs=getHomeNodeFracs();
 
-  // Active node fan line
+  // Capo segment state — hoisted early so shade block and capo tick can both reference it
+  const isSeg=(node&&node.segment);
+  const segCf=isSeg?node.cf:null;
+  const segType=isSeg?node.segment:null;
+
+  // Active node fan line + octave equivalents
   if(frac!==null){
-    const nodeSvgY=TY-frac*SPX;
-    const nodeScreenY=ty+nodeSvgY*sc;
+    const fanCol=isSeg?(segType==='lower'?SUB_COL_LOWER:SUB_COL_UPPER):'#533AB7';
+    // Primary fan line
+    const nodeScreenY=ty+nY(frac)*sc;
     html+=`<line x1="${CX}" y1="${miniY(frac).toFixed(1)}" x2="${fanX2.toFixed(1)}" y2="${nodeScreenY.toFixed(1)}"
-      stroke="#533AB7" stroke-width="1" stroke-dasharray="3 3" opacity="0.4"/>`;
+      stroke="${fanCol}" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>`;
+    // Octave equivalents: find all nodes whose ratio, reduced to [1,2), matches the current node
+    if(node && node.ratio){
+      let normR=node.ratio;
+      while(normR>=2) normR/=2;
+      while(normR<1)  normR*=2;
+      // Candidates: full-string NODES + nut (ratio=1, frac=1.0) in non-capo
+      const candidates=[...NODES];
+      if(!isSeg && Math.abs(normR-1)<0.002) candidates.push({frac:1.0, ratio:1});
+      candidates.forEach(n=>{
+        let nr=n.ratio; while(nr>=2) nr/=2; while(nr<1) nr*=2;
+        if(Math.abs(nr-normR)>0.002) return; // different pitch class
+        // Map to the correct full-string frac for this mode
+        const equivFrac=isSeg
+          ?(segType==='lower'?n.frac*segCf:segCf+n.frac*(1-segCf))
+          :n.frac;
+        if(Math.abs(equivFrac-frac)<0.002) return; // skip primary (already drawn)
+        const eScreenY=(ty+nY(equivFrac)*sc).toFixed(1);
+        html+=`<line x1="${CX}" y1="${miniY(frac).toFixed(1)}" x2="${fanX2.toFixed(1)}" y2="${eScreenY}"
+          stroke="${fanCol}" stroke-width="1" stroke-dasharray="3 3" opacity="0.25"/>`;
+      });
+    }
+  }
+
+  // Segment-aware home node data.
+  // SEGMENT perspective (default): each segment has its own home nodes.
+  // FULL-STRING perspective: one set of home nodes across the whole string.
+  // The useFullString flag gates the full-string path; segment path is untouched.
+  const useFullString = isSeg && capoRulerPerspective==='fullstring';
+  const otherSegType = segType==='lower'?'upper':'lower';
+  const otherSegCol  = (!useFullString && isSeg) ? (segType==='lower' ? SUB_COL_UPPER : SUB_COL_LOWER) : null;
+
+  let withinHomeData, crossHomeData, withinFracs, crossFracs;
+  if(useFullString){
+    // Full-string: find every position on string where key root appears, all labeled '1'
+    withinHomeData = getFullStringHomeFracsWithFreq(segCf);
+    crossHomeData = [];
+    withinFracs = withinHomeData.map(d=>d.frac);
+    crossFracs  = [];
+  } else {
+    // Segment perspective (existing logic — fully guarded)
+    withinHomeData = isSeg
+      ? getCapoSegHomeFracsWithFreq(segType, segCf)
+      : homeFracs.map(hf=>({frac:hf,
+          freq:hf>=0.999?fundFreq():(NODES.find(n=>Math.abs(n.frac-hf)<0.001)||{ratio:2}).ratio*fundFreq(),
+          ratio:hf>=0.999?1:(NODES.find(n=>Math.abs(n.frac-hf)<0.001)||{ratio:2}).ratio}));
+    crossHomeData = isSeg ? getCapoSegHomeFracsWithFreq(otherSegType, segCf) : [];
+    withinFracs = withinHomeData.map(d=>d.frac);
+    crossFracs  = crossHomeData.map(d=>d.frac);
   }
 
   // Home fan lines + shade — only when a node is pinned
   if(_pinnedFrac!==null && frac!==null && homeFracs.length>=1){
-    const upperHome=homeFracs.filter(hf=>hf>frac);
-    const lowerHome=homeFracs.filter(hf=>hf<frac);
-    const nearAbove=upperHome.length?Math.min(...upperHome):null;
-    const nearBelow=lowerHome.length?Math.max(...lowerHome):null;
-    // Shade in main SVG — proper trapezoid following fan lines
+    // Shade uses within-segment home nodes only
+    const upperWithin=withinFracs.filter(hf=>hf>frac);
+    const lowerWithin=withinFracs.filter(hf=>hf<frac);
+    const nearAbove=upperWithin.length?Math.min(...upperWithin):null;
+    const nearBelow=lowerWithin.length?Math.max(...lowerWithin):null;
     const shadeG=document.getElementById('dyn-home-shade');
     if(shadeG){
       shadeG.innerHTML='';
       if(nearAbove!==null && nearBelow!==null){
         const x_str=SX;
-        const y_strAbove=TY-nearAbove*SPX;
-        const y_strBelow=TY-nearBelow*SPX;
+        const y_strAbove=nY(nearAbove);
+        const y_strBelow=nY(nearBelow);
         const x_rul=(canvas.clientWidth+CX-tx)/sc;
         const y_rulAbove=(miniY(nearAbove)-ty)/sc;
         const y_rulBelow=(miniY(nearBelow)-ty)/sc;
@@ -1041,12 +1213,17 @@ function drawRulerSVG(node){
         shadeG.appendChild(poly);
       }
     }
-    // Home fan lines
-    homeFracs.forEach(hf=>{
-      const hmSvgY=TY-hf*SPX;
-      const hmScreenY=(ty+hmSvgY*sc).toFixed(1);
+    // Within-segment home fan lines — purple
+    withinFracs.forEach(hf=>{
+      const hmScreenY=(ty+nY(hf)*sc).toFixed(1);
       html+=`<line x1="${CX}" y1="${miniY(hf).toFixed(1)}" x2="${fanX2.toFixed(1)}" y2="${hmScreenY}"
         stroke="#533AB7" stroke-width="1" stroke-dasharray="3 4" opacity="0.45"/>`;
+    });
+    // Cross-segment home fan lines — other segment color, no shade/labels
+    crossFracs.forEach(hf=>{
+      const hmScreenY=(ty+nY(hf)*sc).toFixed(1);
+      html+=`<line x1="${CX}" y1="${miniY(hf).toFixed(1)}" x2="${fanX2.toFixed(1)}" y2="${hmScreenY}"
+        stroke="${otherSegCol}" stroke-width="1" stroke-dasharray="3 4" opacity="0.35"/>`;
     });
   } else {
     const shadeG=document.getElementById('dyn-home-shade');
@@ -1057,11 +1234,6 @@ function drawRulerSVG(node){
   html+=`<rect x="${(CX-8).toFixed(1)}" y="${vpTop.toFixed(1)}" width="16" height="${visH.toFixed(1)}"
     rx="3" fill="rgba(83,58,183,0.07)" stroke="rgba(83,58,183,0.18)" stroke-width="0.5"/>`;
 
-  // Capo segment state — hoisted so capo tick can reference before home icon block
-  const isSeg=(node&&node.segment);
-  const segCf=isSeg?node.cf:null;
-  const segType=isSeg?node.segment:null;
-
   // Ministring
   html+=`<line x1="${CX}" y1="${MINI_TOP}" x2="${CX}" y2="${MINI_BOT}"
     stroke="rgba(128,128,128,0.3)" stroke-width="2" stroke-linecap="round"/>`;
@@ -1069,7 +1241,6 @@ function drawRulerSVG(node){
     stroke="rgba(128,128,128,0.4)" stroke-width="1.5"/>`;
   html+=`<line x1="${CX-5}" y1="${MINI_BOT}" x2="${CX+5}" y2="${MINI_BOT}"
     stroke="rgba(128,128,128,0.4)" stroke-width="1.5"/>`;
-  // Capo tick — shown when a capo sub-node is active
   if(isSeg && segCf!==null){
     const capoY=miniY(segCf).toFixed(1);
     html+=`<line x1="${(CX-9).toFixed(1)}" y1="${capoY}" x2="${(CX+9).toFixed(1)}" y2="${capoY}"
@@ -1081,47 +1252,126 @@ function drawRulerSVG(node){
   // Full string perspective: always use miniY for dot and home icons
   const activeMiniY=miniY;
   const dotFrac=frac; // pseudoNode.frac is already a main-string frac
-  homeFracs.forEach(hf=>{
-    const hy=activeMiniY(hf).toFixed(1);
-    html+=`<circle cx="${CX}" cy="${hy}" r="7" fill="none" stroke="#533AB7" stroke-width="1.4" opacity="0.35"/>`;
-    html+=`<circle cx="${CX}" cy="${hy}" r="4" fill="#EEEDFE" stroke="#533AB7" stroke-width="1.4"/>`;
-    html+=`<circle cx="${CX}" cy="${hy}" r="1.8" fill="#533AB7"/>`;
+  // Home icons — colored by segment in segment mode, all purple in full-string mode
+  const _segIconColor = (!useFullString && isSeg) ? (segType==='lower' ? SUB_COL_LOWER : SUB_COL_UPPER) : '#533AB7';
+  const _segIconFill  = (!useFullString && isSeg) ? (segType==='lower' ? 'rgba(29,122,107,0.15)' : 'rgba(122,58,29,0.12)') : '#EEEDFE';
+  const _crossIconFill= (!useFullString && isSeg) ? (segType==='lower' ? 'rgba(122,58,29,0.12)' : 'rgba(29,122,107,0.15)') : '#EEEDFE';
+  const _homeIconEls=[];
+  [
+    ...withinHomeData.map(d=>({...d, iconColor:_segIconColor,  iconFill:_segIconFill})),
+    ...crossHomeData.map( d=>({...d, iconColor:otherSegCol||'#533AB7', iconFill:_crossIconFill}))
+  ].forEach(({frac:hf, freq:_hFreq, iconColor, iconFill})=>{
+    const hy=parseFloat(miniY(hf).toFixed(1));
+    const mkS2=(tag,attrs)=>{
+      const el=document.createElementNS('http://www.w3.org/2000/svg',tag);
+      Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));
+      return el;
+    };
+    const hit=mkS2('circle',{cx:CX,cy:hy,r:12,fill:'transparent',style:'cursor:pointer;pointer-events:all;'});
+    hit.addEventListener('click',e=>{e.stopPropagation();playTone(_hFreq);_origShowStrip_step5(_hFreq,hf,'1',iconColor);});
+    hit.addEventListener('touchstart',e=>{e.stopPropagation();playTone(_hFreq);_origShowStrip_step5(_hFreq,hf,'1',iconColor);},{passive:true});
+    _homeIconEls.push(
+      mkS2('circle',{cx:CX,cy:hy,r:7,fill:'none',stroke:iconColor,'stroke-width':1.4,opacity:0.4}),
+      mkS2('circle',{cx:CX,cy:hy,r:4,fill:iconFill,stroke:iconColor,'stroke-width':1.4}),
+      mkS2('circle',{cx:CX,cy:hy,r:1.8,fill:iconColor}),
+      hit
+    );
   });
 
   // Spans + interval labels + dot
+  let upperFrac=null, lowerFrac=null; // hoisted so direction arrows block can reference
   if(frac!==null){
     const dy=activeMiniY(dotFrac);
-// higher frac = higher on screen (miniY=MINI_BOT-f*MINI_H)
-    const upperHomes=homeFracs.filter(f=>f>dotFrac); // visually above dot
-    const lowerHomes=homeFracs.filter(f=>f<dotFrac); // visually below dot
-    const upperFrac=upperHomes.length?Math.min(...upperHomes):null; // nearest above
-    const lowerFrac=lowerHomes.length?Math.max(...lowerHomes):null; // nearest below
+    const upperHomes=withinFracs.filter(f=>f>dotFrac);
+    const lowerHomes=withinFracs.filter(f=>f<dotFrac);
+    upperFrac=upperHomes.length?Math.min(...upperHomes):null;
+    lowerFrac=lowerHomes.length?Math.max(...lowerHomes):null;
 
+    // Full-string: interval = node's freq / lower-seg TC freq (normalized to [1,∞))
+    // This correctly handles cross-segment spans where segments have different fundamentals.
+    const tcFreq = (fundFreq()/segCf) * homeNodeRatio(); // lower seg TC freq = reference "1"
+    const nodeRatioForInterval=(useFullString&&isSeg&&node)
+      ?(node.freq || (segType==='lower'?fundFreq()/segCf:fundFreq()/(1-segCf))*node.ratio) / tcFreq
+      :(node?node.ratio:1);
+    // Cross-capo: home frac belongs to other segment — use compound interval
+    const isCrossCapo=hf=>useFullString&&isSeg&&segCf!==null
+      &&(segType==='lower'?hf>segCf+0.001:hf<segCf-0.001);
+
+    // Pass 1: all lines
     if(upperFrac!==null){
       const uy=activeMiniY(upperFrac);
+      const crossUp=isCrossCapo(upperFrac);
       html+=`<line x1="${CX}" y1="${uy.toFixed(1)}" x2="${CX}" y2="${dy.toFixed(1)}"
-        stroke="#533AB7" stroke-width="3" stroke-linecap="round"/>`;
-      const uHomeRatio=upperFrac===0?1:(NODES.find(n=>Math.abs(n.frac-upperFrac)<0.001)||{ratio:1}).ratio;
-      const itvl=intervalName(node.ratio/uHomeRatio);
-      const lblY=uy-12;
-      html+=`<rect x="${CX-10}" y="${lblY-10}" width="20" height="13" rx="2" fill="rgba(255,255,255,0.92)"/>`;
-      html+=`<text x="${CX}" y="${lblY}" text-anchor="middle" font-size="12" font-weight="800" fill="#533AB7">${itvl}</text>`;
+        stroke="#533AB7" stroke-width="3" stroke-linecap="round"${crossUp?' stroke-dasharray="5 3"':''}/>`;
     }
-
     if(lowerFrac!==null){
       const ly=activeMiniY(lowerFrac);
+      const crossLo=isCrossCapo(lowerFrac);
       html+=`<line x1="${CX}" y1="${dy.toFixed(1)}" x2="${CX}" y2="${ly.toFixed(1)}"
-        stroke="#533AB7" stroke-width="3" stroke-linecap="round"/>`;
-      const lHomeRatio=(NODES.find(n=>Math.abs(n.frac-lowerFrac)<0.001)||{ratio:2}).ratio;
-      const itvl=intervalName(lHomeRatio/node.ratio);
-      // label BELOW lower home icon (outer edge at ly+7), so label at ly+10
-      html+=`<rect x="${CX-10}" y="${ly+10}" width="20" height="13" rx="2" fill="rgba(255,255,255,0.92)"/>`;
-      html+=`<text x="${CX}" y="${ly+20}" text-anchor="middle" font-size="12" font-weight="800" fill="#533AB7">${itvl}</text>`;
+        stroke="#533AB7" stroke-width="3" stroke-linecap="round"${crossLo?' stroke-dasharray="5 3"':''}/>`;
+    }
+    if(crossFracs.length>0&&otherSegCol){
+      crossFracs.forEach(hf=>{
+        const cy=activeMiniY(hf);
+        html+=`<line x1="${CX}" y1="${dy.toFixed(1)}" x2="${CX}" y2="${cy.toFixed(1)}"
+          stroke="${otherSegCol}" stroke-width="3" stroke-linecap="round" opacity="0.55"/>`;
+      });
     }
 
-    // Dot (color by segment)
+    // Pass 2: interval labels on top
+    if(upperFrac!==null){
+      const uy=activeMiniY(upperFrac);
+      const uHomeEntry=withinHomeData.find(d=>Math.abs(d.frac-upperFrac)<0.002);
+      const uHomeRatio=uHomeEntry?uHomeEntry.ratio:1;
+      const crossUp=isCrossCapo(upperFrac);
+      // Full-string mode: always use nodeRatioForInterval + compound name (cross or same-side)
+      // Segment mode: use node.ratio + simple name (unchanged)
+      const itvl=useFullString
+        ?intervalNameCompound(nodeRatioForInterval/uHomeRatio)
+        :intervalName(node.ratio/uHomeRatio);
+      const lblY=uy-12;
+      const lblW=crossUp?26:20;
+      html+=`<rect x="${(CX-lblW/2).toFixed(1)}" y="${lblY-10}" width="${lblW}" height="13" rx="2" fill="rgba(255,255,255,0.95)"/>`;
+      html+=`<text x="${CX}" y="${lblY}" text-anchor="middle" font-size="${crossUp?9:12}" font-weight="800" fill="#533AB7">${itvl}</text>`;
+    }
+    if(lowerFrac!==null){
+      const ly=activeMiniY(lowerFrac);
+      const lHomeEntry=withinHomeData.find(d=>Math.abs(d.frac-lowerFrac)<0.002);
+      const lHomeRatio=lHomeEntry?lHomeEntry.ratio:2;
+      const crossLo=isCrossCapo(lowerFrac);
+      const itvl=useFullString
+        ?intervalNameCompound(lHomeRatio/nodeRatioForInterval)
+        :intervalName(lHomeRatio/node.ratio);
+      const lblW=crossLo?26:20;
+      html+=`<rect x="${(CX-lblW/2).toFixed(1)}" y="${ly+10}" width="${lblW}" height="13" rx="2" fill="rgba(255,255,255,0.95)"/>`;
+      html+=`<text x="${CX}" y="${ly+20}" text-anchor="middle" font-size="${crossLo?9:12}" font-weight="800" fill="#533AB7">${itvl}</text>`;
+    }
+
+    // Dot (color by segment) — DOM element so we can attach tap handler
     const dotCol=isSeg?(segType==='lower'?SUB_COL_LOWER:SUB_COL_UPPER):'#533AB7';
-    html+=`<circle cx="${CX}" cy="${dy.toFixed(1)}" r="5" fill="${dotCol}" stroke="#fff" stroke-width="2"/>`;
+    const _dotFreq=node?(node.freq||fundFreq()*node.ratio):fundFreq();
+    const _mkDot=(tag,attrs)=>{
+      const el=document.createElementNS('http://www.w3.org/2000/svg',tag);
+      Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));
+      return el;
+    };
+    const dotEl=_mkDot('circle',{cx:CX,cy:dy.toFixed(1),r:5,fill:dotCol,stroke:'#fff','stroke-width':2});
+    const dotHit=_mkDot('circle',{cx:CX,cy:dy.toFixed(1),r:12,fill:'transparent',style:'cursor:pointer;pointer-events:all;'});
+    dotHit.addEventListener('click',e=>{
+      e.stopPropagation();playTone(_dotFreq);
+      if(_lastStripArgs) _origShowStrip_step5(_dotFreq,_lastStripArgs.frac,_lastStripArgs.nodeLabel,_lastStripArgs.color);
+    });
+    dotHit.addEventListener('touchstart',e=>{
+      e.stopPropagation();playTone(_dotFreq);
+      if(_lastStripArgs) _origShowStrip_step5(_dotFreq,_lastStripArgs.frac,_lastStripArgs.nodeLabel,_lastStripArgs.color);
+    },{passive:true});
+    _homeIconEls.push(dotEl, dotHit);
+
+    // Full-string mode: if the pinned node is itself a key-root position, relabel strip to '1'
+    if(useFullString && withinFracs.some(wf=>Math.abs(wf-frac)<0.003)){
+      _origShowStrip_step5(_dotFreq, frac, '1', '#533AB7');
+      if(_lastStripArgs) _lastStripArgs={frac:_lastStripArgs.frac, nodeLabel:'1', color:'#533AB7'};
+    }
   }
 
   // Top inset
@@ -1132,14 +1382,14 @@ function drawRulerSVG(node){
     const upperRatioStr=_uf.length===2?`${_uf[1]}:${_uf[0]}`:'—';
     // Lower ratio: node.rs (e.g. "3:2")
     const lowerRatioStr=node.rs;
-    html+=`<text x="${CX}" y="11" text-anchor="middle" font-size="7.5" fill="#aaa">nut</text>`;
+    html+=`<text x="${CX}" y="11" text-anchor="middle" font-size="7.5" fill="#aaa">${nutLabel}</text>`;
     html+=`<text x="${CX}" y="23" text-anchor="middle" font-size="9" fill="#533AB7" font-weight="700">${upperFracStr}</text>`;
     html+=`<text x="${CX}" y="35" text-anchor="middle" font-size="8" fill="#888">${upperRatioStr}</text>`;
     html+=`<text x="${CX}" y="${H-41}" text-anchor="middle" font-size="8" fill="#888">${lowerRatioStr}</text>`;
     html+=`<text x="${CX}" y="${H-29}" text-anchor="middle" font-size="9" fill="#533AB7" font-weight="700">${node.fs}</text>`;
     html+=`<text x="${CX}" y="${H-17}" text-anchor="middle" font-size="7.5" fill="#aaa">bridge</text>`;
   } else {
-    html+=`<text x="${CX}" y="11" text-anchor="middle" font-size="7.5" fill="#aaa">nut</text>`;
+    html+=`<text x="${CX}" y="11" text-anchor="middle" font-size="7.5" fill="#aaa">${nutLabel}</text>`;
     html+=`<text x="${CX}" y="${H-17}" text-anchor="middle" font-size="7.5" fill="#aaa">bridge</text>`;
   }
 
@@ -1147,14 +1397,38 @@ function drawRulerSVG(node){
   if(frac!==null){
     const dotY=miniY(frac);
     const AX=CX+14;
-    if(dotY>MINI_TOP+20){
+    // Upper arrow: from just below upper interval label down to dot
+    if(upperFrac!==null && dotY>MINI_TOP+20){
+      const uy=activeMiniY(upperFrac);
+      const lblBottom=uy-12+3; // bottom of label pill (lblY-10+height13)
+      const ay1=lblBottom+3, ay2=dotY-4;
+      if(ay2-ay1>8){
+        html+=`<line x1="${AX}" y1="${ay1+6}" x2="${AX}" y2="${ay2}"
+          stroke="rgba(128,128,128,0.35)" stroke-width="1.5" stroke-linecap="round"/>`;
+        html+=`<polyline points="${AX-3},${ay1+6} ${AX},${ay1} ${AX+3},${ay1+6}"
+          fill="none" stroke="rgba(128,128,128,0.35)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+      }
+    } else if(upperFrac===null && dotY>MINI_TOP+20){
+      // No upper home node — arrow from nut area to dot
       const ay1=MINI_TOP+4, ay2=dotY-4;
       html+=`<line x1="${AX}" y1="${ay1+6}" x2="${AX}" y2="${ay2}"
         stroke="rgba(128,128,128,0.35)" stroke-width="1.5" stroke-linecap="round"/>`;
       html+=`<polyline points="${AX-3},${ay1+6} ${AX},${ay1} ${AX+3},${ay1+6}"
         fill="none" stroke="rgba(128,128,128,0.35)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>`;
     }
-    if(MINI_BOT-dotY>20){
+    // Lower arrow: from dot down to just above lower interval label
+    if(lowerFrac!==null && MINI_BOT-dotY>20){
+      const ly=activeMiniY(lowerFrac);
+      const lblTop=ly+10; // top of label pill
+      const ay1=dotY+4, ay2=lblTop-3;
+      if(ay2-ay1>8){
+        html+=`<line x1="${AX}" y1="${ay1}" x2="${AX}" y2="${ay2-6}"
+          stroke="rgba(128,128,128,0.35)" stroke-width="1.5" stroke-linecap="round"/>`;
+        html+=`<polyline points="${AX-3},${ay2-6} ${AX},${ay2} ${AX+3},${ay2-6}"
+          fill="none" stroke="rgba(128,128,128,0.35)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+      }
+    } else if(lowerFrac===null && MINI_BOT-dotY>20){
+      // No lower home node — arrow from dot to bridge area
       const ay1=dotY+4, ay2=MINI_BOT-4;
       html+=`<line x1="${AX}" y1="${ay1}" x2="${AX}" y2="${ay2-6}"
         stroke="rgba(128,128,128,0.35)" stroke-width="1.5" stroke-linecap="round"/>`;
@@ -1164,6 +1438,8 @@ function drawRulerSVG(node){
   }
 
   svg.innerHTML=bgHtml+html;
+  // Append home node icon DOM elements (need event listeners, can't be in innerHTML)
+  _homeIconEls.forEach(el=>svg.appendChild(el));
 }
 
 // ── Sidebar builder ───────────────────────────────────────────────
@@ -1178,12 +1454,13 @@ function showLabel(node){
   const lowerIn=(node.frac*esl).toFixed(1);
   const upperIn=((1-node.frac)*esl).toFixed(1);
   const lowerHz=Math.round(fund*node.ratio);
-  const upperHz=Math.round(fund/(1-node.frac));
-  const lNi=noteInfo(fund*node.ratio), uNi=noteInfo(fund/(1-node.frac));
+  const upperHz=node.frac<0.999 ? Math.round(fund/(1-node.frac)) : 0;
+  const lNi=noteInfo(fund*node.ratio);
+  const uNi=node.frac<0.999 ? noteInfo(fund/(1-node.frac)) : null;
   const lNote=lNi.snapped?lNi.name+lNi.octave:'—';
-  const uNote=uNi.snapped?uNi.name+uNi.octave:'—';
+  const uNote=uNi&&uNi.snapped?uNi.name+uNi.octave:'—';
   const lCol=lNi.snapped&&isInKey(lNi.midi)?'#0F6E56':'#993C1D';
-  const uCol=uNi.snapped&&isInKey(uNi.midi)?'#0F6E56':'#993C1D';
+  const uCol=uNi&&uNi.snapped&&isInKey(uNi.midi)?'#0F6E56':'#993C1D';
   const upper=document.getElementById('sb-upper');
   const lower=document.getElementById('sb-lower');
   // Compute dot position as fraction of rrail height to align h-rule with dot
@@ -1228,6 +1505,8 @@ showStrip = function(freq, frac, nodeLabel, color){
   if(_pinnedFrac!==null && Math.abs(_pinnedFrac-frac)>0.001) return;
   _origShowStrip_step5(freq, frac, nodeLabel, color);
   _lastStripArgs={frac, nodeLabel, color};
+  // Don't activate the ruler during pan/scroll — only on intentional hover/tap
+  if(_suppressHover) return;
   const node=NODES.find(n=>Math.abs(n.frac-frac)<0.001);
   if(node) showLabel(node); else hideLabel();
 };
@@ -2279,7 +2558,26 @@ const CAPO_NODES=[
   {label:'maj 6th',  itvl:'5:3', phi:3/8,   phiStr:'3/8' },
   {label:'octave',   itvl:'2:1', phi:1/3,   phiStr:'1/3' },
 ];
-let capoNodeIdx=3; // default: perfect fifth   // inches subtracted from full string length (0 = main nut)
+let capoNodeIdx=3; // default: perfect fifth
+let capoTuneTarget='lower'; // which segment the Tune button targets in capo mode
+let capoRulerPerspective='segment'; // 'segment' | 'fullstring'
+
+function setCapoRulerPerspective(p){
+  capoRulerPerspective=p;
+  document.getElementById('crp-seg').classList.toggle('on',p==='segment');
+  document.getElementById('crp-str').classList.toggle('on',p==='fullstring');
+  // Full render ensures main string nodes + ruler both reflect new perspective
+  if(_activeNode) render();
+  else if(_pinnedFrac!==null) drawRulerSVG(null);
+}
+
+function setCapoTuneTarget(seg){
+  capoTuneTarget=seg;
+  document.getElementById('crt-lower').classList.toggle('on',seg==='lower');
+  document.getElementById('crt-upper').classList.toggle('on',seg==='upper');
+  updateTuneBtn();
+  tuneToKey();
+}
 // Presets: offsets in inches from main nut
 let nutPresets=[6, 12, 19];
 
@@ -2296,6 +2594,11 @@ function setNodeView(view, btn){
   const capoCluster=document.getElementById('capo-cluster');
   nutCluster.style.display=view==='nut'?'':'none';
   capoCluster.style.display=view==='capo'?'':'none';
+  // Show capo root toggle in sidebar only in capo mode
+  const crt=document.getElementById('capo-root-toggle');
+  if(crt) crt.classList.toggle('visible', view==='capo');
+  const crp=document.getElementById('capo-ruler-persp');
+  if(crp) crp.classList.toggle('visible', view==='capo');
   updateColHeaders();
   if(view!=='nut'){
     nutOffsetInches=0;
@@ -2394,9 +2697,14 @@ function _showCapoEndNode(seg, cf){
   const note=ni.snapped?ni.name+ni.octave:'—';
   const upper=document.getElementById('sb-upper');
   const lower=document.getElementById('sb-lower');
+  const _rr=document.getElementById('rrail');
+  const _H=_rr?(_rr.clientHeight||300):300;
+  const _TOP=66,_BOT=54,_MH=_H-_TOP-_BOT;
+  const _dotY=(_H-_BOT)-pseudoNode.frac*_MH;
+  const _dotFrac=_dotY/_H;
   const col=seg==='lower'?SUB_COL_LOWER:SUB_COL_UPPER;
-  if(upper){ upper.style.flex='0'; upper.innerHTML=''; }
-  if(lower){ lower.style.flex='1';
+  if(upper){ upper.style.flex=String(_dotFrac); upper.innerHTML=''; }
+  if(lower){ lower.style.flex=String(1-_dotFrac);
     lower.innerHTML=`<div class="sb-note" style="color:${col};">${note}</div>`+
       `<div class="sb-hz">${Math.round(segFund)} Hz</div>`+
       `<div class="sb-len">${segLen.toFixed(1)}"</div>`; }
@@ -2570,16 +2878,18 @@ function _showSubNode(node, seg, freq, cf, diagY){
   const fund=fundFreq();
   const segFund = seg==='lower' ? fund/cf : fund/(1-cf);
   const lHz=Math.round(segFund*node.ratio);
-  const uHz=Math.round(segFund/(1-node.frac));
-  const lNi=noteInfo(segFund*node.ratio), uNi=noteInfo(segFund/(1-node.frac));
+  const uHz=node.frac<0.999?Math.round(segFund/(1-node.frac)):0;
+  const lNi=noteInfo(segFund*node.ratio);
+  const uNi=node.frac<0.999?noteInfo(segFund/(1-node.frac)):null;
   const lNote=lNi.snapped?lNi.name+lNi.octave:'—';
-  const uNote=uNi.snapped?uNi.name+uNi.octave:'—';
+  const uNote=uNi&&uNi.snapped?uNi.name+uNi.octave:'—';
   const upper=document.getElementById('sb-upper');
   const lower=document.getElementById('sb-lower');
   const _rr=document.getElementById('rrail');
   const _H=_rr?(_rr.clientHeight||300):300;
   const _TOP=66,_BOT=54,_MH=_H-_TOP-_BOT;
-  const _dotY=(_H-_BOT)-node.frac*_MH;
+  // Use pseudoNode.frac (full-string frac) for dot position, not segment-local frac
+  const _dotY=(_H-_BOT)-pseudoNode.frac*_MH;
   const _dotFrac=_dotY/_H;
   if(upper){ upper.style.flex=String(_dotFrac);
     upper.innerHTML=`<div class="sb-len">${upperIn}"</div><div class="sb-hz">${uHz} Hz</div><div class="sb-note">${uNote}</div>`; }
@@ -2928,15 +3238,23 @@ function tuneToKey(){
   const L=effectiveSpeakingLength()*IN_TO_M, mu=muKgM;
   const rootPc=homeKey;
   const tc=homeNodeRatio(); // home node ratio relative to fundamental
-  const lenRatio=L/(69*IN_TO_M);
+
+  // In capo mode, always tune so the LOWER segment's home node = key root.
+  // Lower segment fundamental = fundFreq()/cf, so fundTarget = keyRoot * cf / homeNodeRatio.
+  // Upper segment follows automatically from physics (e.g. P5 above for a P5 capo).
+  let segScale=1;
+  if(nodeView==='capo'){
+    const phi=CAPO_NODES[capoNodeIdx].phi;
+    const cf=1-phi;
+    segScale = capoTuneTarget==='lower' ? cf : (1-cf);
+  }
+
   let bestT=null;
   for(let oct=0;oct<=5;oct++){
     const midi=rootPc+(oct+1)*12;
-    // This is the pitch we want the home node to produce
     const tcTargetFreq=REF_HZ*Math.pow(2,(midi-REF_MIDI)/12);
-    // So the fundamental needs to be tcTargetFreq / tcRatio
-    const fundTargetFreq=tcTargetFreq/tc;
-    // Solve f = (1/2L)*sqrt(T/mu) for T
+    // Fundamental target = segment-scaled key root / home node ratio
+    const fundTargetFreq=tcTargetFreq*segScale/tc;
     const T=Math.pow(2*L*fundTargetFreq,2)*mu;
     const lbs=T/LBS_TO_N;
     if(lbs>=0.1&&lbs<=15){
@@ -2958,6 +3276,23 @@ function updateTuneBtn(){
   document.getElementById('tune-btn').textContent=label;
   const btn2=document.getElementById('tune-btn2');
   if(btn2) btn2.textContent=label2;
+  // Compute both segment note names for the capo root toggle
+  const phi=CAPO_NODES[capoNodeIdx].phi;
+  const cf=1-phi;
+  // semitones upper is above lower = 12*log2(cf/phi)
+  const semitones=Math.round(12*Math.log2(cf/phi));
+  // Option A: lower=root → upper=root+semitones
+  const upperNoteA=NOTES[((homeKey+semitones)%12+12)%12];
+  // Option B: upper=root → lower=root-semitones
+  const lowerNoteB=NOTES[((homeKey-semitones)%12+12)%12];
+  const el_lo_lo=document.getElementById('crt-lo-lo');
+  const el_lo_hi=document.getElementById('crt-lo-hi');
+  const el_up_lo=document.getElementById('crt-up-lo');
+  const el_up_hi=document.getElementById('crt-up-hi');
+  if(el_lo_lo) el_lo_lo.textContent='↓'+NOTES[homeKey];
+  if(el_lo_hi) el_lo_hi.textContent='↑'+upperNoteA;
+  if(el_up_lo) el_up_lo.textContent='↓'+lowerNoteB;
+  if(el_up_hi) el_up_hi.textContent='↑'+NOTES[homeKey];
 }
 
 function updateScaleSpelling(){
@@ -3318,10 +3653,25 @@ function updateNutMarker(){
   hitEl.setAttribute('width',SVG_W);hitEl.setAttribute('height',rowH);
   hitEl.setAttribute('fill','transparent');hitEl.setAttribute('class','row-hit');
   hitEl.style.cursor='ns-resize';
-  hitEl.addEventListener('click',()=>{if(!nutDidDrag) playTone(fund);});
-  hitEl.addEventListener('mouseenter',()=>{ if(_pinnedFrac!==null&&_pinnedFrac!==1.0) return; showStrip(fund,1.0,remapDegree(1)||'1','#533AB7'); });
+  // Pseudo-node for ruler/sidebar — represents the eff. nut (fundamental)
+  const _nutPseudo={frac:1.0,ratio:1,fs:'1/1',rs:'1:1',label:remapDegree(1)||'1',
+    primary:true,desc:'fundamental · eff. nut'};
+  const _nutColor='#533AB7';
+  const _nutLabel=remapDegree(1)||'1';
+  hitEl.addEventListener('click',()=>{
+    if(!nutDidDrag){
+      playTone(fund);
+      if(_togglePin(1.0, false)){ showStrip(fund,1.0,_nutLabel,_nutColor); showLabel(_nutPseudo); }
+      else playTone(fund); // unpin
+    }
+  });
+  hitEl.addEventListener('mouseenter',()=>{ if(_pinnedFrac!==null&&_pinnedFrac!==1.0) return; showStrip(fund,1.0,_nutLabel,_nutColor); });
   hitEl.addEventListener('mouseleave',clearStrip);
-  hitEl.addEventListener('touchstart',()=>{playTone(fund);showStrip(fund,1.0,'1','#533AB7');},{passive:true});
+  hitEl.addEventListener('touchstart',()=>{
+    playTone(fund);
+    if(_togglePin(1.0, true)){ showStrip(fund,1.0,_nutLabel,_nutColor); showLabel(_nutPseudo); }
+    else playTone(fund); // unpin
+  },{passive:true});
   hitEl.addEventListener('touchend',clearStrip,{passive:true});
   // Also start drag from this hit rect
   hitEl.addEventListener('mousedown',e=>{
@@ -3776,6 +4126,7 @@ function render(){
     // Pin toggle: second tap on same node unpins; tap different node switches pin
     hitRect.addEventListener('mousedown',()=>{
       if(_togglePin(node.frac, false)){ playTone(freq); showStrip(freq,node.frac,displayLabel,c.text); }
+      else playTone(freq); // unpin — still play tone
     });
     hitRect.addEventListener('mouseenter',()=>{
       if(_pinnedFrac!==null&&_pinnedFrac!==node.frac) return; // don't override a different pin
@@ -3784,6 +4135,7 @@ function render(){
     hitRect.addEventListener('mouseleave',()=>{ clearStrip(); });
     hitRect.addEventListener('touchstart',()=>{
       if(_togglePin(node.frac, true)){ playTone(freq); showStrip(freq,node.frac,displayLabel,c.text); showRuler(y,upperIn,lowerIn,node.fs,freq); }
+      else playTone(freq); // unpin — still play tone
     },{passive:true});
     hitRect.addEventListener('touchend',()=>{ clearStrip(); },{passive:true});
     g.appendChild(hitRect);
@@ -3826,7 +4178,7 @@ function clamp(){
 function smartPan(){
   const cw=canvas.clientWidth, ch=canvas.clientHeight;
   // Horizontal: pin string column
-  tx=cw*0.38 - SX*sc;
+  tx=cw*0.27 - SX*sc;
   // Vertical
   if(_activeFrac!==null){
     // Node SVG y (string runs NY→TY, frac measured from TY upward)
@@ -3838,13 +4190,33 @@ function smartPan(){
   clamp();
 }
 
+// ── Smart column fit zoom ─────────────────────────────────────────
+// Fits str°, home°, key°, note columns (SDEG_X → NOTE_X+55) in the
+// canvas width with comfortable padding. NOTE_X+55 accommodates 3-char
+// note names like F#2. This is the "natural reading zoom" for the device.
+function smartFitZoom(){
+  const span=(NOTE_X+55)-SDEG_X; // SVG units: ~235
+  const padding=14; // px each side
+  return Math.min(scMx, Math.max(scMn, (canvas.clientWidth - padding*2) / span));
+}
+
+function zoomTo1(){
+  sc=smartFitZoom();
+  smartPan();
+  clamp();
+  applyT();
+}
+
 function zoom(f){
-  const oldSc=sc;
-  sc=Math.min(scMx,Math.max(scMn,sc*f));
+  const target=smartFitZoom();
+  const newSc=Math.min(scMx,Math.max(scMn,sc*f));
+  // Snap: if we're crossing the smart-fit level, land on it instead
+  const crossingUp  = sc<target && newSc>target;
+  const crossingDown= sc>target && newSc<target;
+  sc = (crossingUp||crossingDown) ? target : newSc;
   smartPan();
   applyT();
 }
-function zoomTo1(){sc=1;smartPan();clamp();applyT();}
 function zoomFit(){
   setTimeout(()=>{
     sc=canvas.clientHeight/1440;
@@ -3861,11 +4233,17 @@ canvas.addEventListener('mousedown',e=>{
 });
 window.addEventListener('mousemove',e=>{
   if(!dragging)return;
+  _suppressHover=true;
   tx=dtx+(e.clientX-dsx);ty=dty+(e.clientY-dsy);clamp();applyT();
 });
-window.addEventListener('mouseup',()=>{dragging=false;canvas.classList.remove('dragging');});
+window.addEventListener('mouseup',()=>{dragging=false;canvas.classList.remove('dragging');_suppressHover=false;});
+window.addEventListener('touchend',()=>{_suppressHover=false;},{passive:true});
+let _wheelTimer=null;
 canvas.addEventListener('wheel',e=>{
   e.preventDefault();
+  _suppressHover=true;
+  clearTimeout(_wheelTimer);
+  _wheelTimer=setTimeout(()=>{_suppressHover=false;},150);
   const f=e.deltaY>0?0.85:1.18;
   sc=Math.min(scMx,Math.max(scMn,sc*f));
   smartPan();
@@ -4492,6 +4870,58 @@ document.addEventListener('touchstart',e=>{
 
 
 // ── End README panel ───────────────────────────────────────────────
+
+// ── Sidebar vertical scroll proxy ────────────────────────────────
+// Touch and drag anywhere in #sidebar scrolls the canvas vertically.
+// Full sidebar height maps to full string SVG height (1440px * sc).
+// A minimal 1px indicator line shows scroll position on touch.
+(function wireSidebarScroll(){
+  const sb=document.getElementById('sidebar');
+  if(!sb) return;
+
+  // Indicator: a thin line showing viewport position
+  const ind=document.createElement('div');
+  ind.style.cssText='position:absolute;left:0;right:0;height:1px;background:rgba(83,58,183,0.25);pointer-events:none;display:none;';
+  sb.appendChild(ind);
+
+  function showIndicator(){
+    const sbH=sb.clientHeight||1;
+    const fullSvgH=1440*sc;
+    const scrollable=Math.max(0,fullSvgH-canvas.clientHeight);
+    const scrolled=scrollable>0?Math.max(0,Math.min(1,-ty/scrollable)):0;
+    const posY=Math.round(scrolled*(sbH-2));
+    ind.style.top=posY+'px';
+    ind.style.display='block';
+  }
+
+  let _sbDrag=false, _sbStartY=0, _sbStartTy=0;
+
+  sb.addEventListener('touchstart',e=>{
+    _sbDrag=true;
+    _sbStartY=e.touches[0].clientY;
+    _sbStartTy=ty;
+    showIndicator();
+    e.stopPropagation();
+  },{passive:true});
+
+  sb.addEventListener('touchmove',e=>{
+    if(!_sbDrag) return;
+    const dy=e.touches[0].clientY - _sbStartY;
+    // Map: full sidebar height drag → full string height scroll
+    const sbH=sb.clientHeight||1;
+    const fullSvgH=1440*sc;
+    const ratio=fullSvgH/sbH;
+    // drag up (negative dy) = scroll upstring (ty increases)
+    ty=_sbStartTy + dy*ratio;
+    clamp(); applyT();
+    showIndicator();
+  },{passive:true});
+
+  sb.addEventListener('touchend',()=>{
+    _sbDrag=false;
+    setTimeout(()=>{ind.style.display='none';},600);
+  },{passive:true});
+})();
 
 window.addEventListener('resize',()=>{clamp();applyT();});
 </script>
