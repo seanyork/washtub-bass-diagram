@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Washtub Bass String Map · v5.7</title>
+<title>Washtub Bass String Map · v5.9</title>
 <style>
 *{box-sizing:border-box;}
 body{margin:0;padding:0;font-family:system-ui,sans-serif;background:#fff;color:#1a1a1a;font-size:13px;overflow:hidden;overscroll-behavior:none;touch-action:none;}
@@ -42,7 +42,7 @@ input[type=range]{width:110px;cursor:pointer;}
 #zoom-rail{display:flex;flex-direction:column;gap:3px;align-items:center;padding-top:4px;width:32px;flex-shrink:0;}
 #zoom-rail button{width:26px;height:26px;border:0.5px solid rgba(128,128,128,0.3);background:rgba(255,255,255,0.92);color:#333;border-radius:5px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 @media(prefers-color-scheme:dark){#zoom-rail button{background:rgba(30,30,30,0.92);color:#ddd;}}
-#canvas-wrap{overflow:hidden;flex:1 1 0%;cursor:grab;user-select:none;position:relative;min-height:0;}
+#canvas-wrap{overflow:hidden;flex:1 1 0%;cursor:grab;user-select:none;position:relative;min-height:0;touch-action:none;}
 #canvas-wrap.dragging{cursor:grabbing;}
 #zoom-label{font-size:10px;color:#888;text-align:center;}
 .capo-snap-btn{height:22px;font-size:11px;background:transparent;border:0.5px solid rgba(200,130,26,0.35);border-radius:3px;color:#C8821A;cursor:pointer;padding:0 8px;white-space:nowrap;display:flex;align-items:center;}
@@ -95,7 +95,7 @@ input[type=range]{width:110px;cursor:pointer;}
 #app-body{flex:1 1 0%;display:flex;overflow:hidden;position:relative;min-height:0;}
 
 /* left rail */
-#left-rail{width:56px;flex-shrink:0;border-right:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column-reverse;align-items:center;padding:6px 0 6px 4px;gap:4px;background:rgb(250,250,250);position:relative;z-index:15;}
+#left-rail{width:56px;flex-shrink:0;border-right:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column-reverse;align-items:center;padding:6px 0 6px 4px;gap:4px;background:rgb(250,250,250);position:relative;z-index:15;touch-action:none;}
 @media(prefers-color-scheme:dark){#left-rail{background:#252525;}}
 #lr-tune-btn{width:46px;height:32px;background:#EEEDFE;border:0.5px solid #AFA9EC;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 .lr-icon{font-size:12px;color:#533AB7;}
@@ -143,7 +143,7 @@ input[type=range]{width:110px;cursor:pointer;}
 /* ruler rail — wider, SVG-based */
 #rrail{width:42px;flex-shrink:0;border-left:0.5px solid rgba(128,128,128,0.15);background:rgba(248,247,244,0.97);position:relative;z-index:13;overflow:visible;}
 @media(prefers-color-scheme:dark){#rrail{background:rgba(40,40,40,0.97);}}
-#rr-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;}
+#rr-svg{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;pointer-events:none;}
 
 /* capo root toggle — top of sidebar, capo mode only */
 #capo-root-toggle{display:none;flex-shrink:0;flex-direction:column;align-items:stretch;padding:5px 5px 4px;gap:2px;border-bottom:0.5px solid rgba(128,128,128,0.15);}
@@ -157,7 +157,7 @@ input[type=range]{width:110px;cursor:pointer;}
 .crt-opt.on .crt-seg-hi{color:#7A3A1D;}
 @media(prefers-color-scheme:dark){.crt-opt{color:#aaa;}}
 /* sidebar */
-#sidebar{width:72px;flex-shrink:0;border-left:0.5px solid rgba(128,128,128,0.15);background:#fff;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+#sidebar{width:72px;flex-shrink:0;border-left:0.5px solid rgba(128,128,128,0.15);background:#fff;display:flex;flex-direction:column;overflow:hidden;position:relative;touch-action:none;}
 /* capo ruler perspective toggle — bottom of sidebar, capo mode only */
 #capo-ruler-persp{display:none;flex-shrink:0;flex-direction:column;align-items:stretch;padding:4px 5px 5px;gap:2px;border-top:0.5px solid rgba(128,128,128,0.15);}
 #capo-ruler-persp.visible{display:flex;}
@@ -176,7 +176,7 @@ input[type=range]{width:110px;cursor:pointer;}
 .sb-idle{font-size:9px;color:#ccc;font-style:italic;padding:6px 5px;}
 
 /* bottom rail */
-#bottom-rail{height:76px;flex-shrink:0;border-top:0.5px solid rgba(128,128,128,0.18);display:flex;background:rgb(250,250,250);position:relative;z-index:16;}
+#bottom-rail{height:76px;flex-shrink:0;border-top:0.5px solid rgba(128,128,128,0.18);display:flex;background:rgb(250,250,250);position:relative;z-index:16;touch-action:none;}
 @media(prefers-color-scheme:dark){#bottom-rail{background:#252525;}}
 #br-nv{width:40px;border-right:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 3px;gap:2px;flex-shrink:0;}
 .br-nvb{width:32px;height:20px;font-size:9px;border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;color:#666;display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;}
@@ -241,11 +241,17 @@ input[type=range]{width:110px;cursor:pointer;}
 #scale-picker{position:absolute;left:44px;top:50px;z-index:50;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,0.14);padding:4px 0;min-width:160px;display:none;}
 @media(prefers-color-scheme:dark){#scale-picker{background:#2a2a2a;}}
 #scale-picker.visible{display:block;}
-.sp-item{padding:5px 12px;font-size:19px;cursor:pointer;color:#1a1a1a;text-align:left;}
+.sp-item{padding:5px 12px;font-size:13px;cursor:pointer;color:#1a1a1a;text-align:left;}
 .sp-item:hover{background:rgba(83,58,183,0.07);}
 .sp-item.on{color:#533AB7;font-weight:700;background:rgba(83,58,183,0.05);}
+.sp-item-name{font-size:13px;font-weight:500;line-height:1.4;}
+.sp-item-degs{display:flex;gap:0;margin-top:2px;}
+.sp-item-degs span{display:inline-block;min-width:20px;font-size:10px;font-weight:600;color:#533AB7;text-align:center;}
+.sp-item.on .sp-item-degs span{color:#7B63D4;}
+.sp-item-notes{display:flex;gap:0;}
+.sp-item-notes span{display:inline-block;min-width:20px;font-size:10px;font-weight:500;color:#888;text-align:center;}
 .sp-sep{height:0.5px;background:rgba(128,128,128,0.2);margin:3px 0;}
-@media(prefers-color-scheme:dark){.sp-item{color:#e0e0e0;}}
+@media(prefers-color-scheme:dark){.sp-item{color:#e0e0e0;}.sp-item-notes span{color:#666;}}
 #home-picker{position:absolute;left:44px;top:100px;z-index:50;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.12);padding:4px;display:none;flex-direction:column;gap:1px;min-width:56px;}
 @media(prefers-color-scheme:dark){#home-picker{background:#2a2a2a;}}
 #home-picker.visible{display:flex;}
@@ -260,7 +266,7 @@ input[type=range]{width:110px;cursor:pointer;}
 #readme-panel-header{display:flex;align-items:center;padding:8px 12px;border-bottom:0.5px solid rgba(128,128,128,0.15);gap:8px;flex-shrink:0;}
 #readme-panel-title{font-size:12px;font-weight:600;color:#533AB7;flex:1;}
 #readme-panel-close{font-size:16px;color:#aaa;cursor:pointer;padding:0 4px;line-height:1;}
-#readme-panel-body{flex:1;overflow-y:auto;padding:14px 16px;font-size:13px;line-height:1.6;color:#1a1a1a;}
+#readme-panel-body{flex:1;overflow-y:auto;padding:14px 16px;font-size:13px;line-height:1.6;color:#1a1a1a;touch-action:pan-y;}
 @media(prefers-color-scheme:dark){#readme-panel-body{color:#e0e0e0;}}
 #readme-panel-body h2{font-size:15px;font-weight:700;color:#533AB7;margin:16px 0 6px;border-bottom:0.5px solid rgba(83,58,183,0.2);padding-bottom:4px;}
 #readme-panel-body h3{font-size:13px;font-weight:600;color:#1a1a1a;margin:12px 0 4px;}
@@ -468,17 +474,6 @@ input[type=range]{width:110px;cursor:pointer;}
 <svg id="main-svg" width="1380" height="1440" viewBox="0 0 1380 1440" xmlns="http://www.w3.org/2000/svg">
 
 <!-- Pitch axis (left of string) -->
-<g id="pitch-axis" style="display:none;">
-<line x1="220" y1="52" x2="460" y2="52" stroke="currentColor" stroke-width="0.5" opacity="0.25"/>
-<line x1="220" y1="52" x2="220" y2="1310" stroke="currentColor" stroke-width="0.3" stroke-dasharray="2 5" opacity="0.12"/>
-<line x1="300" y1="52" x2="300" y2="1310" stroke="currentColor" stroke-width="0.3" stroke-dasharray="2 5" opacity="0.12"/>
-<line x1="380" y1="52" x2="380" y2="1310" stroke="currentColor" stroke-width="0.3" stroke-dasharray="2 5" opacity="0.12"/>
-<line x1="460" y1="52" x2="460" y2="1310" stroke="currentColor" stroke-width="0.3" stroke-dasharray="2 5" opacity="0.12"/>
-<text x="220" y="46" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.3">4F</text>
-<text x="300" y="46" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.3">3F</text>
-<text x="380" y="46" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.3">2F</text>
-<text x="460" y="46" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.3">F</text>
-</g>
 
 <!-- Column headers -->
 <text id="col-strdeg" x="438" y="22" text-anchor="middle" font-size="16" font-weight="600" fill="currentColor">str°</text>
@@ -508,29 +503,6 @@ input[type=range]{width:110px;cursor:pointer;}
 <text x="398" y="1302" text-anchor="start" font-size="12" fill="currentColor" opacity="0.5">resonator</text>
 <text x="480" y="1325" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.5">bridge</text>
 
-<!-- Legend — right of washtub, two columns — TODO: remove from DOM in cleanup pass -->
-<g id="svg-legend" style="display:none;">
-<rect x="630" y="1300" width="380" height="150" rx="6" fill="rgba(128,128,128,0.05)" stroke="rgba(128,128,128,0.18)" stroke-width="0.5"/>
-<text x="820" y="1320" text-anchor="middle" font-size="13" font-weight="500" fill="currentColor">legend</text>
-<!-- Column 1: primary family -->
-<circle cx="650" cy="1338" r="7" fill="rgba(0,0,0,0.06)" stroke="currentColor" stroke-width="1.5"/><circle cx="650" cy="1338" r="3" fill="currentColor"/>
-<text x="664" y="1342" font-size="11" fill="currentColor">primary · in key</text>
-<circle cx="650" cy="1358" r="7" fill="#FAECE7" stroke="#993C1D" stroke-width="1.5"/><circle cx="650" cy="1358" r="3" fill="#993C1D"/>
-<text x="664" y="1362" font-size="11" fill="currentColor">primary · chromatic</text>
-<circle cx="650" cy="1378" r="7" fill="#EEEDFE" stroke="#533AB7" stroke-width="1.5"/><circle cx="650" cy="1378" r="3" fill="#533AB7"/>
-<text x="664" y="1382" font-size="11" fill="currentColor">home node (home°)</text>
-<!-- Column 2: secondary family -->
-<circle cx="820" cy="1338" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/>
-<text x="834" y="1342" font-size="11" fill="currentColor" opacity="0.7">secondary · in key</text>
-<circle cx="820" cy="1358" r="5" fill="none" stroke="#D85A30" stroke-width="1.5"/>
-<text x="834" y="1362" font-size="11" fill="currentColor" opacity="0.7">secondary · chromatic</text>
-<circle cx="820" cy="1378" r="5" fill="none" stroke="#B4B2A9" stroke-width="1.5" stroke-dasharray="3 2"/>
-<text x="834" y="1382" font-size="11" fill="currentColor" opacity="0.7">between named pitches</text>
-<!-- Home node ring -->
-<circle cx="650" cy="1398" r="16" fill="none" stroke="#533AB7" stroke-width="2" opacity="0.5"/>
-<text x="664" y="1402" font-size="11" fill="currentColor" opacity="0.7">home node ring</text>
-<text x="630" y="1432" font-size="10" fill="currentColor" opacity="0.3">upper | lower = length from nut | from tub</text>
-</g>
 
 <!-- Dynamic -->
 <g id="dyn-ruler" style="display:none;"></g>
@@ -557,7 +529,6 @@ input[type=range]{width:110px;cursor:pointer;}
 
 <!-- Capo view elements -->
 <g id="capo-layer" display="none">
-  <g id="capo-sub-nodes"></g>
   <g id="capo-ticks"></g>
   <g id="capo-zones"></g>
   <g id="capo-ann"></g>
@@ -566,6 +537,7 @@ input[type=range]{width:110px;cursor:pointer;}
     <line id="capo-drag-line1" x1="452" y1="82" x2="508" y2="82" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
     <line id="capo-drag-line2" x1="452" y1="86" x2="508" y2="86" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
   </g>
+  <g id="capo-sub-nodes"></g>
 </g>
       </div><!-- end svg-inner -->
       <!-- label panel: absolute, pointer-events:none, never shifts layout -->
@@ -579,6 +551,9 @@ input[type=range]{width:110px;cursor:pointer;}
 
     <!-- sidebar: flex-ratio h-rule -->
     <div id="sidebar">
+      <div id="sb-upper"></div>
+      <div id="sb-hrule"></div>
+      <div id="sb-lower"></div>
       <div id="capo-root-toggle">
         <div class="crt-lbl">tune to</div>
         <button class="crt-opt on" id="crt-lower" onclick="setCapoTuneTarget('lower')">
@@ -588,9 +563,6 @@ input[type=range]{width:110px;cursor:pointer;}
           <span class="crt-seg-lo" id="crt-up-lo">↓C</span><span class="crt-seg-hi" id="crt-up-hi">↑G</span>
         </button>
       </div>
-      <div id="sb-upper"></div>
-      <div id="sb-hrule"></div>
-      <div id="sb-lower"></div>
       <div id="capo-ruler-persp">
         <div class="crp-lbl">ruler</div>
         <div class="crp-row">
@@ -600,6 +572,9 @@ input[type=range]{width:110px;cursor:pointer;}
       </div>
     </div>
 
+  <!-- Overlay SVG: inside app-body, spans canvas+ruler for fan lines + shade -->
+  <svg id="fan-overlay" xmlns="http://www.w3.org/2000/svg"
+    style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:12;"></svg>
   </div><!-- end app-body -->
 
   <!-- bottom rail (placeholder — wired in Steps 6–12) -->
@@ -654,6 +629,43 @@ input[type=range]{width:110px;cursor:pointer;}
 
 
 <script>
+// Diagnostic error display — shows JS errors in the UI instead of crashing
+(function(){
+  const _errs=[];
+  function _showErr(msg){
+    _errs.push(msg);
+    let el=document.getElementById('_dbg');
+    if(!el){
+      el=document.createElement('div');
+      el.id='_dbg';
+      el.style.cssText='position:fixed;top:0;left:0;right:0;background:#c00;color:#fff;font-size:11px;padding:6px 8px;z-index:99999;white-space:pre-wrap;max-height:120px;overflow:auto;font-family:monospace;';
+      // Try body first, fall back to documentElement
+      (document.body||document.documentElement).appendChild(el);
+    }
+    el.textContent=_errs.slice(-5).join('\n');
+    console.error('[washtub]', msg); // also log to devtools console
+  }
+  window.onerror=function(msg,src,line,col,err){
+    _showErr('L'+line+': '+((err&&err.message)||msg));
+    return false; // do NOT suppress — let it propagate to devtools console
+  };
+  window.addEventListener('unhandledrejection',function(e){
+    _showErr('Promise: '+(e.reason&&(e.reason.message||e.reason)||'unknown'));
+    // do not preventDefault — let it show in console
+  });
+  // Expose for manual calls
+  window._dbgErr=_showErr;
+})();
+
+// Iframe detection — true when running inside any iframe (Claude artifact renderer,
+// embedded page, etc.). Cross-origin access to window.top throws SecurityError → true.
+const _isIframe=(()=>{ try{ return window.self!==window.top; } catch(e){ return true; } })();
+// Touch-primary device detection — true on phones/tablets, false on desktop.
+const _isCoarsePointer=!!(window.matchMedia&&window.matchMedia('(pointer:coarse)').matches);
+// Disable fan overlay only in desktop iframes — mobile iframes (Claude mobile app) work fine.
+// Desktop Claude renderer crashes on layout reads (clientWidth) even in rAF.
+const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
+
 // ══════════════════════════════════════════════════════════════════════════════
 // ⚠️  PHYSICS & MUSIC THEORY CORE — DO NOT MODIFY DURING UI REDESIGN (v4.x)
 // ══════════════════════════════════════════════════════════════════════════════
@@ -829,6 +841,7 @@ const _setHomeNode_orig=setHomeNode;
 setHomeNode = function(deg){
   _setHomeNode_orig(deg);
   updateLeftRailChips();
+  _maybeAutoTune();
 };
 
 // ── Patch setMode to also update chip ────────────────────────────
@@ -871,6 +884,9 @@ function updateScaleStrip(){
 // Builds #nts-right content directly from data — avoids CSS scoping
 // issues that arise from copying #tone-strip-scoped class markup.
 
+// Returns "nf" label (e.g. "5f") for harmonic number n — used in tone strip as HTML
+function harmLabel(n){ return n ? `${n}<em style="font-style:italic">f</em>` : ''; }
+
 const _origShowStrip = showStrip;
 showStrip = function(freq, frac, nodeLabel, color){
   _origShowStrip(freq, frac, nodeLabel, color); // still writes legacy tone-row1
@@ -887,6 +903,9 @@ showStrip = function(freq, frac, nodeLabel, color){
   // Upper segment fraction string — from node.fs complement
   const upperFracStr=strNode?compFrac(strNode.fs):'—';
   const upperIn=((1-frac)*effectiveSpeakingLength()).toFixed(1);
+  // Harmonic number
+  const harmNum=strNode?strNode.harm:(frac>=0.999?1:null);
+  const harmStr=harmNum?harmLabel(harmNum):'';
   const dst=document.getElementById('nts-right');
   if(!dst) return;
   dst.innerHTML=
@@ -899,11 +918,12 @@ showStrip = function(freq, frac, nodeLabel, color){
        <span style="font-size:10px;color:#ccc;">·</span>
        <span style="font-size:18px;font-weight:500;color:${keyCol};">${noteStr}</span>
      </div>
-     <div style="display:flex;align-items:center;gap:3px;margin-top:2px;">
+     <div style="display:flex;align-items:center;gap:5px;margin-top:2px;">
        <span style="font-size:10px;color:#aaa;">↑</span>
        <span style="font-size:11px;font-weight:600;color:${col};">${upperFracStr}</span>
        <span style="font-size:10px;color:#ccc;">·</span>
        <span style="font-size:11px;font-weight:500;color:#555;">${upperIn}"</span>
+       ${harmStr?`<span style="font-size:10px;color:#ccc;">·</span><span style="font-size:10px;color:#aaa;font-style:italic;">${harmStr}</span>`:''}
      </div>`;
 };
 
@@ -974,7 +994,9 @@ function compFrac(fs){
 // ── Interval name from just-intonation ratio ──────────────────────
 function intervalName(ratio){
   let r=ratio;
-  while(r>=2) r/=2; while(r<1) r*=2;
+  if(!r||!isFinite(r)||r<=0) return '?';
+  let _i=0; while(r>=2&&_i++<60) r/=2;
+  _i=0;     while(r<1 &&_i++<60) r*=2;
   const table=[
     [1,'P1'],[9/8,'M2'],[5/4,'M3'],[4/3,'P4'],
     [3/2,'P5'],[5/3,'M6'],[15/8,'M7'],[2,'P8']
@@ -986,11 +1008,11 @@ function intervalName(ratio){
 
 // Compound-interval version for cross-capo spans.
 // Normalizes to [1,4) to preserve octave context: M9, P12, etc.
-// Direction: r>1 = going upstring (toward nut = lower pitch), label includes direction.
 function intervalNameCompound(ratio){
   let r=ratio;
-  // Normalize to [1,4) — allows simple and first compound range
-  while(r>=4) r/=2; while(r<1) r*=2;
+  if(!r||!isFinite(r)||r<=0) return '?';
+  let _i=0; while(r>=4&&_i++<60) r/=2;
+  _i=0;     while(r<1 &&_i++<60) r*=2;
   const table=[
     [1,'P1'],[9/8,'M2'],[5/4,'M3'],[4/3,'P4'],
     [3/2,'P5'],[5/3,'M6'],[15/8,'M7'],
@@ -1031,8 +1053,9 @@ function getFullStringHomeFracsWithFreq(segCf){
   const result=[];
 
   function isOct(r){
-    if(r<=0) return false;
-    while(r>=2) r/=2; while(r<1) r*=2;
+    if(!r||!isFinite(r)||r<=0) return false;
+    let _i=0; while(r>=2&&_i++<60) r/=2;
+    _i=0;     while(r<1 &&_i++<60) r*=2;
     return Math.abs(r-1)<0.006;
   }
 
@@ -1093,7 +1116,82 @@ let _activeSegment=null; // 'lower'|'upper'|null — set when a capo sub-node is
 let _lastStripArgs=null; // cache last showStrip call args for replay on tension change
 
 // ── Full ruler SVG redraw ─────────────────────────────────────────
+// Fan overlay — draws fan lines + shade polygon in #fan-overlay.
+// Uses clientWidth/clientHeight instead of getBoundingClientRect to avoid
+// forced synchronous layout reflows which crash sandboxed iframes.
+// Layout is known from CSS: rrail=42px, sidebar=72px, both fixed.
+const _drawFanOverlay = (withinFs, crossFs, activeFrac, isSeg_, segType_, otherSegCol_) => {
+  const fo=document.getElementById('fan-overlay');
+  if(!fo) return;
+  fo.innerHTML='';
+  const abody=document.getElementById('app-body');
+  const cv=document.getElementById('canvas-wrap');
+  const rr=document.getElementById('rrail');
+  if(!abody||!cv||!rr) return;
+  // clientWidth/clientHeight — avoids forced layout reflow unlike getBoundingClientRect
+  // Layout: left-rail (56px) | canvas-wrap (flex:1) | rrail (42px) | sidebar (72px)
+  const lr=document.getElementById('left-rail');
+  const lrW=lr?lr.clientWidth:56;
+  const rrW=rr.clientWidth||42;
+  const rrH=rr.clientHeight||300;
+  const cvW=cv.clientWidth||(abody.clientWidth-lrW-rrW-72);
+  // In the overlay (inset:0 inside app-body):
+  // left-rail at x=0, canvas-wrap at x=lrW, rrail at x=lrW+cvW
+  const _CX=lrW+cvW+rrW/2;
+  const _TOP=66, _BOT=54, _MINI_H=rrH-_TOP-_BOT;
+  const _miniY=f=>(_MINI_H+_TOP)-f*_MINI_H;
+  const strPt=f=>({x:lrW+tx+SX*sc, y:ty+nY(f)*sc});
+  const rulPt=f=>({x:_CX,          y:_miniY(f)});
+  const mk_=(tag,attrs)=>{
+    const el=document.createElementNS('http://www.w3.org/2000/svg',tag);
+    Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));
+    return el;
+  };
+  // Shade polygon between nearest home nodes
+  if(activeFrac!==null && withinFs.length>=2){
+    const above=withinFs.filter(f=>f>activeFrac);
+    const below=withinFs.filter(f=>f<activeFrac);
+    const nearAbove=above.length?Math.min(...above):null;
+    const nearBelow=below.length?Math.max(...below):null;
+    if(nearAbove!==null && nearBelow!==null){
+      const sa=strPt(nearAbove), sb=strPt(nearBelow);
+      const ra=rulPt(nearAbove), rb=rulPt(nearBelow);
+      fo.appendChild(mk_('polygon',{
+        points:`${sa.x.toFixed(1)},${sa.y.toFixed(1)} ${sb.x.toFixed(1)},${sb.y.toFixed(1)} ${rb.x.toFixed(1)},${rb.y.toFixed(1)} ${ra.x.toFixed(1)},${ra.y.toFixed(1)}`,
+        fill:'rgba(83,58,183,0.06)','pointer-events':'none'
+      }));
+    }
+  }
+  // Active node fan line
+  if(activeFrac!==null){
+    const fanCol=isSeg_?(segType_==='lower'?SUB_COL_LOWER:SUB_COL_UPPER):'#533AB7';
+    const sp=strPt(activeFrac), rp=rulPt(activeFrac);
+    fo.appendChild(mk_('line',{
+      x1:rp.x.toFixed(1),y1:rp.y.toFixed(1),x2:sp.x.toFixed(1),y2:sp.y.toFixed(1),
+      stroke:fanCol,'stroke-width':1,'stroke-dasharray':'4 3',opacity:0.5
+    }));
+  }
+  // Home node fan lines
+  withinFs.forEach(hf=>{
+    const sp=strPt(hf), rp=rulPt(hf);
+    fo.appendChild(mk_('line',{
+      x1:rp.x.toFixed(1),y1:rp.y.toFixed(1),x2:sp.x.toFixed(1),y2:sp.y.toFixed(1),
+      stroke:'#533AB7','stroke-width':1,'stroke-dasharray':'3 4',opacity:0.4
+    }));
+  });
+  crossFs.forEach(hf=>{
+    if(!otherSegCol_) return;
+    const sp=strPt(hf), rp=rulPt(hf);
+    fo.appendChild(mk_('line',{
+      x1:rp.x.toFixed(1),y1:rp.y.toFixed(1),x2:sp.x.toFixed(1),y2:sp.y.toFixed(1),
+      stroke:otherSegCol_,'stroke-width':1,'stroke-dasharray':'3 4',opacity:0.3
+    }));
+  });
+};
+
 function drawRulerSVG(node){
+  try{
+
   const rrail=document.getElementById('rrail');
   const svg=document.getElementById('rr-svg');
   if(!rrail||!svg) return;
@@ -1109,9 +1207,6 @@ function drawRulerSVG(node){
   const nutViewActive = nodeView==='nut' && nutOffsetInches>0;
   const nutLabel = nutViewActive ? 'eff. nut' : 'nut';
   const miniY=f=>MINI_BOT-f*MINI_H; // frac=1=top, frac=0=bottom — correct in all modes
-
-  // Always compute fanX2 — needed for home lines even after soft-unpin
-  const fanX2=(tx+SX*sc)-canvas.clientWidth;
 
   // Viewport indicator geometry
   const diagH=canvas.clientHeight||1;
@@ -1130,36 +1225,6 @@ function drawRulerSVG(node){
   const isSeg=(node&&node.segment);
   const segCf=isSeg?node.cf:null;
   const segType=isSeg?node.segment:null;
-
-  // Active node fan line + octave equivalents
-  if(frac!==null){
-    const fanCol=isSeg?(segType==='lower'?SUB_COL_LOWER:SUB_COL_UPPER):'#533AB7';
-    // Primary fan line
-    const nodeScreenY=ty+nY(frac)*sc;
-    html+=`<line x1="${CX}" y1="${miniY(frac).toFixed(1)}" x2="${fanX2.toFixed(1)}" y2="${nodeScreenY.toFixed(1)}"
-      stroke="${fanCol}" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>`;
-    // Octave equivalents: find all nodes whose ratio, reduced to [1,2), matches the current node
-    if(node && node.ratio){
-      let normR=node.ratio;
-      while(normR>=2) normR/=2;
-      while(normR<1)  normR*=2;
-      // Candidates: full-string NODES + nut (ratio=1, frac=1.0) in non-capo
-      const candidates=[...NODES];
-      if(!isSeg && Math.abs(normR-1)<0.002) candidates.push({frac:1.0, ratio:1});
-      candidates.forEach(n=>{
-        let nr=n.ratio; while(nr>=2) nr/=2; while(nr<1) nr*=2;
-        if(Math.abs(nr-normR)>0.002) return; // different pitch class
-        // Map to the correct full-string frac for this mode
-        const equivFrac=isSeg
-          ?(segType==='lower'?n.frac*segCf:segCf+n.frac*(1-segCf))
-          :n.frac;
-        if(Math.abs(equivFrac-frac)<0.002) return; // skip primary (already drawn)
-        const eScreenY=(ty+nY(equivFrac)*sc).toFixed(1);
-        html+=`<line x1="${CX}" y1="${miniY(frac).toFixed(1)}" x2="${fanX2.toFixed(1)}" y2="${eScreenY}"
-          stroke="${fanCol}" stroke-width="1" stroke-dasharray="3 3" opacity="0.25"/>`;
-      });
-    }
-  }
 
   // Segment-aware home node data.
   // SEGMENT perspective (default): each segment has its own home nodes.
@@ -1188,46 +1253,17 @@ function drawRulerSVG(node){
     crossFracs  = crossHomeData.map(d=>d.frac);
   }
 
-  // Home fan lines + shade — only when a node is pinned
-  if(_pinnedFrac!==null && frac!==null && homeFracs.length>=1){
-    // Shade uses within-segment home nodes only
-    const upperWithin=withinFracs.filter(hf=>hf>frac);
-    const lowerWithin=withinFracs.filter(hf=>hf<frac);
-    const nearAbove=upperWithin.length?Math.min(...upperWithin):null;
-    const nearBelow=lowerWithin.length?Math.max(...lowerWithin):null;
-    const shadeG=document.getElementById('dyn-home-shade');
-    if(shadeG){
-      shadeG.innerHTML='';
-      if(nearAbove!==null && nearBelow!==null){
-        const x_str=SX;
-        const y_strAbove=nY(nearAbove);
-        const y_strBelow=nY(nearBelow);
-        const x_rul=(canvas.clientWidth+CX-tx)/sc;
-        const y_rulAbove=(miniY(nearAbove)-ty)/sc;
-        const y_rulBelow=(miniY(nearBelow)-ty)/sc;
-        const poly=document.createElementNS('http://www.w3.org/2000/svg','polygon');
-        poly.setAttribute('points',
-          `${x_str},${y_strAbove} ${x_str},${y_strBelow} ${x_rul.toFixed(1)},${y_rulBelow.toFixed(1)} ${x_rul.toFixed(1)},${y_rulAbove.toFixed(1)}`);
-        poly.setAttribute('fill','rgba(83,58,183,0.07)');
-        poly.setAttribute('pointer-events','none');
-        shadeG.appendChild(poly);
-      }
-    }
-    // Within-segment home fan lines — purple
-    withinFracs.forEach(hf=>{
-      const hmScreenY=(ty+nY(hf)*sc).toFixed(1);
-      html+=`<line x1="${CX}" y1="${miniY(hf).toFixed(1)}" x2="${fanX2.toFixed(1)}" y2="${hmScreenY}"
-        stroke="#533AB7" stroke-width="1" stroke-dasharray="3 4" opacity="0.45"/>`;
-    });
-    // Cross-segment home fan lines — other segment color, no shade/labels
-    crossFracs.forEach(hf=>{
-      const hmScreenY=(ty+nY(hf)*sc).toFixed(1);
-      html+=`<line x1="${CX}" y1="${miniY(hf).toFixed(1)}" x2="${fanX2.toFixed(1)}" y2="${hmScreenY}"
-        stroke="${otherSegCol}" stroke-width="1" stroke-dasharray="3 4" opacity="0.35"/>`;
+  // Draw fan lines + shade only when pinned and not in a desktop iframe.
+  // Mobile iframes work fine; desktop Claude renderer crashes on layout reads.
+  if(_pinnedFrac!==null && !_disableFanOverlay){
+    requestAnimationFrame(()=>{
+      try{
+        _drawFanOverlay(withinFracs, crossFracs, frac, isSeg, segType,
+          (!useFullString && isSeg) ? otherSegCol : null);
+      }catch(e){}
     });
   } else {
-    const shadeG=document.getElementById('dyn-home-shade');
-    if(shadeG) shadeG.innerHTML='';
+    const fo=document.getElementById('fan-overlay'); if(fo) fo.innerHTML='';
   }
 
   // Viewport indicator
@@ -1268,8 +1304,8 @@ function drawRulerSVG(node){
       return el;
     };
     const hit=mkS2('circle',{cx:CX,cy:hy,r:12,fill:'transparent',style:'cursor:pointer;pointer-events:all;'});
-    hit.addEventListener('click',e=>{e.stopPropagation();playTone(_hFreq);_origShowStrip_step5(_hFreq,hf,'1',iconColor);});
-    hit.addEventListener('touchstart',e=>{e.stopPropagation();playTone(_hFreq);_origShowStrip_step5(_hFreq,hf,'1',iconColor);},{passive:true});
+    hit.addEventListener('click',e=>{try{e.stopPropagation();playTone(_hFreq);_origShowStrip_step5(_hFreq,hf,'1',iconColor);}catch(e){}});
+    hit.addEventListener('touchstart',e=>{try{e.stopPropagation();playTone(_hFreq);_origShowStrip_step5(_hFreq,hf,'1',iconColor);}catch(e){}},{passive:true});
     _homeIconEls.push(
       mkS2('circle',{cx:CX,cy:hy,r:7,fill:'none',stroke:iconColor,'stroke-width':1.4,opacity:0.4}),
       mkS2('circle',{cx:CX,cy:hy,r:4,fill:iconFill,stroke:iconColor,'stroke-width':1.4}),
@@ -1357,14 +1393,14 @@ function drawRulerSVG(node){
     };
     const dotEl=_mkDot('circle',{cx:CX,cy:dy.toFixed(1),r:5,fill:dotCol,stroke:'#fff','stroke-width':2});
     const dotHit=_mkDot('circle',{cx:CX,cy:dy.toFixed(1),r:12,fill:'transparent',style:'cursor:pointer;pointer-events:all;'});
-    dotHit.addEventListener('click',e=>{
+    dotHit.addEventListener('click',e=>{try{
       e.stopPropagation();playTone(_dotFreq);
       if(_lastStripArgs) _origShowStrip_step5(_dotFreq,_lastStripArgs.frac,_lastStripArgs.nodeLabel,_lastStripArgs.color);
-    });
-    dotHit.addEventListener('touchstart',e=>{
+    }catch(e){}});
+    dotHit.addEventListener('touchstart',e=>{try{
       e.stopPropagation();playTone(_dotFreq);
       if(_lastStripArgs) _origShowStrip_step5(_dotFreq,_lastStripArgs.frac,_lastStripArgs.nodeLabel,_lastStripArgs.color);
-    },{passive:true});
+    }catch(e){}},{passive:true});
     _homeIconEls.push(dotEl, dotHit);
 
     // Full-string mode: if the pinned node is itself a key-root position, relabel strip to '1'
@@ -1440,10 +1476,13 @@ function drawRulerSVG(node){
   svg.innerHTML=bgHtml+html;
   // Append home node icon DOM elements (need event listeners, can't be in innerHTML)
   _homeIconEls.forEach(el=>svg.appendChild(el));
+  }catch(e){} // swallow any rendering errors — never crash the app
 }
 
 // ── Sidebar builder ───────────────────────────────────────────────
 function showLabel(node){
+  try{
+
   // If pinned to a different node, don't update the display
   if(_pinnedFrac!==null && Math.abs(_pinnedFrac-node.frac)>0.001) return;
   _activeFrac=node.frac; _activeNode=node;
@@ -1477,12 +1516,15 @@ function showLabel(node){
     lower.style.flex=String(1-_dotFrac);
     lower.innerHTML=`<div class="sb-note" style="color:${lCol};">${lNote}</div><div class="sb-hz">${lowerHz} Hz</div><div class="sb-len">${lowerIn}"</div>`;
   }
+  }catch(e){} // never crash on hover/tap
 }
 
 function hideLabel(){
   _activeFrac=null; _activeNode=null; _activeSegment=null;
+  window._activeRatioFund=1; // reset tension tone to fundamental
   setRowHL(null);
   drawRulerSVG(null);
+  const fo=document.getElementById('fan-overlay'); if(fo) fo.innerHTML='';
   const upper=document.getElementById('sb-upper');
   const lower=document.getElementById('sb-lower');
   if(upper){ upper.style.flex='1'; upper.innerHTML=''; }
@@ -1491,12 +1533,14 @@ function hideLabel(){
 
 // ── Viewport / applyT ─────────────────────────────────────────────
 function updateVP(){
-  if(_activeNode) drawRulerSVG(_activeNode);
-  else drawRulerSVG(null);
+  try{
+    if(_activeNode) drawRulerSVG(_activeNode);
+    else drawRulerSVG(null);
+  }catch(e){}
 }
 
 const _applyT_orig=applyT;
-applyT = function(){ _applyT_orig(); updateVP(); };
+applyT = function(){ try{ _applyT_orig(); }catch(e){} try{ updateVP(); }catch(e){} };
 
 // ── Hook showStrip / clearStrip ───────────────────────────────────
 const _origShowStrip_step5=showStrip;
@@ -1578,6 +1622,9 @@ let brNodeView = 'full';   // 'full' | 'nut' | 'capo'
 let brRightPanel = null;   // null | 'audio' | 'phys' | 'lgnd'
 let showPitchBars = false; // show/hide pitch bars + secondary info columns
 let overflowOpen = false;
+let autoTune = false;      // auto-tune string on key or mode change
+
+function _maybeAutoTune(){ if(autoTune) tuneToKey(); }
 
 // ── isMobile helper ───────────────────────────────────────────────
 function isMobile(){ return window.matchMedia('(max-width:600px)').matches; }
@@ -1780,6 +1827,7 @@ function renderPhysPanel(){
             <span class="br-chip-lbl" style="font-size:7.5px;">kg/m</span>
             <div style="width:0.5px;background:rgba(128,128,128,0.2);align-self:stretch;margin:0 2px;"></div>
             <div class="br-btn${showPitchBars?' on':''}" onclick="togglePitchBars()" title="show/hide pitch bars and detail columns">show pitch bars</div>
+            <div class="br-btn${autoTune?' on':''}" onclick="autoTune=!autoTune;renderBRCtx()" title="Auto-tune string when key or mode changes">auto-tune</div>
           </div>
           <div class="br-ctx-row" onclick="toggleOverflow()" style="cursor:pointer;">
             <div class="br-more-bar"></div>
@@ -1916,19 +1964,13 @@ function toggleOverflow(){
   }
 }
 
-// On desktop, show overflow automatically when state has one
+// On desktop, auto-close overflow when overflowOpen is false — never auto-open.
+// Overflow opens only via explicit user action (toggleOverflow / swipe).
 function updateOverflowDesktop(){
   if(isMobile()) return;
-  const hasOverflow=(brNodeView==='nut'&&!brRightPanel)||(brRightPanel==='phys');
   const op=document.getElementById('overflow-panel');
   if(!op) return;
-  if(hasOverflow){
-    overflowOpen=true;
-    renderOverflowPanel();
-    op.classList.add('visible');
-    setTimeout(wireAllBRSliders,0);
-  } else {
-    overflowOpen=false;
+  if(!overflowOpen){
     op.classList.remove('visible');
     op.innerHTML='';
   }
@@ -1963,8 +2005,10 @@ function wireAllBRSliders(){
     });
     // touch support
     track.addEventListener('touchstart',e=>{
+      e.preventDefault();
       drag=true;
       const move=ev=>{
+        ev.preventDefault();
         if(!drag) return;
         const r=track.getBoundingClientRect();
         const pct=Math.max(0,Math.min(1,(ev.touches[0].clientX-r.left)/r.width));
@@ -1972,9 +2016,9 @@ function wireAllBRSliders(){
         cb(min+pct*(max-min), pct);
       };
       const up=()=>{drag=false;track.removeEventListener('touchmove',move);track.removeEventListener('touchend',up);};
-      track.addEventListener('touchmove',move,{passive:true});
+      track.addEventListener('touchmove',move,{passive:false});
       track.addEventListener('touchend',up,{passive:true});
-    },{passive:true});
+    },{passive:false});
   }
 
   // ── Audio: dur ────────────────────────────────────────────────
@@ -2041,11 +2085,12 @@ function wireAllBRSliders(){
       window.addEventListener('mouseup',up);
     });
     track.addEventListener('touchstart',e=>{
-      const move=ev=>{doMove(ev.touches[0].clientX);};
+      e.preventDefault();
+      const move=ev=>{ev.preventDefault();doMove(ev.touches[0].clientX);};
       const up=()=>{track.removeEventListener('touchmove',move);track.removeEventListener('touchend',up);};
-      track.addEventListener('touchmove',move,{passive:true});
+      track.addEventListener('touchmove',move,{passive:false});
       track.addEventListener('touchend',up,{passive:true});
-    },{passive:true});
+    },{passive:false});
   })();
 }
 
@@ -2214,7 +2259,7 @@ function snapCoF(){
         b.classList.toggle('on', COF_ORDER[bi]===newKey);
       });
       updateTuneBtn(); updateScaleSpelling(); updateScaleStrip();
-      updateLeftRailChips(); render();
+      updateLeftRailChips(); render(); _maybeAutoTune();
     }
   }
   requestAnimationFrame(step);
@@ -2226,23 +2271,108 @@ function initCoF(){
   drawCoF();
 }
 
-// Drag wiring
+// Spin to a specific CoF position (0-11), animating from current angle
+function spinToPos(pos){
+  const targetAngle=-(pos/12)*2*Math.PI;
+  const start=cofAngle;
+  let diff=((targetAngle-start) % (2*Math.PI));
+  if(diff>Math.PI) diff-=2*Math.PI;
+  if(diff<-Math.PI) diff+=2*Math.PI;
+  if(Math.abs(diff)<0.001){ snapCoF(); return; } // already there — just snap+select
+  const duration=280, t0=performance.now();
+  function step(t){
+    const p=Math.min(1,(t-t0)/duration);
+    const ease=1-Math.pow(1-p,3);
+    cofAngle=start+diff*ease;
+    drawCoF();
+    if(p<1){ requestAnimationFrame(step); }
+    else{
+      cofAngle=targetAngle;
+      const newKey=COF_ORDER[pos];
+      _clearPin(); homeKey=newKey;
+      drawCoF();
+      document.querySelectorAll('.kbtn').forEach((b,bi)=>{
+        b.classList.toggle('on', COF_ORDER[bi]===newKey);
+      });
+      updateTuneBtn(); updateScaleSpelling(); updateScaleStrip();
+      updateLeftRailChips(); render(); _maybeAutoTune();
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+// Drag + tap wiring
 (function(){
   const cv=document.getElementById('cof-canvas');
   if(!cv) return;
   let dragging=false, startA=0, startCof=0;
+  let _tapStartX=0, _tapStartY=0, _moved=false;
+
   function ptrAngle(e){
     const r=cv.getBoundingClientRect();
     const cx=(e.touches?e.touches[0].clientX:e.clientX)-r.left-COF_CX;
     const cy=(e.touches?e.touches[0].clientY:e.clientY)-r.top-COF_CY;
     return Math.atan2(cy,cx);
   }
-  cv.addEventListener('mousedown',e=>{dragging=true;cv.style.cursor='grabbing';startA=ptrAngle(e);startCof=cofAngle;e.stopPropagation();});
-  cv.addEventListener('touchstart',e=>{dragging=true;startA=ptrAngle(e);startCof=cofAngle;e.stopPropagation();},{passive:true});
-  window.addEventListener('mousemove',e=>{if(!dragging)return;cofAngle=startCof+(ptrAngle(e)-startA);drawCoF();});
-  window.addEventListener('touchmove',e=>{if(!dragging)return;cofAngle=startCof+(ptrAngle(e)-startA);drawCoF();},{passive:true});
-  window.addEventListener('mouseup',()=>{if(dragging){dragging=false;cv.style.cursor='grab';snapCoF();}});
-  window.addEventListener('touchend',()=>{if(dragging){dragging=false;snapCoF();}});
+
+  // Given a canvas-relative (x,y), return which CoF position (0-11) was tapped, or -1
+  function hitPos(ex, ey){
+    const r=cv.getBoundingClientRect();
+    const dx=ex-r.left-COF_CX, dy=ey-r.top-COF_CY;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    const outerR=78, innerR=34;
+    if(dist<innerR||dist>outerR) return -1; // hit donut hole or outside
+    const tapAngle=Math.atan2(dy,dx);
+    // midAngle for pos = (pos/12)*2π - π/2 + cofAngle
+    // tapAngle ≈ (pos/12)*2π - π/2 + cofAngle → pos = (tapAngle + π/2 - cofAngle)*12/(2π)
+    let raw=(tapAngle + Math.PI/2 - cofAngle) * 12 / (2*Math.PI);
+    return ((Math.round(raw) % 12) + 12) % 12;
+  }
+
+  cv.addEventListener('mousedown',e=>{
+    dragging=true; _moved=false; cv.style.cursor='grabbing';
+    startA=ptrAngle(e); startCof=cofAngle;
+    _tapStartX=e.clientX; _tapStartY=e.clientY;
+    e.stopPropagation();
+  });
+  cv.addEventListener('touchstart',e=>{
+    e.preventDefault(); dragging=true; _moved=false;
+    startA=ptrAngle(e); startCof=cofAngle;
+    _tapStartX=e.touches[0].clientX; _tapStartY=e.touches[0].clientY;
+    e.stopPropagation();
+  },{passive:false});
+
+  window.addEventListener('mousemove',e=>{
+    if(!dragging) return;
+    _moved=true;
+    cofAngle=startCof+(ptrAngle(e)-startA); drawCoF();
+  });
+  cv.addEventListener('touchmove',e=>{
+    e.preventDefault(); if(!dragging) return;
+    _moved=true;
+    cofAngle=startCof+(ptrAngle(e)-startA); drawCoF();
+  },{passive:false});
+
+  window.addEventListener('mouseup',e=>{
+    if(!dragging) return;
+    dragging=false; cv.style.cursor='grab';
+    if(!_moved){
+      // Tap: spin to tapped key
+      const pos=hitPos(e.clientX, e.clientY);
+      if(pos>=0){ spinToPos(pos); return; }
+    }
+    snapCoF();
+  });
+  window.addEventListener('touchend',e=>{
+    if(!dragging) return;
+    dragging=false;
+    if(!_moved && e.changedTouches.length>0){
+      const t=e.changedTouches[0];
+      const pos=hitPos(t.clientX, t.clientY);
+      if(pos>=0){ spinToPos(pos); return; }
+    }
+    snapCoF();
+  });
 })();
 
 toggleCoF = function(){
@@ -2467,9 +2597,23 @@ function setModeByName(mode){
   else{ currentMode=mode; render(); }
   updateScaleStrip(); updateLeftRailChips();
   drawCoF(); // update donut label immediately
+  _maybeAutoTune();
 }
 
 openScalePicker = function(){ openModePicker(); }; // redirect old call
+
+// Compute degree + note spelling for a given mode key at current homeKey
+function modeSpelling(modeKey){
+  const steps=MODE_SCALES[modeKey];
+  const degs=[], notes=[];
+  let pc=homeKey;
+  for(let i=0;i<7;i++){
+    degs.push(CHROM[((pc-homeKey)%12+12)%12]);
+    notes.push(NOTES[((pc%12)+12)%12]);
+    pc+=steps[i];
+  }
+  return {degs, notes};
+}
 
 function openModePicker(){
   closeHomePicker();
@@ -2480,19 +2624,26 @@ function openModePicker(){
   const lr=document.getElementById('left-rail');
   if(shell&&lr){
     const sr=shell.getBoundingClientRect(), lrr=lr.getBoundingClientRect();
-    sp.style.left=(lrr.right-sr.left)+'px'; // flush with left rail right edge
+    sp.style.left=(lrr.right-sr.left)+'px';
     sp.style.transform='none';
-    sp.style.bottom='80px'; // above bottom rail
+    sp.style.bottom='80px';
     sp.style.top='auto';
     const maxH=sr.height-80-8;
     sp.style.maxHeight=Math.max(80,maxH)+'px';
     sp.style.overflowY='auto';
   }
-  sp.innerHTML=MODES_ORDER.map(m=>
-    m===null?'<div class="sp-sep"></div>'
-    :`<div class="sp-item${currentMode===m.key?' on':''}"
-        onclick="setModeByName('${m.key}');closePickers()">${m.label}</div>`
-  ).join('');
+  sp.innerHTML=MODES_ORDER.map(m=>{
+    if(m===null) return '<div class="sp-sep"></div>';
+    const s=modeSpelling(m.key);
+    const degSpans=s.degs.map(d=>`<span>${d}</span>`).join('');
+    const noteSpans=s.notes.map(n=>`<span>${n}</span>`).join('');
+    return `<div class="sp-item${currentMode===m.key?' on':''}"
+        onclick="setModeByName('${m.key}');closePickers()">
+        <div class="sp-item-name">${m.label}</div>
+        <div class="sp-item-degs">${degSpans}</div>
+        <div class="sp-item-notes">${noteSpans}</div>
+      </div>`;
+  }).join('');
   sp.classList.add('visible');
 };
 
@@ -2525,13 +2676,18 @@ function closeScalePicker(){const s=document.getElementById('scale-picker');if(s
 function closeHomePicker(){const h=document.getElementById('home-picker');if(h)h.classList.remove('visible');}
 function closePickers(){closeScalePicker();closeHomePicker();}
 
-// Close pickers on outside click
-document.addEventListener('mousedown',e=>{
-  const sp=document.getElementById('scale-picker');
-  const hp=document.getElementById('home-picker');
-  if(sp&&sp.classList.contains('visible')&&!sp.contains(e.target)&&e.target.id!=='chip-scale') closeScalePicker();
-  if(hp&&hp.classList.contains('visible')&&!hp.contains(e.target)&&e.target.id!=='chip-home') closeHomePicker();
-});
+// Close pickers on outside click or touch
+function _checkPickerDismiss(target){
+  try{
+    if(!target) return;
+    const sp=document.getElementById('scale-picker');
+    const hp=document.getElementById('home-picker');
+    if(sp&&sp.classList.contains('visible')&&!sp.contains(target)&&target.id!=='chip-scale') closeScalePicker();
+    if(hp&&hp.classList.contains('visible')&&!hp.contains(target)&&target.id!=='chip-home') closeHomePicker();
+  }catch(e){}
+}
+document.addEventListener('mousedown',e=>_checkPickerDismiss(e.target));
+document.addEventListener('touchstart',e=>_checkPickerDismiss(e.target),{passive:true});
 
 // ── End Steps 13–14 CoF + pickers ════════════════════════════════
 
@@ -2613,12 +2769,12 @@ function setNodeView(view, btn){
 // ── Column header updates ─────────────────────────────────────────
 function updateColHeaders(){
   const isCapo=nodeView==='capo';
-  document.getElementById('col-strdeg').textContent=  isCapo ? 'interval' : 'str°';
-  document.getElementById('col-homedeg').textContent= isCapo ? 'ratio'    : 'home°';
-  document.getElementById('col-keydeg').textContent=  isCapo ? ''         : 'key°';
-  document.getElementById('col-note').textContent=    isCapo ? ''         : 'note';
-  document.getElementById('col-info').textContent=    isCapo ? ''         : 'fraction · ratio · interval';
-  document.getElementById('col-segs').textContent=    isCapo ? ''         : 'upper | lower';
+  document.getElementById('col-strdeg').textContent=  'str°';
+  document.getElementById('col-homedeg').textContent= 'home°';
+  document.getElementById('col-keydeg').textContent=  isCapo ? '' : 'key°';
+  document.getElementById('col-note').textContent=    isCapo ? '' : 'note';
+  document.getElementById('col-info').textContent=    (isCapo||!showPitchBars) ? '' : 'fraction · ratio · interval';
+  document.getElementById('col-segs').textContent=    (isCapo||!showPitchBars) ? '' : 'upper | lower';
 }
 function capoYpx(){
   const nutY=nutEffY(), speakingPx=TY-nutY;
@@ -2713,18 +2869,24 @@ function _showCapoEndNode(seg, cf){
   const _inKey=ni.snapped?isInKey(ni.midi):false;
   const _keyCol=_inKey?'#0F6E56':'rgba(153,60,29,0.6)';
   const _dst=document.getElementById('nts-right');
+  const _endHomeLabel=remapDegree(1)||'1';
   if(_dst) _dst.innerHTML=
     `<div style="display:flex;align-items:baseline;gap:4px;line-height:1;">
-       <span style="font-size:18px;font-weight:500;color:${col};">1</span>
-       <span style="font-size:10px;color:#999;">·</span>
+       <span style="font-size:18px;font-weight:500;color:#5F5E5A;">1</span>
+       <span style="font-size:10px;color:#ccc;">·</span>
+       <span style="font-size:18px;font-weight:500;color:${col};">${_endHomeLabel}</span>
+       <span style="font-size:10px;color:#ccc;">·</span>
        <span style="font-size:18px;font-weight:500;color:${_keyCol};">${_kd}</span>
-       <span style="font-size:10px;color:#999;">·</span>
+       <span style="font-size:10px;color:#ccc;">·</span>
        <span style="font-size:18px;font-weight:500;color:${_keyCol};">${note}</span>
      </div>
-     <div style="display:flex;align-items:center;gap:4px;margin-top:1px;">
-       <span style="font-size:10px;font-weight:500;color:${col};">${Math.round(segFund)} Hz</span>
-       <span style="font-size:9px;color:#999;">·</span>
-       <span style="font-size:10px;color:#888;">${fmtLen(segLen)}</span>
+     <div style="display:flex;align-items:center;gap:5px;margin-top:2px;">
+       <span style="font-size:10px;color:#aaa;">↑</span>
+       <span style="font-size:11px;font-weight:500;color:#555;">—</span>
+       <span style="font-size:10px;color:#ccc;">·</span>
+       <span style="font-size:11px;font-weight:500;color:#555;">${fmtLen(segLen)}</span>
+       <span style="font-size:10px;color:#ccc;">·</span>
+       <span style="font-size:10px;color:#aaa;font-style:italic;">1<em style="font-style:italic">f</em></span>
      </div>`;
 }
 
@@ -2771,28 +2933,54 @@ function updateCapoSubNodes(){
       g.appendChild(mkS('circle',{cx:SX,cy:lY,r:16,fill:'none',stroke:lCol,'stroke-width':2,opacity:0.55}));
     }
 
-    // label (primary only)
-    if(lIsPri){
-      g.appendChild(mkS('text',{x:SDEG_X,y:lY+lFS*0.38,'font-size':lFS,'font-weight':'500',
+    // labels — str° for all nodes; home°, key°, note for all nodes
+    {
+      const lNi2=noteInfo(lFreq);
+      const lKd=lNi2.snapped?chromDeg(lNi2.midi,homeKey):'—';
+      const lInKey=lNi2.snapped?isInKey(lNi2.midi):false;
+      const lNoteStr=lNi2.snapped?lNi2.name+lNi2.octave:'—';
+      const lKeyCol=lInKey?'#0F6E56':'#993C1D';
+      const lRemapped=remapDegree(node.ratio)||node.label;
+      const yOff=lFS*0.38;
+      // str°
+      g.appendChild(mkS('text',{x:SDEG_X,y:lY+yOff,'font-size':lFS,'font-weight':'500',
         'text-anchor':'middle',fill:lCol,opacity:0.75},node.label));
+      // harmonic number superscript
+      const lHarmFS=Math.max(8,Math.round(lFS*0.55));
+      const _lht=mkS('text',{x:SX-lR-4,y:lY-lR+2,'font-size':lHarmFS,'text-anchor':'end',fill:'#B4B2A9',opacity:0.6});
+      _lht.appendChild(document.createTextNode(node.harm+''));
+      const _lhf=document.createElementNS('http://www.w3.org/2000/svg','tspan');
+      _lhf.setAttribute('font-style','italic'); _lhf.textContent='f';
+      _lht.appendChild(_lhf); g.appendChild(_lht);
+      // home°
+      g.appendChild(mkS('text',{x:HOME_X,y:lY+yOff,'font-size':lFS,'font-weight':'500',
+        fill:lCol,opacity:0.85},lRemapped));
+      // key° + note (snapped only)
+      if(lNi2.snapped){
+        g.appendChild(mkS('text',{x:KD_RX,y:lY+yOff,'font-size':lFS,'font-weight':'500',
+          'text-anchor':'end',fill:lKeyCol},lKd));
+        g.appendChild(mkS('text',{x:NOTE_X,y:lY+yOff,'font-size':lFS,'font-weight':'500',
+          fill:lKeyCol},lNoteStr));
+      }
     }
 
     // hit rect
     const lRowH=lFS+8;
     const lHit=mkS('rect',{x:0,y:lY-lRowH/2,width:SVG_W,height:lRowH,
       fill:'transparent',class:'row-hit'});
-    lHit.addEventListener('mousedown',()=>{
+    lHit.addEventListener('mousedown',()=>{ try{
       const pKey=node.frac*cf;
       if(_togglePin(pKey, false)){ playTone(lFreq); _showSubNode(node,'lower',lFreq,cf,lY); }
-    });
-    lHit.addEventListener('mouseenter',()=>{ if(_pinnedFrac!==null&&_pinnedFrac!==node.frac*cf) return; _showSubNode(node,'lower',lFreq,cf,lY); });
-    lHit.addEventListener('mouseleave',()=>{ clearStrip(); if(!_pinnedFrac) hideLabel(); });
-    lHit.addEventListener('touchstart',()=>{
+      else playTone(lFreq);
+    }catch(e){} });
+    lHit.addEventListener('mouseenter',()=>{ try{ if(_pinnedFrac!==null&&_pinnedFrac!==node.frac*cf) return; _showSubNode(node,'lower',lFreq,cf,lY); }catch(e){} });
+    lHit.addEventListener('mouseleave',()=>{ try{ clearStrip(); if(!_pinnedFrac) hideLabel(); }catch(e){} });
+    lHit.addEventListener('touchstart',()=>{ try{
       const pKey=node.frac*cf;
       if(_togglePin(pKey, true)){ playTone(lFreq); _showSubNode(node,'lower',lFreq,cf,lY); }
-    },{passive:true});
-    lHit.addEventListener('touchend',()=>{ clearStrip(); if(!_pinnedFrac) hideLabel(); },{passive:true});
-    lHit.addEventListener('touchend',()=>{ clearStrip(); if(!_pinnedFrac) hideLabel(); },{passive:true});
+      else playTone(lFreq);
+    }catch(e){} },{passive:true});
+    lHit.addEventListener('touchend',()=>{ try{ clearStrip(); if(!_pinnedFrac) hideLabel(); }catch(e){} },{passive:true});
     g.appendChild(lHit);
 
     // ── Upper sub-node ──
@@ -2815,25 +3003,53 @@ function updateCapoSubNodes(){
       g.appendChild(mkS('circle',{cx:SX,cy:uY,r:16,fill:'none',stroke:uCol,'stroke-width':2,opacity:0.55}));
     }
 
-    if(uIsPri){
-      g.appendChild(mkS('text',{x:SDEG_X,y:uY+uFS*0.38,'font-size':uFS,'font-weight':'500',
+    // labels — str°, home°, key°, note for all upper nodes
+    {
+      const uNi2=noteInfo(uFreq);
+      const uKd=uNi2.snapped?chromDeg(uNi2.midi,homeKey):'—';
+      const uInKey=uNi2.snapped?isInKey(uNi2.midi):false;
+      const uNoteStr=uNi2.snapped?uNi2.name+uNi2.octave:'—';
+      const uKeyCol=uInKey?'#0F6E56':'#993C1D';
+      const uRemapped=remapDegree(node.ratio)||node.label;
+      const yOff=uFS*0.38;
+      // str°
+      g.appendChild(mkS('text',{x:SDEG_X,y:uY+yOff,'font-size':uFS,'font-weight':'500',
         'text-anchor':'middle',fill:uCol,opacity:0.75},node.label));
+      // harmonic number superscript
+      const uHarmFS=Math.max(8,Math.round(uFS*0.55));
+      const _uht=mkS('text',{x:SX-uR-4,y:uY-uR+2,'font-size':uHarmFS,'text-anchor':'end',fill:'#B4B2A9',opacity:0.6});
+      _uht.appendChild(document.createTextNode(node.harm+''));
+      const _uhf=document.createElementNS('http://www.w3.org/2000/svg','tspan');
+      _uhf.setAttribute('font-style','italic'); _uhf.textContent='f';
+      _uht.appendChild(_uhf); g.appendChild(_uht);
+      // home°
+      g.appendChild(mkS('text',{x:HOME_X,y:uY+yOff,'font-size':uFS,'font-weight':'500',
+        fill:uCol,opacity:0.85},uRemapped));
+      // key° + note (snapped only)
+      if(uNi2.snapped){
+        g.appendChild(mkS('text',{x:KD_RX,y:uY+yOff,'font-size':uFS,'font-weight':'500',
+          'text-anchor':'end',fill:uKeyCol},uKd));
+        g.appendChild(mkS('text',{x:NOTE_X,y:uY+yOff,'font-size':uFS,'font-weight':'500',
+          fill:uKeyCol},uNoteStr));
+      }
     }
 
     const uRowH=uFS+8;
     const uHit=mkS('rect',{x:0,y:uY-uRowH/2,width:SVG_W,height:uRowH,
       fill:'transparent',class:'row-hit'});
-    uHit.addEventListener('mousedown',()=>{
+    uHit.addEventListener('mousedown',()=>{ try{
       const pKey=cf+node.frac*(1-cf);
       if(_togglePin(pKey, false)){ playTone(uFreq); _showSubNode(node,'upper',uFreq,cf,uY); }
-    });
-    uHit.addEventListener('mouseenter',()=>{ if(_pinnedFrac!==null&&_pinnedFrac!==(cf+node.frac*(1-cf))) return; _showSubNode(node,'upper',uFreq,cf,uY); });
-    uHit.addEventListener('mouseleave',()=>{ clearStrip(); if(!_pinnedFrac) hideLabel(); });
-    uHit.addEventListener('touchstart',()=>{
+      else playTone(uFreq);
+    }catch(e){} });
+    uHit.addEventListener('mouseenter',()=>{ try{ if(_pinnedFrac!==null&&_pinnedFrac!==(cf+node.frac*(1-cf))) return; _showSubNode(node,'upper',uFreq,cf,uY); }catch(e){} });
+    uHit.addEventListener('mouseleave',()=>{ try{ clearStrip(); if(!_pinnedFrac) hideLabel(); }catch(e){} });
+    uHit.addEventListener('touchstart',()=>{ try{
       const pKey=cf+node.frac*(1-cf);
       if(_togglePin(pKey, true)){ playTone(uFreq); _showSubNode(node,'upper',uFreq,cf,uY); }
-    },{passive:true});
-    uHit.addEventListener('touchend',()=>{ clearStrip(); if(!_pinnedFrac) hideLabel(); },{passive:true});
+      else playTone(uFreq);
+    }catch(e){} },{passive:true});
+    uHit.addEventListener('touchend',()=>{ try{ clearStrip(); if(!_pinnedFrac) hideLabel(); }catch(e){} },{passive:true});
     g.appendChild(uHit);
   });
 }
@@ -2902,20 +3118,25 @@ function _showSubNode(node, seg, freq, cf, diagY){
   const _inKey=_ni.snapped?isInKey(_ni.midi):false;
   const _keyCol=_inKey?'#0F6E56':'rgba(153,60,29,0.6)';
   const _dst=document.getElementById('nts-right');
+  const _harmStr=node.harm?harmLabel(node.harm):'';
+  const _homeLabel=remapDegree(node.ratio)||node.label;
+  const _upperFracStr=compFrac(node.fs);
   if(_dst) _dst.innerHTML=
     `<div style="display:flex;align-items:baseline;gap:4px;line-height:1;">
-       <span style="font-size:18px;font-weight:500;color:${col};">${node.label}</span>
-       <span style="font-size:10px;color:#999;">·</span>
+       <span style="font-size:18px;font-weight:500;color:#5F5E5A;">${node.label}</span>
+       <span style="font-size:10px;color:#ccc;">·</span>
+       <span style="font-size:18px;font-weight:500;color:${col};">${_homeLabel}</span>
+       <span style="font-size:10px;color:#ccc;">·</span>
        <span style="font-size:18px;font-weight:500;color:${_keyCol};">${_kd}</span>
-       <span style="font-size:10px;color:#999;">·</span>
+       <span style="font-size:10px;color:#ccc;">·</span>
        <span style="font-size:18px;font-weight:500;color:${_keyCol};">${_noteStr}</span>
      </div>
-     <div style="display:flex;align-items:center;gap:4px;margin-top:1px;">
-       <span style="font-size:10px;font-weight:500;color:${col};">${freq.toFixed(1)} Hz</span>
-       <span style="font-size:9px;color:#999;">·</span>
-       <span style="font-size:10px;color:#1a1a1a;">↑ ${upperIn}"</span>
-       <span style="font-size:9px;color:#999;">·</span>
-       <span style="font-size:10px;color:#888;">${uHz} Hz</span>
+     <div style="display:flex;align-items:center;gap:5px;margin-top:2px;">
+       <span style="font-size:10px;color:#aaa;">↑</span>
+       <span style="font-size:11px;font-weight:600;color:${col};">${_upperFracStr}</span>
+       <span style="font-size:10px;color:#ccc;">·</span>
+       <span style="font-size:11px;font-weight:500;color:#555;">${upperIn}"</span>
+       ${_harmStr?`<span style="font-size:10px;color:#ccc;">·</span><span style="font-size:10px;color:#aaa;font-style:italic;">${_harmStr}</span>`:''}
      </div>`;
 }
 
@@ -2982,6 +3203,20 @@ function updateCapoLayer(){
   const annG=document.getElementById('capo-ann');
   annG.innerHTML='';
   const mkA=(tag,attrs,txt)=>{const el=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const[k,v]of Object.entries(attrs))el.setAttribute(k,v);if(txt!==undefined)el.textContent=txt;return el;};
+
+  // Full-width capo row hover target — rendered first (behind everything else in capo-ann,
+  // drag-marker, and sub-nodes) so sub-node hit rects always take priority.
+  const capoRowH=mainFS+10;
+  const capoRowHit=mkA('rect',{x:0,y:cy-capoRowH/2,width:SVG_W,height:capoRowH,fill:'transparent',class:'row-hit'});
+  capoRowHit.addEventListener('mouseenter',()=>{
+    if(_pinnedFrac!==null&&_pinnedFrac!==cf) return;
+    _showCapoEndNode('lower',cf);
+  });
+  capoRowHit.addEventListener('mouseleave',()=>{
+    clearStrip();
+    if(!_pinnedFrac){const rh=document.getElementById('row-hl');if(rh)rh.innerHTML='';}
+  });
+  annG.appendChild(capoRowHit);
 
   // Upper segment shading
   annG.appendChild(mkA('rect',{x:470,y:nutY,width:20,height:Math.max(0,cy-nutY),fill:'rgba(200,130,26,0.08)',rx:2}));
@@ -3149,18 +3384,34 @@ function setMode(mode, btn){
 // ── Audio ─────────────────────────────────────────────────────────
 let audioCtx=null, waveform='string', toneDuration=0.5, volume=0.65;
 let polyOn=true;
-// For polyphony=off: track active node so we can stop it cleanly
 let activeOsc=null, activeGain=null;
 
+// Audio availability flag — probed at init time via a short timeout.
+// If AudioContext creation hangs (sandboxed iframe), the probe times out
+// and audio is permanently disabled for this session.
+let _audioAvailable=true; // optimistic default; probe may disable it
+
 function getCtx(){
-  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  if(_disableFanOverlay) return null; // desktop iframe — audio + fans both disabled
+  if(!_audioAvailable) return null;
+  if(!audioCtx){
+    try{ audioCtx=new(window.AudioContext||window.webkitAudioContext)(); }
+    catch(e){ _audioAvailable=false; return null; }
+  }
   return audioCtx;
 }
+
 // iOS audio unlock on first touch
 document.addEventListener('touchstart',function unlock(){
+  if(!_audioAvailable) return;
   const ctx=getCtx();
-  if(ctx.state==='suspended') ctx.resume();
-  document.removeEventListener('touchstart',unlock);
+  if(!ctx) return;
+  if(ctx.state==='suspended') ctx.resume().catch(()=>{});
+  try{
+    const buf=ctx.createBuffer(1,1,22050);
+    const src=ctx.createBufferSource();
+    src.buffer=buf; src.connect(ctx.destination); src.start(0);
+  }catch(e){}
 },{once:true,passive:true});
 
 function stopActive(){
@@ -3177,45 +3428,46 @@ function stopActive(){
 
 function playTone(freq){
   if(!freq||freq<16||freq>20000)return;
-  const ctx=getCtx();
-  if(ctx.state==='suspended') ctx.resume();
-  if(!polyOn) stopActive();
-  const osc=ctx.createOscillator();
-  const filter=ctx.createBiquadFilter();
-  const gain=ctx.createGain();
-  osc.connect(filter);
-  filter.connect(gain);
-  gain.connect(ctx.destination);
+  try{
+    const ctx=getCtx();
+    if(!ctx) return;
+    if(ctx.state==='suspended') ctx.resume().catch(()=>{});
+    if(!polyOn) stopActive();
+    const osc=ctx.createOscillator();
+    const filter=ctx.createBiquadFilter();
+    const gain=ctx.createGain();
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
 
-  // Waveform mapping
-  if(waveform==='sine'){
-    osc.type='sine';
-    filter.type='lowpass';
-    filter.frequency.value=20000; // no filtering for sine
-    filter.Q.value=0.5;
-  } else if(waveform==='warm'){
-    // Warm: filtered triangle — odd harmonics, soft rolloff
-    osc.type='triangle';
-    filter.type='lowpass';
-    filter.frequency.value=Math.min(1000, freq*8); // cutoff tracks pitch
-    filter.Q.value=0.7;
-  } else if(waveform==='string'){
-    // String: filtered sawtooth — full harmonics, warm bass tone
-    osc.type='sawtooth';
-    filter.type='lowpass';
-    filter.frequency.value=Math.min(900, freq*6);
-    filter.Q.value=0.8;
-  }
+    // Waveform mapping
+    if(waveform==='sine'){
+      osc.type='sine';
+      filter.type='lowpass';
+      filter.frequency.value=20000;
+      filter.Q.value=0.5;
+    } else if(waveform==='warm'){
+      osc.type='triangle';
+      filter.type='lowpass';
+      filter.frequency.value=Math.min(1000, freq*8);
+      filter.Q.value=0.7;
+    } else if(waveform==='string'){
+      osc.type='sawtooth';
+      filter.type='lowpass';
+      filter.frequency.value=Math.min(900, freq*6);
+      filter.Q.value=0.8;
+    }
 
-  osc.frequency.value=freq;
-  const t=ctx.currentTime;
-  gain.gain.setValueAtTime(0,t);
-  gain.gain.linearRampToValueAtTime(volume,t+0.015);
-  gain.gain.setValueAtTime(volume,t+toneDuration*0.82);
-  gain.gain.linearRampToValueAtTime(0,t+toneDuration);
-  osc.start(t);
-  osc.stop(t+toneDuration+0.05);
-  if(!polyOn){activeOsc=osc;activeGain=gain;}
+    osc.frequency.value=freq;
+    const t=ctx.currentTime;
+    gain.gain.setValueAtTime(0,t);
+    gain.gain.linearRampToValueAtTime(volume,t+0.015);
+    gain.gain.setValueAtTime(volume,t+toneDuration*0.82);
+    gain.gain.linearRampToValueAtTime(0,t+toneDuration);
+    osc.start(t);
+    osc.stop(t+toneDuration+0.05);
+    if(!polyOn){activeOsc=osc;activeGain=gain;}
+  }catch(e){}
 }
 
 function setWaveform(w,btn){
@@ -3425,20 +3677,20 @@ document.getElementById('mu-ro').value=muKgM.toFixed(6);
 
 // ── Node data ─────────────────────────────────────────────────────
 const NODES=[
-  {label:'2',frac:8/9,  ratio:9/8,  primary:false,desc:'maj 2nd below octave node', fs:'8/9', rs:'9:8', tonic:false},
-  {label:'3',frac:4/5,  ratio:5/4,  primary:false,desc:'maj 3rd below octave node', fs:'4/5', rs:'5:4', tonic:false},
-  {label:'4',frac:3/4,  ratio:4/3,  primary:true, desc:'perf 4th below octave node',fs:'3/4', rs:'4:3', tonic:false},
-  {label:'5',frac:2/3,  ratio:3/2,  primary:true, desc:'perf 5th below octave node',fs:'2/3', rs:'3:2', tonic:false},
-  {label:'6',frac:3/5,  ratio:5/3,  primary:false,desc:'maj 6th below octave node', fs:'3/5', rs:'5:3', tonic:false},
-  {label:'7',frac:8/15, ratio:15/8, primary:false,desc:'maj 7th below octave node', fs:'8/15',rs:'15:8',tonic:false},
-  {label:'1',frac:1/2,  ratio:2,    primary:true, desc:'OCTAVE NODE · midpoint',    fs:'1/2', rs:'2:1', tonic:true},
-  {label:'2',frac:4/9,  ratio:9/4,  primary:false,desc:'maj 2nd above octave node', fs:'4/9', rs:'9:4', tonic:false},
-  {label:'3',frac:2/5,  ratio:5/2,  primary:false,desc:'maj 3rd above octave node', fs:'2/5', rs:'5:2', tonic:false},
-  {label:'4',frac:3/8,  ratio:8/3,  primary:true, desc:'perf 4th above octave node',fs:'3/8', rs:'8:3', tonic:false},
-  {label:'5',frac:1/3,  ratio:3,    primary:true, desc:'perf 5th above octave node',fs:'1/3', rs:'3:1', tonic:false},
-  {label:'6',frac:3/10, ratio:10/3, primary:false,desc:'maj 6th above octave node', fs:'3/10',rs:'10:3',tonic:false},
-  {label:'7',frac:4/15, ratio:15/4, primary:false,desc:'maj 7th above octave node', fs:'4/15',rs:'15:4',tonic:false},
-  {label:'1',frac:1/4,  ratio:4,    primary:true, desc:'octave node · 2nd octave',  fs:'1/4', rs:'4:1', tonic:true},
+  {label:'2',frac:8/9,  ratio:9/8,  primary:false,desc:'maj 2nd below octave node', fs:'8/9', rs:'9:8', tonic:false,harm:9},
+  {label:'3',frac:4/5,  ratio:5/4,  primary:false,desc:'maj 3rd below octave node', fs:'4/5', rs:'5:4', tonic:false,harm:5},
+  {label:'4',frac:3/4,  ratio:4/3,  primary:true, desc:'perf 4th below octave node',fs:'3/4', rs:'4:3', tonic:false,harm:4},
+  {label:'5',frac:2/3,  ratio:3/2,  primary:true, desc:'perf 5th below octave node',fs:'2/3', rs:'3:2', tonic:false,harm:3},
+  {label:'6',frac:3/5,  ratio:5/3,  primary:false,desc:'maj 6th below octave node', fs:'3/5', rs:'5:3', tonic:false,harm:5},
+  {label:'7',frac:8/15, ratio:15/8, primary:false,desc:'maj 7th below octave node', fs:'8/15',rs:'15:8',tonic:false,harm:15},
+  {label:'1',frac:1/2,  ratio:2,    primary:true, desc:'OCTAVE NODE · midpoint',    fs:'1/2', rs:'2:1', tonic:true, harm:2},
+  {label:'2',frac:4/9,  ratio:9/4,  primary:false,desc:'maj 2nd above octave node', fs:'4/9', rs:'9:4', tonic:false,harm:9},
+  {label:'3',frac:2/5,  ratio:5/2,  primary:false,desc:'maj 3rd above octave node', fs:'2/5', rs:'5:2', tonic:false,harm:5},
+  {label:'4',frac:3/8,  ratio:8/3,  primary:true, desc:'perf 4th above octave node',fs:'3/8', rs:'8:3', tonic:false,harm:8},
+  {label:'5',frac:1/3,  ratio:3,    primary:true, desc:'perf 5th above octave node',fs:'1/3', rs:'3:1', tonic:false,harm:3},
+  {label:'6',frac:3/10, ratio:10/3, primary:false,desc:'maj 6th above octave node', fs:'3/10',rs:'10:3',tonic:false,harm:10},
+  {label:'7',frac:4/15, ratio:15/4, primary:false,desc:'maj 7th above octave node', fs:'4/15',rs:'15:4',tonic:false,harm:15},
+  {label:'1',frac:1/4,  ratio:4,    primary:true, desc:'octave node · 2nd octave',  fs:'1/4', rs:'4:1', tonic:true, harm:4},
 ];
 
 // ── Layout constants ──────────────────────────────────────────────
@@ -3492,8 +3744,9 @@ function remapDegree(nodeRatio){
   if(homeNode===1) return null;
   const hn=homeNodeRatio();
   let interval=nodeRatio/hn;
-  while(interval>=2) interval/=2;
-  while(interval<1)  interval*=2;
+  if(!isFinite(interval)||interval<=0) return null;
+  let _i=0; while(interval>=2&&_i++<60) interval/=2;
+  _i=0;     while(interval<1 &&_i++<60) interval*=2;
   let best=0, bestDist=Infinity;
   DEGREE_RATIOS.forEach((r,i)=>{
     const dist=Math.abs(interval-r);
@@ -3506,14 +3759,16 @@ function remapDegree(nodeRatio){
 function isTonalCenter(nodeRatio){
   if(homeNode===1){
     let r=nodeRatio;
-    while(r>=2) r/=2;
-    while(r<1)  r*=2;
+    if(!isFinite(r)||r<=0) return false;
+    let _i=0; while(r>=2&&_i++<60) r/=2;
+    _i=0;     while(r<1 &&_i++<60) r*=2;
     return Math.abs(r-1)<0.001;
   }
   const hn=homeNodeRatio();
   let interval=nodeRatio/hn;
-  while(interval>=2) interval/=2;
-  while(interval<1)  interval*=2;
+  if(!isFinite(interval)||interval<=0) return false;
+  let _i=0; while(interval>=2&&_i++<60) interval/=2;
+  _i=0;     while(interval<1 &&_i++<60) interval*=2;
   return Math.abs(interval-1)<0.001;
 }
 
@@ -3558,6 +3813,9 @@ function fontSize(i, nodeYS){
 }
 
 // ── Nut marker update & drag ──────────────────────────────────────
+// Tracks the ny at which ann was last fully rebuilt — used for drag translate
+let _nutAnnBuiltY=NY;
+
 function updateNutMarker(){
   const layer=document.getElementById('nut-height-layer');
   if(nodeView!=='nut'){layer.setAttribute('display','none');return;}
@@ -3579,24 +3837,29 @@ function updateNutMarker(){
   const ann=document.getElementById('nut-drag-ann');
   // Do NOT clear ann while a drag is in progress — removing the touched
   // DOM element mid-sequence causes iOS to stop delivering touchmove events.
-  // Instead, only update the marker's visual position; rebuild ann on drag end.
+  // Instead, translate the entire ann group so it tracks the nut position.
   if(nutDragging){
-    // Just reposition existing elements by updating the marker group (already done above).
+    const dy=ny-_nutAnnBuiltY;
+    ann.setAttribute('transform','translate(0,'+dy.toFixed(1)+')');
     return;
   }
+  ann.setAttribute('transform','');
+  _nutAnnBuiltY=ny;
   ann.innerHTML='';
   const fund=fundFreq();
   const fi=noteInfo(fund);
   const speakingIn=effectiveSpeakingLength();
   const nutFS=30, nutInfoFS=16, yOff=9;
 
-  // Pitch bar
-  const bw=barW(1);
-  const barEl=document.createElementNS('http://www.w3.org/2000/svg','rect');
-  barEl.setAttribute('x',BR-bw);barEl.setAttribute('y',ny-5);
-  barEl.setAttribute('width',bw);barEl.setAttribute('height',10);
-  barEl.setAttribute('rx',2);barEl.setAttribute('fill','#533AB7');barEl.setAttribute('opacity',0.55);
-  ann.appendChild(barEl);
+  // Pitch bar (showPitchBars only)
+  if(showPitchBars){
+    const bw=barW(1);
+    const barEl=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    barEl.setAttribute('x',BR-bw);barEl.setAttribute('y',ny-5);
+    barEl.setAttribute('width',bw);barEl.setAttribute('height',10);
+    barEl.setAttribute('rx',2);barEl.setAttribute('fill','#533AB7');barEl.setAttribute('opacity',0.55);
+    ann.appendChild(barEl);
+  }
 
   // Fixed string degree — dark grey bold, left of string
   const sdegEl=document.createElementNS('http://www.w3.org/2000/svg','text');
@@ -3632,19 +3895,19 @@ function updateNutMarker(){
     kdEl.textContent='—';ann.appendChild(kdEl);
   }
 
-  // Info text
-  const infoEl=document.createElementNS('http://www.w3.org/2000/svg','text');
-  infoEl.setAttribute('x',INFO_X);infoEl.setAttribute('y',ny+yOff);
-  infoEl.setAttribute('font-size',nutInfoFS);infoEl.setAttribute('fill','#533AB7');infoEl.setAttribute('opacity',0.8);
-  infoEl.textContent=`1/1  ·  1:1  ·  eff. nut  ·  offset: ${fmtLen(nutOffsetInches)}`;
-  ann.appendChild(infoEl);
-
-  // Segment lengths
-  const segEl=document.createElementNS('http://www.w3.org/2000/svg','text');
-  segEl.setAttribute('x',SEG_X);segEl.setAttribute('y',ny+yOff);
-  segEl.setAttribute('font-size',nutInfoFS);segEl.setAttribute('fill','#533AB7');segEl.setAttribute('opacity',0.65);
-  segEl.textContent='— | '+fmtLen(speakingIn);
-  ann.appendChild(segEl);
+  // Info text + segment lengths (showPitchBars only)
+  if(showPitchBars){
+    const infoEl=document.createElementNS('http://www.w3.org/2000/svg','text');
+    infoEl.setAttribute('x',INFO_X);infoEl.setAttribute('y',ny+yOff);
+    infoEl.setAttribute('font-size',nutInfoFS);infoEl.setAttribute('fill','#533AB7');infoEl.setAttribute('opacity',0.8);
+    infoEl.textContent=`1/1  ·  1:1  ·  eff. nut  ·  offset: ${fmtLen(nutOffsetInches)}`;
+    ann.appendChild(infoEl);
+    const segEl=document.createElementNS('http://www.w3.org/2000/svg','text');
+    segEl.setAttribute('x',SEG_X);segEl.setAttribute('y',ny+yOff);
+    segEl.setAttribute('font-size',nutInfoFS);segEl.setAttribute('fill','#533AB7');segEl.setAttribute('opacity',0.65);
+    segEl.textContent='— | '+fmtLen(speakingIn);
+    ann.appendChild(segEl);
+  }
 
   // Full-width hit rect — click to play, also acts as drag target
   const rowH=nutFS+10;
@@ -3665,8 +3928,18 @@ function updateNutMarker(){
       else playTone(fund); // unpin
     }
   });
-  hitEl.addEventListener('mouseenter',()=>{ if(_pinnedFrac!==null&&_pinnedFrac!==1.0) return; showStrip(fund,1.0,_nutLabel,_nutColor); });
-  hitEl.addEventListener('mouseleave',clearStrip);
+  hitEl.addEventListener('mouseenter',()=>{
+    if(_pinnedFrac!==null&&_pinnedFrac!==1.0) return;
+    showStrip(fund,1.0,_nutLabel,_nutColor);
+    const rh=document.getElementById('row-hl');
+    if(rh){rh.innerHTML='';const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      Object.entries({x:0,y:ny-16,width:SVG_W,height:32,fill:'rgba(83,58,183,0.08)',rx:2})
+        .forEach(([k,v])=>rect.setAttribute(k,v));rh.appendChild(rect);}
+  });
+  hitEl.addEventListener('mouseleave',()=>{
+    clearStrip();
+    if(!_pinnedFrac){const rh=document.getElementById('row-hl');if(rh)rh.innerHTML='';}
+  });
   hitEl.addEventListener('touchstart',()=>{
     playTone(fund);
     if(_togglePin(1.0, true)){ showStrip(fund,1.0,_nutLabel,_nutColor); showLabel(_nutPseudo); }
@@ -3717,8 +3990,13 @@ window.addEventListener('touchmove',e=>{
   applyNutOffset(nutDragStartOffset+dyInches);
   render();},{passive:true});
 window.addEventListener('mouseup',()=>{
-  if(nutDragging && nutDidDrag) playTone(fundFreq());
-  nutDragging=false; nutDidDrag=false;
+  if(nutDragging){
+    if(nutDidDrag) playTone(fundFreq());
+    nutDragging=false; nutDidDrag=false;
+    render(); // rebuild ann now that drag is done (matches touchend)
+  } else {
+    nutDragging=false; nutDidDrag=false;
+  }
 });
 window.addEventListener('touchend',()=>{
   if(nutDragging){
@@ -3740,6 +4018,16 @@ document.getElementById('capo-drag-marker').addEventListener('click',e=>{
   _showCapoEndNode('lower',cf2);
   _togglePin(cf2, false);
   if(_pinnedFrac===cf2){ playTone(capoLowerFreq()); _showCapoEndNode('lower',cf2); }
+});
+document.getElementById('capo-drag-marker').addEventListener('mouseenter',()=>{
+  if(nodeView!=='capo') return;
+  const cf2=1-CAPO_NODES[capoNodeIdx].phi;
+  if(_pinnedFrac!==null&&_pinnedFrac!==cf2) return;
+  _showCapoEndNode('lower',cf2);
+});
+document.getElementById('capo-drag-marker').addEventListener('mouseleave',()=>{
+  clearStrip();
+  if(!_pinnedFrac){const rh=document.getElementById('row-hl');if(rh)rh.innerHTML='';}
 });
 document.getElementById('capo-drag-marker').addEventListener('mousedown',e=>{
   if(nodeView!=='capo') return;
@@ -3985,7 +4273,7 @@ function render(){
     const nutG2=document.getElementById('dyn-nut');
     const nutYc=nutEffY(), nutFS2=26, nutInfoFS2=15, nutRowH2=nutFS2+10;
     nutG2.appendChild(mk('text',{x:SDEG_X,y:nutYc+9,'font-size':nutFS2,'font-weight':'500',
-      'text-anchor':'middle',fill:SUB_COL_UPPER,opacity:0.75},'↑'));
+      'text-anchor':'middle',fill:SUB_COL_UPPER,opacity:0.75},'1'));
     nutG2.appendChild(mk('text',{x:HOME_X,y:nutYc+9,'font-size':nutFS2,'font-weight':'500',
       fill:SUB_COL_UPPER},uNote));
     nutG2.appendChild(mk('text',{x:NOTE_X,y:nutYc+9,'font-size':nutInfoFS2,
@@ -3994,9 +4282,19 @@ function render(){
       fill:'transparent',class:'row-hit'});
     nutHitC.addEventListener('mousedown',()=>{
       if(_togglePin(1.0, false)){ playTone(uFreq); _showCapoEndNode('upper',_cf); }
+      else playTone(uFreq);
+    });
+    nutHitC.addEventListener('mouseenter',()=>{
+      if(_pinnedFrac!==null&&_pinnedFrac!==1.0) return;
+      _showCapoEndNode('upper',_cf);
+    });
+    nutHitC.addEventListener('mouseleave',()=>{
+      clearStrip();
+      if(!_pinnedFrac){const rh=document.getElementById('row-hl');if(rh)rh.innerHTML='';}
     });
     nutHitC.addEventListener('touchstart',()=>{
       if(_togglePin(1.0, true)){ playTone(uFreq); _showCapoEndNode('upper',_cf); }
+      else playTone(uFreq);
     },{passive:true});
     nutHitC.addEventListener('touchend',()=>{ if(!_pinnedFrac) hideLabel(); },{passive:true});
     nutG2.appendChild(nutHitC);
@@ -4049,6 +4347,7 @@ function render(){
     const _nutNode={frac:1.0,ratio:1,fs:'1/1',rs:'1:1',desc:'fundamental',label:'1',primary:true,tonic:false};
     nutHit.addEventListener('mousedown',()=>{
       if(_togglePin(1.0, false)){ playTone(fund); showStrip(fund,1.0,nutHomeLabel,nutColor); showLabel(_nutNode); }
+      else playTone(fund);
     });
     nutHit.addEventListener('mouseenter',()=>{
       if(_pinnedFrac!==null&&_pinnedFrac!==1.0) return;
@@ -4057,6 +4356,7 @@ function render(){
     nutHit.addEventListener('mouseleave',()=>{ clearStrip(); });
     nutHit.addEventListener('touchstart',()=>{
       if(_togglePin(1.0, true)){ playTone(fund); showStrip(fund,1.0,nutHomeLabel,nutColor); showLabel(_nutNode); }
+      else playTone(fund);
     },{passive:true});
     nutHit.addEventListener('touchend',()=>{ clearStrip(); },{passive:true});
     nutG.appendChild(nutHit);
@@ -4105,6 +4405,13 @@ function render(){
     if(isT||isPri) g.appendChild(mk('circle',{cx:SX,cy:y,r:isT?4:3,fill:c.dot}));
     // Fixed string degree — dark grey bold, left of string
     g.appendChild(mk('text',{x:SDEG_X,y:y+yOff,'font-size':fs,'font-weight':'500','text-anchor':'middle',fill:'#5F5E5A'},node.label));
+    // Harmonic number — small superscript just right of the circle
+    const harmLblFS=Math.max(9,Math.round(fs*0.55));
+    const _ht=mk('text',{x:SX-r-4,y:y-r+2,'font-size':harmLblFS,'text-anchor':'end',fill:'#B4B2A9',opacity:0.7});
+    _ht.appendChild(document.createTextNode(node.harm+''));
+    const _hf=document.createElementNS('http://www.w3.org/2000/svg','tspan');
+    _hf.setAttribute('font-style','italic'); _hf.textContent='f';
+    _ht.appendChild(_hf); g.appendChild(_ht);
     // home degree — right of string, colored
     g.appendChild(mk('text',{x:HOME_X,y:y+yOff,'font-size':fs,'font-weight':'500',fill:c.text},displayLabel));
     if(ni.snapped){
@@ -4123,21 +4430,22 @@ function render(){
     }
 
     const hitRect=mk('rect',{x:0,y:y-rowH/2,width:SVG_W,height:rowH,fill:'transparent',class:'row-hit'});
-    // Pin toggle: second tap on same node unpins; tap different node switches pin
-    hitRect.addEventListener('mousedown',()=>{
+    hitRect.addEventListener('mousedown',()=>{ try{
       if(_togglePin(node.frac, false)){ playTone(freq); showStrip(freq,node.frac,displayLabel,c.text); }
-      else playTone(freq); // unpin — still play tone
-    });
-    hitRect.addEventListener('mouseenter',()=>{
-      if(_pinnedFrac!==null&&_pinnedFrac!==node.frac) return; // don't override a different pin
+      else playTone(freq);
+    }catch(e){} });
+    hitRect.addEventListener('mouseenter',()=>{ try{
+      if(_pinnedFrac!==null&&_pinnedFrac!==node.frac) return;
       showStrip(freq,node.frac,displayLabel,c.text); showRuler(y,upperIn,lowerIn,node.fs,freq);
-    });
-    hitRect.addEventListener('mouseleave',()=>{ clearStrip(); });
-    hitRect.addEventListener('touchstart',()=>{
+    }catch(e){} });
+    hitRect.addEventListener('mouseleave',()=>{ try{ clearStrip(); }catch(e){} });
+    hitRect.addEventListener('touchstart',()=>{ try{
+
       if(_togglePin(node.frac, true)){ playTone(freq); showStrip(freq,node.frac,displayLabel,c.text); showRuler(y,upperIn,lowerIn,node.fs,freq); }
-      else playTone(freq); // unpin — still play tone
-    },{passive:true});
-    hitRect.addEventListener('touchend',()=>{ clearStrip(); },{passive:true});
+      else playTone(freq);
+
+    }catch(e){} },{passive:true});
+    hitRect.addEventListener('touchend',()=>{ try{ clearStrip(); }catch(e){} },{passive:true});
     g.appendChild(hitRect);
   });
 }
@@ -4265,28 +4573,27 @@ function _t2Mid(e){
 }
 
 canvas.addEventListener('touchstart',e=>{
+  e.preventDefault(); // prevent host pull-to-dismiss
   if(e.touches.length===2){
-    // Two-finger: start pinch — cancel any single-finger pan
     dragging=false;
     const m=_t2Mid(e);
     _t2StartDist=m.dist; _t2StartSc=sc;
     _t2StartTx=tx; _t2StartTy=ty;
     _t2MidX=m.x; _t2MidY=m.y;
   } else if(e.touches.length===1&&!e.target.classList.contains('row-hit')){
-    // Single-finger on non-node area: pan
     dragging=true;
     dsx=e.touches[0].clientX; dsy=e.touches[0].clientY;
     dtx=tx; dty=ty;
   }
-},{passive:true});
+},{passive:false});
 
 canvas.addEventListener('touchmove',e=>{
+  e.preventDefault(); // prevent host pull-to-dismiss
   if(e.touches.length===2){
     const m=_t2Mid(e);
     sc=Math.min(scMx,Math.max(scMn,_t2StartSc*(m.dist/_t2StartDist)));
     smartPan();
     clamp(); applyT();
-    e.preventDefault();
   } else if(dragging&&e.touches.length===1){
     tx=dtx+(e.touches[0].clientX-dsx);
     ty=dty+(e.touches[0].clientY-dsy);
@@ -4311,7 +4618,8 @@ canvas.addEventListener('touchend',e=>{
     _odStartY=e.touches[0].clientY; _odMoved=false;
   },{passive:true});
   document.getElementById('bottom-rail').addEventListener('touchmove',e=>{
-    const dy=_odStartY-e.touches[0].clientY; // positive = upward
+    e.preventDefault();
+    const dy=_odStartY-e.touches[0].clientY;
     if(dy>20&&!overflowOpen&&!_odMoved){
       _odMoved=true;
       toggleOverflow();
@@ -4319,25 +4627,16 @@ canvas.addEventListener('touchend',e=>{
       _odMoved=true;
       toggleOverflow();
     }
-  },{passive:true});
+  },{passive:false});
 })();
 
-// ── iOS Safari: prevent page scroll/bounce during all touch interactions ──
-// Must be non-passive to allow preventDefault. Allows scrolling inside
-// elements that explicitly need it (overflow-y:auto) via the check below.
-document.addEventListener('touchmove', e=>{
-  // Allow scrolling inside overflow panels (e.g. if overflow-panel is tall)
-  let el=e.target;
-  while(el && el!==document.body){
-    if(el.id==='overflow-panel') return; // let overflow panel scroll
-    if(el.id==='readme-panel-body') return; // let readme panel scroll
-    el=el.parentElement;
-  }
-  e.preventDefault();
-}, {passive:false});
+// ── iOS Safari scroll prevention ─────────────────────────────────
+// Handled via CSS touch-action:none on #canvas-wrap instead of
+// a non-passive document touchmove listener, which can crash
+// sandboxed iframes when preventDefault() is called.
 
 // Initialize to fit view on load
-setTimeout(()=>{
+setTimeout(()=>{ try{
   zoomFit();
   buildCapoSnapBtns();
   updateScaleSpelling();
@@ -4345,7 +4644,28 @@ setTimeout(()=>{
   render();
   initBR();
   initCoF();
-},0);
+
+  // Probe AudioContext availability — if creation hangs in a sandboxed iframe
+  // this Promise races against a 500ms timeout and disables audio if it loses.
+  new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>reject('timeout'),500);
+    try{
+      const probe=new(window.AudioContext||window.webkitAudioContext)();
+      probe.close().then(()=>{ clearTimeout(timer); resolve(true); }).catch(()=>{ clearTimeout(timer); resolve(true); });
+    }catch(e){ clearTimeout(timer); reject(e); }
+  }).then(()=>{
+    // Audio works fine — leave _audioAvailable=true
+  }).catch(()=>{
+    _audioAvailable=false;
+    // Show brief notice
+    const sa=document.createElement('div');
+    sa.style.cssText='position:fixed;top:0;left:0;right:0;background:rgba(83,58,183,0.85);color:#fff;font-size:11px;text-align:center;padding:3px;z-index:9999;pointer-events:none;';
+    sa.textContent='audio unavailable in this environment — visual interaction works normally';
+    document.body.appendChild(sa);
+    setTimeout(()=>sa.remove(), 5000);
+  });
+
+}catch(e){} },0);
 // ── README panel ──────────────────────────────────────────────────
 
 // Simple markdown → HTML converter (headers, bold, lists, tables, hr)
@@ -4875,6 +5195,12 @@ document.addEventListener('touchstart',e=>{
 // Touch and drag anywhere in #sidebar scrolls the canvas vertically.
 // Full sidebar height maps to full string SVG height (1440px * sc).
 // A minimal 1px indicator line shows scroll position on touch.
+(function wireLeftRailTouch(){
+  const lr=document.getElementById('left-rail');
+  if(!lr) return;
+  lr.addEventListener('touchmove', e=>{ e.preventDefault(); }, {passive:false});
+})();
+
 (function wireSidebarScroll(){
   const sb=document.getElementById('sidebar');
   if(!sb) return;
@@ -4902,20 +5228,21 @@ document.addEventListener('touchstart',e=>{
     _sbStartTy=ty;
     showIndicator();
     e.stopPropagation();
-  },{passive:true});
+    e.preventDefault();
+  },{passive:false});
 
   sb.addEventListener('touchmove',e=>{
     if(!_sbDrag) return;
+    e.preventDefault(); // prevent host pull-to-dismiss gesture
+    e.stopPropagation();
     const dy=e.touches[0].clientY - _sbStartY;
-    // Map: full sidebar height drag → full string height scroll
     const sbH=sb.clientHeight||1;
     const fullSvgH=1440*sc;
     const ratio=fullSvgH/sbH;
-    // drag up (negative dy) = scroll upstring (ty increases)
     ty=_sbStartTy + dy*ratio;
     clamp(); applyT();
     showIndicator();
-  },{passive:true});
+  },{passive:false});
 
   sb.addEventListener('touchend',()=>{
     _sbDrag=false;
