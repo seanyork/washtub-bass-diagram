@@ -357,7 +357,7 @@ input[type=range]{width:110px;cursor:pointer;}
   <input id="len-ro" value='69.0"' onchange="syncReadout('len',this.value)">
   <button class="tog on" id="unit-in" onclick="setUnits('in',this)">in</button>
   <button class="tog" id="unit-cm" onclick="setUnits('cm',this)">cm</button>
-  <input type="range" id="ten-sl" min="10" max="150" step="1" value="50" oninput="syncSlider('ten',this.value)">
+  <input type="range" id="ten-sl" min="5" max="150" step="1" value="50" oninput="syncSlider('ten',this.value)">
   <input id="ten-ro" value="5.0 lbs" onchange="syncReadout('ten',this.value)">
   <input type="range" id="mu-sl" min="1" max="100" step="1" value="52" oninput="syncSlider('mu',this.value)">
   <input id="mu-ro" value="0.000754" onchange="syncReadout('mu',this.value)">
@@ -902,7 +902,7 @@ showStrip = function(freq, frac, nodeLabel, color){
   const strLabel=strNode?strNode.label:(frac>=0.999?'1':'—');
   // Upper segment fraction string — from node.fs complement
   const upperFracStr=strNode?compFrac(strNode.fs):'—';
-  const upperIn=((1-frac)*effectiveSpeakingLength()).toFixed(1);
+  const upperIn=fmtLen((1-frac)*effectiveSpeakingLength());
   // Harmonic number
   const harmNum=strNode?strNode.harm:(frac>=0.999?1:null);
   const harmStr=harmNum?harmLabel(harmNum):'';
@@ -922,7 +922,7 @@ showStrip = function(freq, frac, nodeLabel, color){
        <span style="font-size:10px;color:#aaa;">↑</span>
        <span style="font-size:11px;font-weight:600;color:${col};">${upperFracStr}</span>
        <span style="font-size:10px;color:#ccc;">·</span>
-       <span style="font-size:11px;font-weight:500;color:#555;">${upperIn}"</span>
+       <span style="font-size:11px;font-weight:500;color:#555;">${upperIn}</span>
        ${harmStr?`<span style="font-size:10px;color:#ccc;">·</span><span style="font-size:10px;color:#aaa;font-style:italic;">${harmStr}</span>`:''}
      </div>`;
 };
@@ -1490,8 +1490,8 @@ function showLabel(node){
   setRowHL(node.frac);
   drawRulerSVG(node);
   const fund=fundFreq(), esl=effectiveSpeakingLength();
-  const lowerIn=(node.frac*esl).toFixed(1);
-  const upperIn=((1-node.frac)*esl).toFixed(1);
+  const lowerIn=fmtLen(node.frac*esl);
+  const upperIn=fmtLen((1-node.frac)*esl);
   const lowerHz=Math.round(fund*node.ratio);
   const upperHz=node.frac<0.999 ? Math.round(fund/(1-node.frac)) : 0;
   const lNi=noteInfo(fund*node.ratio);
@@ -1510,11 +1510,11 @@ function showLabel(node){
   const _dotFrac=_dotY/_H;
   if(upper){
     upper.style.flex=String(_dotFrac);
-    upper.innerHTML=`<div class="sb-len">${upperIn}"</div><div class="sb-hz">${upperHz} Hz</div><div class="sb-note" style="color:${uCol};">${uNote}</div>`;
+    upper.innerHTML=`<div class="sb-len">${upperIn}</div><div class="sb-hz">${upperHz} Hz</div><div class="sb-note" style="color:${uCol};">${uNote}</div>`;
   }
   if(lower){
     lower.style.flex=String(1-_dotFrac);
-    lower.innerHTML=`<div class="sb-note" style="color:${lCol};">${lNote}</div><div class="sb-hz">${lowerHz} Hz</div><div class="sb-len">${lowerIn}"</div>`;
+    lower.innerHTML=`<div class="sb-note" style="color:${lCol};">${lNote}</div><div class="sb-hz">${lowerHz} Hz</div><div class="sb-len">${lowerIn}</div>`;
   }
   }catch(e){} // never crash on hover/tap
 }
@@ -2499,7 +2499,7 @@ setTimeout(()=>{
   const tenTrack=document.getElementById('lr-tension-track'); // full 28px hit area
   const tenThumb=document.getElementById('lr-ten-thumb');
   const tenFill =document.getElementById('lr-ten-fill');
-  const tenMin=10, tenMax=150;
+  const tenMin=5, tenMax=150;
 
   function tenSlToFrac(slVal){ return (slVal-tenMin)/(tenMax-tenMin); }
   function tenFracToSl(f){ return Math.round(tenMin+f*(tenMax-tenMin)); }
@@ -3089,8 +3089,8 @@ function _showSubNode(node, seg, freq, cf, diagY){
   // Sidebar
   const esl=effectiveSpeakingLength();
   const segLen = seg==='lower' ? cf*esl : (1-cf)*esl;
-  const lowerIn=(node.frac*segLen).toFixed(1);
-  const upperIn=((1-node.frac)*segLen).toFixed(1);
+  const lowerIn=fmtLen(node.frac*segLen);
+  const upperIn=fmtLen((1-node.frac)*segLen);
   const fund=fundFreq();
   const segFund = seg==='lower' ? fund/cf : fund/(1-cf);
   const lHz=Math.round(segFund*node.ratio);
@@ -3108,9 +3108,9 @@ function _showSubNode(node, seg, freq, cf, diagY){
   const _dotY=(_H-_BOT)-pseudoNode.frac*_MH;
   const _dotFrac=_dotY/_H;
   if(upper){ upper.style.flex=String(_dotFrac);
-    upper.innerHTML=`<div class="sb-len">${upperIn}"</div><div class="sb-hz">${uHz} Hz</div><div class="sb-note">${uNote}</div>`; }
+    upper.innerHTML=`<div class="sb-len">${upperIn}</div><div class="sb-hz">${uHz} Hz</div><div class="sb-note">${uNote}</div>`; }
   if(lower){ lower.style.flex=String(1-_dotFrac);
-    lower.innerHTML=`<div class="sb-note">${lNote}</div><div class="sb-hz">${lHz} Hz</div><div class="sb-len">${lowerIn}"</div>`; }
+    lower.innerHTML=`<div class="sb-note">${lNote}</div><div class="sb-hz">${lHz} Hz</div><div class="sb-len">${lowerIn}</div>`; }
   // Update top tone strip right panel
   const _ni=noteInfo(freq);
   const _kd=_ni.snapped?chromDeg(_ni.midi,homeKey):'—';
@@ -3135,7 +3135,7 @@ function _showSubNode(node, seg, freq, cf, diagY){
        <span style="font-size:10px;color:#aaa;">↑</span>
        <span style="font-size:11px;font-weight:600;color:${col};">${_upperFracStr}</span>
        <span style="font-size:10px;color:#ccc;">·</span>
-       <span style="font-size:11px;font-weight:500;color:#555;">${upperIn}"</span>
+       <span style="font-size:11px;font-weight:500;color:#555;">${upperIn}</span>
        ${_harmStr?`<span style="font-size:10px;color:#ccc;">·</span><span style="font-size:10px;color:#aaa;font-style:italic;">${_harmStr}</span>`:''}
      </div>`;
 }
@@ -3501,6 +3501,9 @@ function tuneToKey(){
     segScale = capoTuneTarget==='lower' ? cf : (1-cf);
   }
 
+  // Score candidates by distance to 5 lbs sweet spot (calibration point / comfortable mid-range).
+  // This prefers middle octaves over very low or very high tensions regardless of current setting.
+  const TUNE_SWEET=5.0;
   let bestT=null;
   for(let oct=0;oct<=5;oct++){
     const midi=rootPc+(oct+1)*12;
@@ -3509,14 +3512,14 @@ function tuneToKey(){
     const fundTargetFreq=tcTargetFreq*segScale/tc;
     const T=Math.pow(2*L*fundTargetFreq,2)*mu;
     const lbs=T/LBS_TO_N;
-    if(lbs>=0.1&&lbs<=15){
-      if(bestT===null||Math.abs(lbs-tensionLbs)<Math.abs(bestT-tensionLbs)){
+    if(lbs>=0.5&&lbs<=15){
+      if(bestT===null||Math.abs(lbs-TUNE_SWEET)<Math.abs(bestT-TUNE_SWEET)){
         bestT=lbs;
       }
     }
   }
   if(bestT===null) return;
-  tensionLbs=Math.max(1,Math.min(15,bestT));
+  tensionLbs=Math.max(0.5,Math.min(15,bestT));
   document.getElementById('ten-sl').value=tenValToSl(tensionLbs);
   document.getElementById('ten-ro').value=tensionLbs.toFixed(1)+' lbs';
   render();
@@ -3578,7 +3581,7 @@ function applyDefaults(){
   if(isNaN(mu))  mu=0.000754;
   if(!useInches) len=len/2.54;
   len=Math.max(24,Math.min(200,len));
-  ten=Math.max(1,Math.min(15,ten));
+  ten=Math.max(0.5,Math.min(15,ten));
   mu=Math.max(0.0001,Math.min(0.005,mu));
 
   // In nut height mode: preserve the speaking length ratio when string length changes
@@ -3668,7 +3671,7 @@ function syncReadout(key,raw){
     }
     render();
   }
-  else if(key==='ten'){v=Math.max(1,Math.min(15,v));tensionLbs=v;document.getElementById('ten-sl').value=tenValToSl(v);document.getElementById('ten-ro').value=v.toFixed(1)+' lbs';render();}
+  else if(key==='ten'){v=Math.max(0.5,Math.min(15,v));tensionLbs=v;document.getElementById('ten-sl').value=tenValToSl(v);document.getElementById('ten-ro').value=v.toFixed(1)+' lbs';render();}
   else if(key==='mu'){v=Math.max(0.0001,Math.min(0.005,v));muKgM=v;document.getElementById('mu-sl').value=muValToSl(v);document.getElementById('mu-ro').value=v.toFixed(6);render();}
 }
 // Init mu slider
