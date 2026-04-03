@@ -507,8 +507,8 @@ input[type=range]{width:110px;cursor:pointer;}
 <ellipse cx="408" cy="1351" rx="4.5" ry="8" fill="#888" stroke="#999" stroke-width="2" opacity="0.9" transform="rotate(27,408,1351)"/>
 <ellipse cx="552" cy="1351" rx="4.5" ry="8" fill="#888" stroke="#999" stroke-width="2" opacity="0.9" transform="rotate(-27,552,1351)"/>
 <!-- Board ends under tub (outer edges at x=393 and x=567) -->
-<rect x="393" y="1392" width="30" height="9" rx="2" fill="#C4946A" opacity="0.85"/>
-<rect x="537" y="1392" width="30" height="9" rx="2" fill="#C4946A" opacity="0.85"/>
+<rect x="375" y="1392" width="30" height="9" rx="2" fill="#C4946A" opacity="0.85"/>
+<rect x="555" y="1392" width="30" height="9" rx="2" fill="#C4946A" opacity="0.85"/>
 <line x1="443" y1="1351" x2="418" y2="1351" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
 <line x1="517" y1="1351" x2="542" y2="1351" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
 <text x="480" y="1354" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.5">sound ports</text>
@@ -553,6 +553,7 @@ input[type=range]{width:110px;cursor:pointer;}
     <line id="capo-drag-line2" x1="452" y1="86" x2="508" y2="86" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
   </g>
   <g id="capo-sub-nodes"></g>
+  <g id="capo-label-hits"></g>
 </g>
       </div><!-- end svg-inner -->
       <!-- label panel: absolute, pointer-events:none, never shifts layout -->
@@ -1639,6 +1640,7 @@ let brRightPanel = null;   // null | 'audio' | 'phys' | 'lgnd'
 let showPitchBars = false; // show/hide pitch bars + secondary info columns
 let overflowOpen = false;
 let autoTune = false;      // auto-tune string on key or mode change
+let toneSpacing = 0;       // seconds between sequential tones (before/after playback)
 
 function _maybeAutoTune(){ if(autoTune) tuneToKey(); }
 
@@ -1732,22 +1734,6 @@ function renderNodeViewCtx(view){
   if(view==='full'){
     return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">readme</span></div>
             <div class="br-ctx-row" style="gap:5px;justify-content:center;">
-              <div class="br-readme-btn" onclick="openReadme('physics')">
-                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M2 11 C4 11 5 5 7 5 C9 5 10 17 12 17 C14 17 15 11 17 11 C18.5 11 19.5 8 20 8" stroke="#533AB7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <div class="br-readme-btn-lbl">physics</div>
-              </div>
-              <div class="br-readme-btn" onclick="openReadme('theory')">
-                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <line x1="8" y1="5" x2="8" y2="14" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round"/>
-                  <line x1="14" y1="3" x2="14" y2="12" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round"/>
-                  <line x1="8" y1="5" x2="14" y2="3" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round"/>
-                  <ellipse cx="7" cy="14.5" rx="2.5" ry="1.8" transform="rotate(-15 7 14.5)" fill="#533AB7"/>
-                  <ellipse cx="13" cy="12.5" rx="2.5" ry="1.8" transform="rotate(-15 13 12.5)" fill="#533AB7"/>
-                </svg>
-                <div class="br-readme-btn-lbl">theory</div>
-              </div>
               <div class="br-readme-btn" onclick="openReadme('instrument')">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M7 17 L15 17 L17 21 L5 21 Z" stroke="#533AB7" stroke-width="1.3" stroke-linejoin="round"/>
@@ -1765,6 +1751,22 @@ function renderNodeViewCtx(view){
                   <line x1="8" y1="13" x2="11" y2="13" stroke="#533AB7" stroke-width="1.2" stroke-linecap="round"/>
                 </svg>
                 <div class="br-readme-btn-lbl">app</div>
+              </div>
+              <div class="br-readme-btn" onclick="openReadme('physics')">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 11 C4 11 5 5 7 5 C9 5 10 17 12 17 C14 17 15 11 17 11 C18.5 11 19.5 8 20 8" stroke="#533AB7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div class="br-readme-btn-lbl">physics</div>
+              </div>
+              <div class="br-readme-btn" onclick="openReadme('theory')">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <line x1="8" y1="5" x2="8" y2="14" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round"/>
+                  <line x1="14" y1="3" x2="14" y2="12" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round"/>
+                  <line x1="8" y1="5" x2="14" y2="3" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round"/>
+                  <ellipse cx="7" cy="14.5" rx="2.5" ry="1.8" transform="rotate(-15 7 14.5)" fill="#533AB7"/>
+                  <ellipse cx="13" cy="12.5" rx="2.5" ry="1.8" transform="rotate(-15 13 12.5)" fill="#533AB7"/>
+                </svg>
+                <div class="br-readme-btn-lbl">theory</div>
               </div>
               <div class="br-readme-btn" onclick="openReadme('thanks')">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1804,13 +1806,19 @@ function renderNodeViewCtx(view){
     const snaps=['m3','M3','P4','P5','m6','M6','8ve'];
     const snapBtns=snaps.map((s,i)=>`<div class="br-snap-btn${i===capoNodeIdx?' on':''}"
       onclick="setCapoNode(${i});renderBRCtx()">${s}</div>`).join('');
+    const arpOn=capoArp;
     return `<div class="br-ctx-row" style="gap:3px;">
               <div class="br-play-btn" onclick="playTone(capoUpperFreq())">▲ ${uLen}</div>
               <div class="br-play-btn" onclick="playTone(capoLowerFreq())">▼ ${lLen}</div>
               <div class="br-play-btn" onclick="playCapoBoth()">▲▼ both</div>
             </div>
-            <div style="flex:2 1 0%;display:flex;align-items:stretch;padding:3px 5px;gap:2px;border-top:0.5px solid rgba(128,128,128,0.1);">
+            <div style="flex:1 1 0%;display:flex;align-items:stretch;padding:3px 5px;gap:2px;border-top:0.5px solid rgba(128,128,128,0.1);">
               ${snapBtns}
+            </div>
+            <div class="br-ctx-row" style="gap:4px;border-top:0.5px solid rgba(128,128,128,0.1);">
+              <span class="br-chip-lbl">arp</span>
+              <div class="br-poly-btn${!arpOn?' on':''}" onclick="toggleCapoArp(false);renderBRCtx()">off</div>
+              <div class="br-poly-btn${arpOn?' on':''}" onclick="toggleCapoArp(true);renderBRCtx()">on</div>
             </div>`;
   }
   return '';
@@ -1839,6 +1847,7 @@ function renderAudioPanel(){
   const polyoff=`<div class="br-poly-btn${!polyOn?' on':''}" onclick="setPoly(false,this);renderBRCtx()">off</div>`;
   const durPct=(toneDuration-0.2)/(4-0.2);
   const volPct=volume;
+  const spcPct=toneSpacing/1.0;
   return `<div class="br-ctx-row" style="gap:3px;">
             <span class="br-chip-lbl">wave</span>${wbtns}
             <div style="width:0.5px;background:rgba(128,128,128,0.2);align-self:stretch;"></div>
@@ -1851,6 +1860,14 @@ function renderAudioPanel(){
                 <div class="br-sl-thumb" style="left:${(durPct*100).toFixed(1)}%"></div>
               </div>
               <span class="br-sl-val" id="br-dur-val">${toneDuration.toFixed(1)}s</span>
+            </div>
+            <div style="width:0.5px;background:rgba(128,128,128,0.15);align-self:stretch;margin:0 2px;"></div>
+            <div class="br-sl-wrap">
+              <span class="br-sl-lbl">spc</span>
+              <div class="br-sl-track" id="br-spc-track">
+                <div class="br-sl-thumb" style="left:${(spcPct*100).toFixed(1)}%"></div>
+              </div>
+              <span class="br-sl-val" id="br-spc-val">${toneSpacing.toFixed(2)}s</span>
             </div>
           </div>
           <div class="br-ctx-row" id="br-vol-row">
@@ -2081,6 +2098,42 @@ function wireAllBRSliders(){
     if(valEl) valEl.textContent=val.toFixed(1)+'s';
     syncSlider('dur', val);
   });
+
+  // ── Audio: spacing — wired with pointer capture for reliability ──
+  (function wireSpcSlider(){
+    const track=document.getElementById('br-spc-track');
+    if(!track||track._wired) return;
+    track._wired=true;
+    const SPC_MAX=1.0;
+    function update(clientX){
+      const r=track.getBoundingClientRect();
+      if(r.width<1) return;
+      const pct=Math.max(0,Math.min(1,(clientX-r.left)/r.width));
+      toneSpacing=Math.max(0,Math.min(SPC_MAX,pct*SPC_MAX));
+      const thumb=track.querySelector('.br-sl-thumb');
+      if(thumb) thumb.style.left=(pct*100).toFixed(1)+'%';
+      const val=document.getElementById('br-spc-val');
+      if(val) val.textContent=toneSpacing.toFixed(2)+'s';
+    }
+    let _dragging=false;
+    track.addEventListener('pointerdown',e=>{
+      e.preventDefault();
+      track.setPointerCapture(e.pointerId);
+      _dragging=true;
+      update(e.clientX);
+    });
+    track.addEventListener('pointermove',e=>{
+      if(!_dragging) return;
+      update(e.clientX);
+    });
+    track.addEventListener('pointerup',e=>{
+      _dragging=false;
+      track.releasePointerCapture(e.pointerId);
+    });
+    track.addEventListener('pointercancel',e=>{
+      _dragging=false;
+    });
+  })();
 
   // ── Audio: vol ────────────────────────────────────────────────
   wireTrack(document.getElementById('br-vol-track'), 0, 100, (val)=>{
@@ -2840,10 +2893,14 @@ function capoUpperFreq(){ return fundFreq() / CAPO_NODES[capoNodeIdx].phi; }
 function capoLowerFreq(){ return fundFreq() / (1-CAPO_NODES[capoNodeIdx].phi); }
 
 function setCapoNode(idx){
+  if(idx===capoNodeIdx) return;
+  const _oldU=capoUpperFreq(), _oldL=capoLowerFreq();
   capoNodeIdx=idx;
   document.querySelectorAll('.capo-snap-btn').forEach((b,i)=>b.classList.toggle('on',i===idx));
   updateCapoReadouts();
   render();
+  const _newU=capoUpperFreq(), _newL=capoLowerFreq();
+  playCapoTransition(_oldU, _oldL, _newU, _newL);
 }
 
 function updateCapoReadouts(){
@@ -2856,6 +2913,10 @@ function updateCapoReadouts(){
 function playCapoBoth(){
   playTone(capoUpperFreq());
   playTone(capoLowerFreq());
+}
+
+function toggleCapoArp(on){
+  capoArp=on;
 }
 
 // Build snap buttons (called once on init)
@@ -3219,6 +3280,8 @@ function updateCapoLayer(){
   // Snap ticks with diagonal callout lines to fanned labels — all 7 always shown
   const ticksG=document.getElementById('capo-ticks');
   ticksG.innerHTML='';
+  const labelHitsG=document.getElementById('capo-label-hits');
+  labelHitsG.innerHTML=''; // cleared separately — renders last (top z-order) in capo-layer
   const mkT=(tag,attrs,txt)=>{const el=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const[k,v]of Object.entries(attrs))el.setAttribute(k,v);if(txt!==undefined)el.textContent=txt;return el;};
   const TICK_X1=462, TICK_X2=522, LABEL_X=610, LABEL_FS=mainFS, MIN_GAP=LABEL_FS+6;
 
@@ -3246,11 +3309,15 @@ function updateCapoLayer(){
     const lbl=mkT('text',{x:LABEL_X,y:lY+LABEL_FS*0.35,'font-size':LABEL_FS,
       'font-weight':isActive?'600':'500',fill:CAPO_COL,opacity:isActive?1:0.55});
     lbl.textContent=d.n.label+' · '+d.n.itvl; ticksG.appendChild(lbl);
-    // Clickable hit
-    const lHit=mkT('rect',{x:LABEL_X-2,y:lY-LABEL_FS*0.7,width:200,height:LABEL_FS+6,
-      fill:'transparent',style:'cursor:pointer;'});
+    // Clickable hit — solid fill so the whole rect receives pointer events, not just text glyphs
+    // Clickable hit — in capo-label-hits group (highest z-order), tight around text only
+    const lText=d.n.label+' · '+d.n.itvl;
+    const lHitW=Math.min(250, lText.length*15+8); // estimate text width at LABEL_FS
+    const lHit=mkT('rect',{x:LABEL_X-2,y:lY-LABEL_FS*0.7,width:lHitW,height:LABEL_FS+6,
+      fill:'rgba(0,0,0,0)',style:'cursor:pointer;pointer-events:all;'});
     lHit.addEventListener('click',e=>{e.stopPropagation();setCapoNode(d.i);});
-    ticksG.appendChild(lHit);
+    lHit.addEventListener('touchend',e=>{e.stopPropagation();setCapoNode(d.i);},{passive:true});
+    labelHitsG.appendChild(lHit);
   });
 
   // Annotation
@@ -3543,10 +3610,46 @@ function setPoly(on,btn){
 // Calculate tension needed so fundamental matches home key root (nearest octave)
 // f = (1/2L)*sqrt(T/mu)  →  T = (2*L*f)^2 * mu
 // Find nearest octave of home key root within playable range
+let _tuneSeqTimer=null; // pending sequential tone timer — cancelled on new tune call
+let capoArp=false;      // capo arp mode: play individual voices then chord on snap
+let _arpTimers=[];      // array of pending arp step timers
+
+function clearArpTimers(){
+  _arpTimers.forEach(t=>clearTimeout(t));
+  _arpTimers=[];
+  if(_tuneSeqTimer){ clearTimeout(_tuneSeqTimer); _tuneSeqTimer=null; }
+}
+
+// Play capo transition: old interval → new interval.
+// Chord-only (capoArp=false): old chord simultaneously → gap → new chord simultaneously.
+// Arp (capoArp=true): old lower → old upper → old chord → gap → new lower → new upper → new chord.
+function playCapoTransition(oldU, oldL, newU, newL){
+  clearArpTimers();
+  const D=toneDuration*1000, G=toneSpacing*1000;
+  if(!capoArp){
+    stopActive();
+    playTone(oldU); playTone(oldL);
+    _arpTimers.push(setTimeout(()=>{ stopActive(); playTone(newU); playTone(newL); }, D+G));
+  } else {
+    stopActive();
+    playTone(oldL);
+    _arpTimers.push(setTimeout(()=>{ playTone(oldU); },        D));
+    _arpTimers.push(setTimeout(()=>{ playTone(oldU); playTone(oldL); }, D*2));
+    _arpTimers.push(setTimeout(()=>{ playTone(newL); },        D*3+G));
+    _arpTimers.push(setTimeout(()=>{ playTone(newU); },        D*4+G));
+    _arpTimers.push(setTimeout(()=>{ playTone(newU); playTone(newL); }, D*5+G));
+  }
+}
+
 function tuneToKey(){
   const L=effectiveSpeakingLength()*IN_TO_M, mu=muKgM;
   const rootPc=homeKey;
   const tc=homeNodeRatio(); // home node ratio relative to fundamental
+
+  // Capture the "before" frequency — pinned node if any, else fundamental
+  const _beforeFreq = (_activeNode && window._activeRatioFund)
+    ? fundFreq() * window._activeRatioFund
+    : fundFreq();
 
   // In capo mode, always tune so the LOWER segment's home node = key root.
   // Lower segment fundamental = fundFreq()/cf, so fundTarget = keyRoot * cf / homeNodeRatio.
@@ -3580,6 +3683,21 @@ function tuneToKey(){
   document.getElementById('ten-sl').value=tenValToSl(tensionLbs);
   document.getElementById('ten-ro').value=tensionLbs.toFixed(1)+' lbs';
   render();
+
+  // Capture "after" frequency using the same ratio against the new tension
+  const _afterFreq = (_activeNode && window._activeRatioFund)
+    ? fundFreq() * window._activeRatioFund
+    : fundFreq();
+
+  // Cancel any pending sequential tone and play before→pause→after
+  if(_tuneSeqTimer){ clearTimeout(_tuneSeqTimer); _tuneSeqTimer=null; }
+  stopActive();
+  playTone(_beforeFreq);
+  _tuneSeqTimer=setTimeout(()=>{
+    stopActive();
+    playTone(_afterFreq);
+    _tuneSeqTimer=null;
+  }, toneDuration*1000 + toneSpacing*1000);
 }
 
 function updateTuneBtn(){
@@ -3692,6 +3810,7 @@ function syncSlider(key,sv){
   const n=parseFloat(sv);
   if(key==='dur'){toneDuration=n;document.getElementById('dur-ro').value=n.toFixed(1)+' s';}
   else if(key==='vol'){volume=n/100;document.getElementById('vol-ro').value=Math.round(n)+'%';}
+  else if(key==='spc'){toneSpacing=Math.max(0,Math.min(1.0,n));}
   else if(key==='len'){ _clearPin();
     const n=parseFloat(sv);
     if(nodeView==='nut'){
@@ -4002,13 +4121,13 @@ function updateNutMarker(){
     ann.appendChild(segEl);
   }
 
-  // Full-width hit rect — click to play, also acts as drag target
+  // Full-width hit rect — click/hover for row interaction (drag handled by dragHandle below)
   const rowH=nutFS+10;
   const hitEl=document.createElementNS('http://www.w3.org/2000/svg','rect');
   hitEl.setAttribute('x',0);hitEl.setAttribute('y',ny-rowH/2);
   hitEl.setAttribute('width',SVG_W);hitEl.setAttribute('height',rowH);
   hitEl.setAttribute('fill','transparent');hitEl.setAttribute('class','row-hit');
-  hitEl.style.cursor='ns-resize';
+  hitEl.style.cursor='pointer';
   // Pseudo-node for ruler/sidebar — represents the eff. nut (fundamental)
   const _nutPseudo={frac:1.0,ratio:1,fs:'1/1',rs:'1:1',label:remapDegree(1)||'1',
     primary:true,desc:'fundamental · eff. nut'};
@@ -4039,33 +4158,56 @@ function updateNutMarker(){
     else playTone(fund); // unpin
   },{passive:true});
   hitEl.addEventListener('touchend',clearStrip,{passive:true});
-  // Also start drag from this hit rect
-  hitEl.addEventListener('mousedown',e=>{
+  ann.appendChild(hitEl);
+
+  // Narrow drag handle — covers only the drag marker, on top of hitEl.
+  // Keeps drag cursor and drag-start events away from the row interaction area.
+  const DH_X=448, DH_W=64; // spans the drag marker (x=460, w=40) with small margin
+  const dragHandle=document.createElementNS('http://www.w3.org/2000/svg','rect');
+  dragHandle.setAttribute('x',DH_X);
+  dragHandle.setAttribute('y',ny-rowH/2);
+  dragHandle.setAttribute('width',DH_W);
+  dragHandle.setAttribute('height',rowH);
+  dragHandle.setAttribute('fill','rgba(0,0,0,0)');
+  dragHandle.setAttribute('pointer-events','all');
+  dragHandle.style.cursor='ns-resize';
+  dragHandle.addEventListener('mousedown',e=>{
     if(nodeView!=='nut') return;
     nutDragging=true; e.stopPropagation();
     nutDragStartY=e.clientY; nutDragStartOffset=nutOffsetInches;
+    _nutDragStartFreq=fundFreq();
   });
-  hitEl.addEventListener('touchstart',e=>{
+  dragHandle.addEventListener('touchstart',e=>{
     if(nodeView!=='nut') return;
     nutDragging=true; e.stopPropagation();
     nutDragStartY=e.touches[0].clientY; nutDragStartOffset=nutOffsetInches;
+    _nutDragStartFreq=fundFreq();
   },{passive:true});
-  ann.appendChild(hitEl);
+  dragHandle.addEventListener('mouseenter',()=>{
+    // Hovering over the handle: clear row highlight so it doesn't persist during drag
+    clearStrip();
+    const rh=document.getElementById('row-hl');
+    if(rh) rh.innerHTML='';
+  });
+  ann.appendChild(dragHandle); // appended after hitEl → renders on top
 }
 
 // Drag the effective nut marker on the SVG
 let nutDragging=false, nutDragStartY=0, nutDragStartOffset=0, nutDidDrag=false;
+let _nutDragStartFreq=0; // fundamental at drag start, for before/after playback
 document.getElementById('nut-drag-marker').addEventListener('mousedown',e=>{
   if(nodeView!=='nut') return;
   nutDragging=true; nutDidDrag=false; e.stopPropagation();
   nutDragStartY=e.clientY;
   nutDragStartOffset=nutOffsetInches;
+  _nutDragStartFreq=fundFreq();
 });
 document.getElementById('nut-drag-marker').addEventListener('touchstart',e=>{
   if(nodeView!=='nut') return;
   nutDragging=true; nutDidDrag=false; e.stopPropagation();
   nutDragStartY=e.touches[0].clientY;
   nutDragStartOffset=nutOffsetInches;
+  _nutDragStartFreq=fundFreq();
 },{passive:true});
 window.addEventListener('mousemove',e=>{
   if(!nutDragging) return;
@@ -4084,7 +4226,14 @@ window.addEventListener('touchmove',e=>{
   render();},{passive:true});
 window.addEventListener('mouseup',()=>{
   if(nutDragging){
-    if(nutDidDrag) playTone(fundFreq());
+    if(nutDidDrag){
+      const _afterFreq=fundFreq();
+      if(_tuneSeqTimer){ clearTimeout(_tuneSeqTimer); _tuneSeqTimer=null; }
+      stopActive();
+      playTone(_nutDragStartFreq);
+      _tuneSeqTimer=setTimeout(()=>{ stopActive(); playTone(_afterFreq); _tuneSeqTimer=null; },
+        toneDuration*1000 + toneSpacing*1000);
+    }
     nutDragging=false; nutDidDrag=false;
     render(); // rebuild ann now that drag is done (matches touchend)
   } else {
@@ -4093,7 +4242,14 @@ window.addEventListener('mouseup',()=>{
 });
 window.addEventListener('touchend',()=>{
   if(nutDragging){
-    if(nutDidDrag) playTone(fundFreq());
+    if(nutDidDrag){
+      const _afterFreq=fundFreq();
+      if(_tuneSeqTimer){ clearTimeout(_tuneSeqTimer); _tuneSeqTimer=null; }
+      stopActive();
+      playTone(_nutDragStartFreq);
+      _tuneSeqTimer=setTimeout(()=>{ stopActive(); playTone(_afterFreq); _tuneSeqTimer=null; },
+        toneDuration*1000 + toneSpacing*1000);
+    }
     nutDragging=false; nutDidDrag=false;
     render(); // rebuild ann now that drag is done
   }
@@ -4141,9 +4297,12 @@ function capoSnapFromRawPhi(rawPhi){
   let best=0, bestDist=Infinity;
   CAPO_NODES.forEach((cn,i)=>{const d=Math.abs(cn.phi-phi);if(d<bestDist){bestDist=d;best=i;}});
   if(best!==capoNodeIdx){
+    const _oldU=capoUpperFreq(), _oldL=capoLowerFreq();
     capoNodeIdx=best;
     document.querySelectorAll('.capo-snap-btn').forEach((b,i)=>b.classList.toggle('on',i===best));
     render();
+    const _newU=capoUpperFreq(), _newL=capoLowerFreq();
+    playCapoTransition(_oldU, _oldL, _newU, _newL);
   }
 }
 
