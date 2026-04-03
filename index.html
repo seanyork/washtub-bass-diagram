@@ -1225,9 +1225,10 @@ function drawRulerSVG(node){
 
   // Viewport indicator geometry
   const diagH=canvas.clientHeight||1;
-  const visH=Math.max(6,Math.min(MINI_H,MINI_H/sc));
-  const maxScroll=diagH*(sc-1);
-  const scrollFrac=maxScroll>0?Math.min(1,Math.max(0,-ty/maxScroll)):0;
+  const totalSvgH=1440*sc;
+  const scrollable=Math.max(0,totalSvgH-diagH);
+  const visH=Math.max(6,Math.min(MINI_H,MINI_H*diagH/totalSvgH));
+  const scrollFrac=scrollable>0?Math.min(1,Math.max(0,-ty/scrollable)):0;
   const vpTop=MINI_TOP+scrollFrac*(MINI_H-visH);
 
   let html='';
@@ -5350,6 +5351,16 @@ document.addEventListener('touchstart',e=>{
     ind.style.display='block';
   }
 
+  function scrollByDelta(startTy, dy){
+    const sbH=sb.clientHeight||1;
+    const fullSvgH=1440*sc;
+    const ratio=fullSvgH/sbH;
+    ty=startTy + dy*ratio;
+    clamp(); applyT();
+    showIndicator();
+  }
+
+  // ── Touch drag ────────────────────────────────────────────────────
   let _sbDrag=false, _sbStartY=0, _sbStartTy=0;
 
   sb.addEventListener('touchstart',e=>{
@@ -5365,15 +5376,9 @@ document.addEventListener('touchstart',e=>{
 
   sb.addEventListener('touchmove',e=>{
     if(!_sbDrag) return;
-    e.preventDefault(); // prevent host pull-to-dismiss gesture
+    e.preventDefault();
     e.stopPropagation();
-    const dy=e.touches[0].clientY - _sbStartY;
-    const sbH=sb.clientHeight||1;
-    const fullSvgH=1440*sc;
-    const ratio=fullSvgH/sbH;
-    ty=_sbStartTy + dy*ratio;
-    clamp(); applyT();
-    showIndicator();
+    scrollByDelta(_sbStartTy, e.touches[0].clientY - _sbStartY);
   },{passive:false});
 
   sb.addEventListener('touchend',()=>{
@@ -5381,13 +5386,35 @@ document.addEventListener('touchstart',e=>{
     setTimeout(()=>{ind.style.display='none';},600);
   },{passive:true});
 
-  // Desktop: mouse wheel on sidebar scrolls the canvas vertically
-  sb.addEventListener('wheel',e=>{
+  // ── Mouse drag (desktop) ──────────────────────────────────────────
+  let _msbDrag=false, _msbStartY=0, _msbStartTy=0;
+
+  sb.addEventListener('mousedown',e=>{
+    if(e.target.closest('button,input,select')) return; // don't steal interactive element clicks
+    _msbDrag=true;
+    _msbStartY=e.clientY;
+    _msbStartTy=ty;
+    showIndicator();
+    e.preventDefault(); // prevent text selection during drag
+  });
+
+  window.addEventListener('mousemove',e=>{
+    if(!_msbDrag) return;
+    scrollByDelta(_msbStartTy, e.clientY - _msbStartY);
+  });
+
+  window.addEventListener('mouseup',()=>{
+    if(!_msbDrag) return;
+    _msbDrag=false;
+    setTimeout(()=>{ind.style.display='none';},600);
+  });
+
+  // ── Mouse wheel (desktop) ─────────────────────────────────────────
+  const rrail=document.getElementById('rrail');
+  window.addEventListener('wheel',e=>{
+    if(!e.target.closest('#sidebar, #rrail')) return;
     e.preventDefault();
-    const sbH=sb.clientHeight||1;
-    const fullSvgH=1440*sc;
-    const ratio=fullSvgH/sbH;
-    ty -= e.deltaY * ratio * 0.5;
+    ty -= e.deltaY;
     clamp(); applyT();
     showIndicator();
     clearTimeout(sb._wheelIndTimer);
