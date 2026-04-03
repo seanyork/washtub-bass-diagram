@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Washtub Bass String Map · v5.9</title>
+<title>Washtub Bass String Map · v6.0</title>
 <style>
 *{box-sizing:border-box;}
 body{margin:0;padding:0;font-family:system-ui,sans-serif;background:#fff;color:#1a1a1a;font-size:13px;overflow:hidden;overscroll-behavior:none;touch-action:none;}
@@ -167,7 +167,7 @@ input[type=range]{width:110px;cursor:pointer;}
 .crp-btn.on{background:rgba(83,58,183,0.1);color:#533AB7;border-color:rgba(83,58,183,0.4);}
 @media(prefers-color-scheme:dark){.crp-btn{color:#aaa;}}
 @media(prefers-color-scheme:dark){#sidebar{background:#1e1e1e;}}
-#sb-upper{display:flex;flex-direction:column;justify-content:flex-end;padding:4px 5px;min-height:0;}
+#sb-upper{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:4px 5px;min-height:0;}
 #sb-lower{display:flex;flex-direction:column;justify-content:flex-start;padding:4px 5px;min-height:0;}
 #sb-hrule{height:0.5px;background:rgba(128,128,128,0.28);margin:0 6px;flex-shrink:0;}
 .sb-len{font-size:13px;font-weight:700;color:#533AB7;line-height:1.15;}
@@ -189,7 +189,7 @@ input[type=range]{width:110px;cursor:pointer;}
 .br-ctx-idle{font-size:8.5px;color:#ccc;font-style:italic;}
 .br-more-bar{flex:1 1 0%;height:1.5px;background:rgba(128,128,128,0.15);border-radius:1px;}
 .br-more-lbl{font-size:8px;color:#bbb;white-space:nowrap;}
-#br-ap{width:44px;flex-shrink:0;border-left:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 3px;gap:2px;}
+#br-ap{width:44px;flex-shrink:0;border-left:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 6px 4px 3px;gap:2px;}
 .br-apb{width:36px;height:18px;font-size:7.5px;border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;color:#555;display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;}
 .br-apb-on{background:#533AB7;color:#fff;border-color:#533AB7;}
 @media(prefers-color-scheme:dark){.br-apb{background:#333;color:#aaa;}}
@@ -405,7 +405,14 @@ input[type=range]{width:110px;cursor:pointer;}
     <!-- left rail -->
     <div id="left-rail">
       <!-- column-reverse: FIRST child = visual BOTTOM, LAST child = visual TOP -->
-      <!-- DOM order: tune · ks-chip · home · sep · zoom · sep · tension · fund -->
+      <!-- DOM order: auto-tune · tune · ks-chip · home · sep · zoom · sep · tension · fund -->
+
+      <!-- auto-tune button: visual bottom -->
+      <div id="lr-autotune-btn" onclick="toggleAutoTune()" title="Auto-tune on key/mode change"
+        style="width:46px;height:32px;background:rgba(128,128,128,0.07);border:0.5px solid rgba(128,128,128,0.3);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;gap:0;">
+        <span style="font-size:7px;font-weight:700;letter-spacing:0.06em;color:#888;line-height:1.3;">AUTO</span>
+        <span style="font-size:7px;font-weight:700;letter-spacing:0.06em;color:#888;line-height:1.3;">TUNE</span>
+      </div>
 
       <!-- tune button: T3 icon (offset waves + arrow) -->
       <div id="lr-tune-btn" onclick="tuneToKey()" title="Tune to key">
@@ -431,10 +438,11 @@ input[type=range]{width:110px;cursor:pointer;}
 
       <!-- home chip: icon + number -->
       <div id="chip-home" class="lr-chip" onclick="openHomePicker()">
+        <!-- home chip icon — colors must match HOME_COL / HOME_COL_LIGHT constants -->
         <svg width="14" height="14" viewBox="0 0 14 14" style="flex-shrink:0;">
-          <circle cx="7" cy="7" r="6.5" fill="none" stroke="#533AB7" stroke-width="1.2" opacity="0.4"/>
-          <circle cx="7" cy="7" r="4" fill="#EEEDFE" stroke="#533AB7" stroke-width="1.2"/>
-          <circle cx="7" cy="7" r="1.8" fill="#533AB7"/>
+          <circle cx="7" cy="7" r="6.5" fill="none" stroke="#C92CD5" stroke-width="1.2" opacity="0.4"/>
+          <circle cx="7" cy="7" r="4" fill="#F7E0F9" stroke="#C92CD5" stroke-width="1.2"/>
+          <circle cx="7" cy="7" r="1.8" fill="#C92CD5"/>
         </svg>
         <div class="lr-chip-val" id="chip-home-val">1</div>
       </div>
@@ -442,13 +450,13 @@ input[type=range]{width:110px;cursor:pointer;}
       <div class="lr-sep"></div>
 
       <!-- zoom: 2×2 grid, no ↔ button -->
+      <div id="zoom-label" class="lr-zoom-pct">100%</div>
       <div id="lr-zoom-cluster">
         <button class="lr-zb" onclick="zoom(1.3)" title="zoom in">+</button>
         <button class="lr-zb" onclick="zoom(1/1.3)" title="zoom out">−</button>
         <button class="lr-zb" onclick="fitV()" title="fit vertical" style="font-size:11px;">↕</button>
-        <button class="lr-zb lr-zb-pct" onclick="zoomTo1()" title="fit columns" style="font-size:8px;font-weight:600;">fit</button>
+        <button class="lr-zb lr-zb-pct" onclick="zoomTo1()" title="fit columns" style="font-size:8px;font-weight:600;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><polyline points="4,4 1,7 4,10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="10,4 13,7 10,10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
-      <div id="zoom-label" class="lr-zoom-pct">100%</div>
 
       <div class="lr-sep"></div>
       <div id="lr-tension-track">
@@ -494,12 +502,19 @@ input[type=range]{width:110px;cursor:pointer;}
 <!-- Washtub -->
 <path d="M398,1310 L356,1392 L604,1392 L562,1310 Z" fill="rgba(128,128,128,0.07)" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
 <rect x="393" y="1304" width="174" height="10" rx="3" fill="currentColor" opacity="0.35"/>
-<rect x="368" y="1328" width="18" height="6" rx="2" fill="white" stroke="currentColor" stroke-width="0.5" opacity="0.4"/>
-<rect x="368" y="1342" width="18" height="6" rx="2" fill="white" stroke="currentColor" stroke-width="0.5" opacity="0.4"/>
-<rect x="368" y="1356" width="18" height="6" rx="2" fill="white" stroke="currentColor" stroke-width="0.5" opacity="0.4"/>
-<rect x="338" y="1390" width="284" height="8" rx="2" fill="currentColor" opacity="0.2"/>
 <circle cx="480" cy="1310" r="4" fill="currentColor" opacity="0.5"/>
-<text x="356" y="1410" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.5">tub</text>
+<!-- Port holes at tub mid-height, centered over boards -->
+<ellipse cx="408" cy="1351" rx="4.5" ry="8" fill="#888" stroke="#999" stroke-width="2" opacity="0.9" transform="rotate(27,408,1351)"/>
+<ellipse cx="552" cy="1351" rx="4.5" ry="8" fill="#888" stroke="#999" stroke-width="2" opacity="0.9" transform="rotate(-27,552,1351)"/>
+<!-- Board ends under tub (outer edges at x=393 and x=567) -->
+<rect x="393" y="1392" width="30" height="9" rx="2" fill="#C4946A" opacity="0.85"/>
+<rect x="537" y="1392" width="30" height="9" rx="2" fill="#C4946A" opacity="0.85"/>
+<line x1="443" y1="1351" x2="418" y2="1351" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+<line x1="517" y1="1351" x2="542" y2="1351" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+<text x="480" y="1354" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.5">sound ports</text>
+<text x="480" y="1400" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.5">support boards</text>
+<!-- tub label inside tub near bottom -->
+<text x="480" y="1385" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.5">tub</text>
 <text x="398" y="1302" text-anchor="start" font-size="12" fill="currentColor" opacity="0.5">resonator</text>
 <text x="480" y="1325" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.5">bridge</text>
 
@@ -1176,7 +1191,7 @@ const _drawFanOverlay = (withinFs, crossFs, activeFrac, isSeg_, segType_, otherS
     const sp=strPt(hf), rp=rulPt(hf);
     fo.appendChild(mk_('line',{
       x1:rp.x.toFixed(1),y1:rp.y.toFixed(1),x2:sp.x.toFixed(1),y2:sp.y.toFixed(1),
-      stroke:'#533AB7','stroke-width':1,'stroke-dasharray':'3 4',opacity:0.4
+      stroke:HOME_COL,'stroke-width':1,'stroke-dasharray':'3 4',opacity:0.4
     }));
   });
   crossFs.forEach(hf=>{
@@ -1289,13 +1304,13 @@ function drawRulerSVG(node){
   const activeMiniY=miniY;
   const dotFrac=frac; // pseudoNode.frac is already a main-string frac
   // Home icons — colored by segment in segment mode, all purple in full-string mode
-  const _segIconColor = (!useFullString && isSeg) ? (segType==='lower' ? SUB_COL_LOWER : SUB_COL_UPPER) : '#533AB7';
-  const _segIconFill  = (!useFullString && isSeg) ? (segType==='lower' ? 'rgba(29,122,107,0.15)' : 'rgba(122,58,29,0.12)') : '#EEEDFE';
-  const _crossIconFill= (!useFullString && isSeg) ? (segType==='lower' ? 'rgba(122,58,29,0.12)' : 'rgba(29,122,107,0.15)') : '#EEEDFE';
+  const _segIconColor = (!useFullString && isSeg) ? (segType==='lower' ? SUB_COL_LOWER : SUB_COL_UPPER) : HOME_COL;
+  const _segIconFill  = (!useFullString && isSeg) ? (segType==='lower' ? 'rgba(29,122,107,0.15)' : 'rgba(122,58,29,0.12)') : HOME_COL_LIGHT;
+  const _crossIconFill= (!useFullString && isSeg) ? (segType==='lower' ? 'rgba(122,58,29,0.12)' : 'rgba(29,122,107,0.15)') : HOME_COL_LIGHT;
   const _homeIconEls=[];
   [
     ...withinHomeData.map(d=>({...d, iconColor:_segIconColor,  iconFill:_segIconFill})),
-    ...crossHomeData.map( d=>({...d, iconColor:otherSegCol||'#533AB7', iconFill:_crossIconFill}))
+    ...crossHomeData.map( d=>({...d, iconColor:otherSegCol||HOME_COL, iconFill:_crossIconFill}))
   ].forEach(({frac:hf, freq:_hFreq, iconColor, iconFill})=>{
     const hy=parseFloat(miniY(hf).toFixed(1));
     const mkS2=(tag,attrs)=>{
@@ -1338,13 +1353,13 @@ function drawRulerSVG(node){
       const uy=activeMiniY(upperFrac);
       const crossUp=isCrossCapo(upperFrac);
       html+=`<line x1="${CX}" y1="${uy.toFixed(1)}" x2="${CX}" y2="${dy.toFixed(1)}"
-        stroke="#533AB7" stroke-width="3" stroke-linecap="round"${crossUp?' stroke-dasharray="5 3"':''}/>`;
+        stroke="${HOME_COL}" stroke-width="3" stroke-linecap="round"${crossUp?' stroke-dasharray="5 3"':''}/>`;
     }
     if(lowerFrac!==null){
       const ly=activeMiniY(lowerFrac);
       const crossLo=isCrossCapo(lowerFrac);
       html+=`<line x1="${CX}" y1="${dy.toFixed(1)}" x2="${CX}" y2="${ly.toFixed(1)}"
-        stroke="#533AB7" stroke-width="3" stroke-linecap="round"${crossLo?' stroke-dasharray="5 3"':''}/>`;
+        stroke="${HOME_COL}" stroke-width="3" stroke-linecap="round"${crossLo?' stroke-dasharray="5 3"':''}/>`;
     }
     if(crossFracs.length>0&&otherSegCol){
       crossFracs.forEach(hf=>{
@@ -1368,7 +1383,7 @@ function drawRulerSVG(node){
       const lblY=uy-12;
       const lblW=crossUp?26:20;
       html+=`<rect x="${(CX-lblW/2).toFixed(1)}" y="${lblY-10}" width="${lblW}" height="13" rx="2" fill="rgba(255,255,255,0.95)"/>`;
-      html+=`<text x="${CX}" y="${lblY}" text-anchor="middle" font-size="${crossUp?9:12}" font-weight="800" fill="#533AB7">${itvl}</text>`;
+      html+=`<text x="${CX}" y="${lblY}" text-anchor="middle" font-size="${crossUp?9:12}" font-weight="800" fill="${HOME_COL}">${itvl}</text>`;
     }
     if(lowerFrac!==null){
       const ly=activeMiniY(lowerFrac);
@@ -1380,7 +1395,7 @@ function drawRulerSVG(node){
         :intervalName(lHomeRatio/node.ratio);
       const lblW=crossLo?26:20;
       html+=`<rect x="${(CX-lblW/2).toFixed(1)}" y="${ly+10}" width="${lblW}" height="13" rx="2" fill="rgba(255,255,255,0.95)"/>`;
-      html+=`<text x="${CX}" y="${ly+20}" text-anchor="middle" font-size="${crossLo?9:12}" font-weight="800" fill="#533AB7">${itvl}</text>`;
+      html+=`<text x="${CX}" y="${ly+20}" text-anchor="middle" font-size="${crossLo?9:12}" font-weight="800" fill="${HOME_COL}">${itvl}</text>`;
     }
 
     // Dot (color by segment) — DOM element so we can attach tap handler
@@ -1405,8 +1420,8 @@ function drawRulerSVG(node){
 
     // Full-string mode: if the pinned node is itself a key-root position, relabel strip to '1'
     if(useFullString && withinFracs.some(wf=>Math.abs(wf-frac)<0.003)){
-      _origShowStrip_step5(_dotFreq, frac, '1', '#533AB7');
-      if(_lastStripArgs) _lastStripArgs={frac:_lastStripArgs.frac, nodeLabel:'1', color:'#533AB7'};
+      _origShowStrip_step5(_dotFreq, frac, '1', HOME_COL);
+      if(_lastStripArgs) _lastStripArgs={frac:_lastStripArgs.frac, nodeLabel:'1', color:HOME_COL};
     }
   }
 
@@ -1626,6 +1641,35 @@ let autoTune = false;      // auto-tune string on key or mode change
 
 function _maybeAutoTune(){ if(autoTune) tuneToKey(); }
 
+function updateAutoTuneUI(){
+  const lrBtn=document.getElementById('lr-autotune-btn');
+  const on=autoTune;
+  // Left rail auto-tune button
+  if(lrBtn){
+    lrBtn.style.background=on?'#533AB7':'rgba(128,128,128,0.07)';
+    lrBtn.style.borderColor=on?'#533AB7':'rgba(128,128,128,0.3)';
+    const spans=lrBtn.querySelectorAll('span');
+    spans.forEach(s=>s.style.color=on?'#fff':'#888');
+  }
+  // Left rail tune button — active state when auto-tune on
+  const tuneBtn=document.getElementById('lr-tune-btn');
+  if(tuneBtn){
+    tuneBtn.style.background=on?'#533AB7':'#EEEDFE';
+    tuneBtn.style.borderColor=on?'#533AB7':'#AFA9EC';
+    const col=on?'#fff':'#533AB7';
+    tuneBtn.querySelectorAll('line,polyline,path').forEach(el=>{
+      el.setAttribute('stroke',col);
+    });
+  }
+}
+
+function toggleAutoTune(){
+  autoTune=!autoTune;
+  if(autoTune) tuneToKey();
+  updateAutoTuneUI();
+  renderBRCtx(); // keep phys panel button in sync
+}
+
 // ── isMobile helper ───────────────────────────────────────────────
 function isMobile(){ return window.matchMedia('(max-width:600px)').matches; }
 
@@ -1720,6 +1764,14 @@ function renderNodeViewCtx(view){
                   <line x1="8" y1="13" x2="11" y2="13" stroke="#533AB7" stroke-width="1.2" stroke-linecap="round"/>
                 </svg>
                 <div class="br-readme-btn-lbl">app</div>
+              </div>
+              <div class="br-readme-btn" onclick="openReadme('thanks')">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M11 3 C11 3 5 6 5 11 C5 14.3 7.7 17 11 17 C14.3 17 17 14.3 17 11 C17 6 11 3 11 3 Z" stroke="#533AB7" stroke-width="1.3" stroke-linejoin="round"/>
+                  <line x1="11" y1="17" x2="11" y2="20" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/>
+                  <line x1="8" y1="19" x2="14" y2="19" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+                <div class="br-readme-btn-lbl">thanks</div>
               </div>
             </div>
             <div class="br-ctx-row"></div>`;
@@ -1827,7 +1879,7 @@ function renderPhysPanel(){
             <span class="br-chip-lbl" style="font-size:7.5px;">kg/m</span>
             <div style="width:0.5px;background:rgba(128,128,128,0.2);align-self:stretch;margin:0 2px;"></div>
             <div class="br-btn${showPitchBars?' on':''}" onclick="togglePitchBars()" title="show/hide pitch bars and detail columns">show pitch bars</div>
-            <div class="br-btn${autoTune?' on':''}" onclick="autoTune=!autoTune;renderBRCtx()" title="Auto-tune string when key or mode changes">auto-tune</div>
+            <div class="br-btn${autoTune?' on':''}" onclick="toggleAutoTune()" title="Auto-tune string when key or mode changes">auto-tune</div>
           </div>
           <div class="br-ctx-row" onclick="toggleOverflow()" style="cursor:pointer;">
             <div class="br-more-bar"></div>
@@ -1842,8 +1894,9 @@ function renderLgndPanel(){
     <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="rgba(0,0,0,0.06)" stroke="#1a1a1a" stroke-width="1.5"/><circle cx="7" cy="7" r="2.5" fill="#1a1a1a"/></svg>`;
   const svgChrom=`<svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="none" stroke="#D85A30" stroke-width="1.2"/></svg>
     <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="#FAECE7" stroke="#993C1D" stroke-width="1.5"/><circle cx="7" cy="7" r="2.5" fill="#993C1D"/></svg>`;
-  const svgHome=`<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="none" stroke="#533AB7" stroke-width="1.5" opacity="0.45"/><circle cx="8" cy="8" r="4.5" fill="#EEEDFE" stroke="#533AB7" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="#533AB7"/></svg>`;
+  const svgHome=`<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="none" stroke="${HOME_COL}" stroke-width="1.5" opacity="0.45"/><circle cx="8" cy="8" r="4.5" fill="${HOME_COL_LIGHT}" stroke="${HOME_COL}" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="${HOME_COL}"/></svg>`;
   const svgBetween=`<svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="none" stroke="#B4B2A9" stroke-width="1.2" stroke-dasharray="2 1.5"/></svg>`;
+  const svgOffNode=`<svg width="36" height="10" viewBox="0 0 36 10"><line x1="0" y1="5" x2="20" y2="5" stroke="currentColor" stroke-width="1.5" opacity="0.65"/><rect x="20" y="1" width="16" height="8" rx="2" fill="rgba(128,128,128,0.12)"/><text x="28" y="8" text-anchor="middle" font-size="7" font-weight="600" fill="#0F6E56">2</text></svg>`;
   return `<div style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
     <div style="display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden;">
       <div class="lgnd-cell br bb">${svgInKey}<span class="lgnd-txt">in key</span></div>
@@ -1851,7 +1904,7 @@ function renderLgndPanel(){
       <div class="lgnd-cell br">${svgHome}<span class="lgnd-txt">home node</span></div>
       <div class="lgnd-cell">${svgBetween}<span class="lgnd-txt">between named pitches</span></div>
     </div>
-    <div style="flex:0 0 25px;border-top:0.5px solid rgba(128,128,128,0.1);"></div>
+    <div style="display:flex;align-items:center;gap:4px;padding:0 5px;flex:0 0 25px;border-top:0.5px solid rgba(128,128,128,0.1);">${svgOffNode}<span class="lgnd-txt">in-key, off-node</span></div>
   </div>`;
 }
 
@@ -3321,6 +3374,9 @@ const REF_HZ=261.63, REF_MIDI=60, SNAP_CENTS=25;
 const CHROM=['1','♭2','2','♭3','3','4','♯4','5','♭6','6','♭7','7'];
 let homeKey=7;
 const GRAY='#B4B2A9';
+// ── Home node color — change these two values to retheme all home node visuals ──
+const HOME_COL='#C92CD5';       // home node accent (rings, circles, text, bars)
+const HOME_COL_LIGHT='#F7E0F9'; // home node light fill (circle interior)
 
 // ── Mode / scale system ───────────────────────────────────────────
 // Interval sequences (semitone steps) for each mode/scale
@@ -3703,6 +3759,11 @@ const BR=425, BMW=240, BMR=4;           // pitch bars shifted left to make room 
 // ── Chromatic passing-note ticks ──────────────────────────────────
 // One ET semitone above each lower-pitch (higher-frac) node neighbour
 // in the six M2 gaps: nut→str°2, str°4→5, str°6→7 (both octaves).
+// NOTE: tick positions are calculated using equal temperament (2^(-1/12)),
+// not just intonation. The actual pinch-fret pitch at these positions is
+// only approximately equal to the ET value used for placement (~±few cents).
+// For practical playing guidance this is acceptable, but labels derived from
+// these positions carry that approximation. This is documented in the README.
 const _SEMI=Math.pow(2,-1/12);
 const CHROM_TICKS=[1.0, 3/4, 3/5, 1/2, 3/8, 3/10].map(f=>f*_SEMI);
 
@@ -3715,13 +3776,35 @@ render=function(){
   ctG.innerHTML='';
   if(nodeView==='capo') return; // sub-node layers fill this space in capo mode
   const nutY=nutEffY();
+  const fund=fundFreq();
+  const lFS=15; // fixed label font size — smaller than node labels, visually distinct
   CHROM_TICKS.forEach(frac=>{
     const y=nY(frac);
     if(y<nutY-2||y>TY+2) return; // outside visible string zone
+    // Tick line — extended to pill edge when labeled, standard width otherwise
+    const freq=fund/frac;
+    const ni=noteInfo(freq);
+    const tickLabeled=ni.snapped&&isInKey(ni.midi);
     ctG.appendChild(mk('line',{
-      x1:SX-7,x2:SX+7,y1:y,y2:y,
-      stroke:GRAY,'stroke-width':'1.5',opacity:'0.65'
+      x1:SX-7,x2:tickLabeled?556:SX+7,y1:y,y2:y,
+      stroke:'currentColor','stroke-width':'1.5',opacity:'0.65'
     }));
+    // Label only if diatonic to current key — no str°, no home°, no interaction
+    // NOTE: frequency is ET-based (2^(-1/12) offset) — an approximation, not JI
+    if(tickLabeled){
+      const kd=chromDeg(ni.midi,homeKey);
+      const noteStr=ni.name+ni.octave;
+      const yOff=lFS*0.38;
+      // Grey background pill behind key° + note columns
+      ctG.appendChild(mk('rect',{x:554,y:y-lFS*0.72,width:104,height:lFS+4,rx:3,
+        fill:'rgba(128,128,128,0.12)'}));
+      // key° right-aligned with 4px right padding — green, same as diatonic in-key nodes
+      ctG.appendChild(mk('text',{x:KD_RX-4,y:y+yOff,'font-size':lFS,'font-weight':'700',
+        'text-anchor':'end',fill:'#0F6E56'},kd));
+      // note name at NOTE_X
+      ctG.appendChild(mk('text',{x:NOTE_X,y:y+yOff,'font-size':lFS,'font-weight':'700',
+        fill:'#0F6E56'},noteStr));
+    }
   });
 };
 const SDEG_X=438;                        // string degree — fixed, left of string, dark grey bold
@@ -3741,21 +3824,24 @@ function homeNodeRatio(){
   return DEGREE_RATIOS[homeNode-1];
 }
 
-// Map a node's ratio to a degree label relative to current home node
-// Returns null when home node is fundamental (use original labels)
+// Map a node's ratio to a degree label relative to current home node.
+// Algorithm: octave-reduce nodeRatio, look up the corresponding str° (1–7)
+// by exact match against DEGREE_RATIOS, then rotate by homeNode offset.
+// This is a clean modular rotation — TC° = ((strDeg − homeNode + 7) % 7) + 1.
+// Returns null when homeNode===1 (caller falls back to node.label = str°).
 function remapDegree(nodeRatio){
   if(homeNode===1) return null;
-  const hn=homeNodeRatio();
-  let interval=nodeRatio/hn;
-  if(!isFinite(interval)||interval<=0) return null;
-  let _i=0; while(interval>=2&&_i++<60) interval/=2;
-  _i=0;     while(interval<1 &&_i++<60) interval*=2;
-  let best=0, bestDist=Infinity;
-  DEGREE_RATIOS.forEach((r,i)=>{
-    const dist=Math.abs(interval-r);
-    if(dist<bestDist){bestDist=dist;best=i;}
-  });
-  return DEGREE_LABELS[best];
+  let r=nodeRatio;
+  if(!isFinite(r)||r<=0) return null;
+  let _i=0; while(r>=2&&_i++<60) r/=2;
+  _i=0;     while(r<1 &&_i++<60) r*=2;
+  // Exact match against the 7 JI degree ratios (EPS well below minimum gap of ~0.083)
+  const EPS=0.02;
+  let strDeg=null;
+  DEGREE_RATIOS.forEach((dr,i)=>{ if(Math.abs(r-dr)<EPS) strDeg=i+1; });
+  if(strDeg===null) return null;
+  const tc=((strDeg-homeNode+7)%7)+1;
+  return DEGREE_LABELS[tc-1];
 }
 
 // Is this node the home node (new 1)?
@@ -3853,6 +3939,9 @@ function updateNutMarker(){
   const fi=noteInfo(fund);
   const speakingIn=effectiveSpeakingLength();
   const nutFS=30, nutInfoFS=16, yOff=9;
+  // Determine home node color — same logic as full-string nut row
+  const _nutIsHome=isTonalCenter(1);
+  const nutAnnColor=_nutIsHome?HOME_COL:(fi.snapped?(isInKey(fi.midi)?'#0F6E56':'rgba(153,60,29,0.6)'):GRAY);
 
   // Pitch bar (showPitchBars only)
   if(showPitchBars){
@@ -3860,7 +3949,7 @@ function updateNutMarker(){
     const barEl=document.createElementNS('http://www.w3.org/2000/svg','rect');
     barEl.setAttribute('x',BR-bw);barEl.setAttribute('y',ny-5);
     barEl.setAttribute('width',bw);barEl.setAttribute('height',10);
-    barEl.setAttribute('rx',2);barEl.setAttribute('fill','#533AB7');barEl.setAttribute('opacity',0.55);
+    barEl.setAttribute('rx',2);barEl.setAttribute('fill',nutAnnColor);barEl.setAttribute('opacity',0.55);
     ann.appendChild(barEl);
   }
 
@@ -3875,7 +3964,7 @@ function updateNutMarker(){
   const nutHomeLabel=remapDegree(1)||'1';
   const degEl=document.createElementNS('http://www.w3.org/2000/svg','text');
   degEl.setAttribute('x',HOME_X);degEl.setAttribute('y',ny+yOff);
-  degEl.setAttribute('font-size',nutFS);degEl.setAttribute('font-weight','500');degEl.setAttribute('fill','#533AB7');
+  degEl.setAttribute('font-size',nutFS);degEl.setAttribute('font-weight','500');degEl.setAttribute('fill',nutAnnColor);
   degEl.textContent=nutHomeLabel;ann.appendChild(degEl);
 
   // Key deg + note
@@ -3902,12 +3991,12 @@ function updateNutMarker(){
   if(showPitchBars){
     const infoEl=document.createElementNS('http://www.w3.org/2000/svg','text');
     infoEl.setAttribute('x',INFO_X);infoEl.setAttribute('y',ny+yOff);
-    infoEl.setAttribute('font-size',nutInfoFS);infoEl.setAttribute('fill','#533AB7');infoEl.setAttribute('opacity',0.8);
+    infoEl.setAttribute('font-size',nutInfoFS);infoEl.setAttribute('fill',nutAnnColor);infoEl.setAttribute('opacity',0.8);
     infoEl.textContent=`1/1  ·  1:1  ·  eff. nut  ·  offset: ${fmtLen(nutOffsetInches)}`;
     ann.appendChild(infoEl);
     const segEl=document.createElementNS('http://www.w3.org/2000/svg','text');
     segEl.setAttribute('x',SEG_X);segEl.setAttribute('y',ny+yOff);
-    segEl.setAttribute('font-size',nutInfoFS);segEl.setAttribute('fill','#533AB7');segEl.setAttribute('opacity',0.65);
+    segEl.setAttribute('font-size',nutInfoFS);segEl.setAttribute('fill',nutAnnColor);segEl.setAttribute('opacity',0.65);
     segEl.textContent='— | '+fmtLen(speakingIn);
     ann.appendChild(segEl);
   }
@@ -4077,7 +4166,7 @@ window.addEventListener('touchend',()=>{ capoDragging=false; });
 
 
 function resolveColor(node,snapped,inKey,isHome){
-  if(isHome)       return{fill:'#EEEDFE',stroke:'#533AB7',dot:'#533AB7',text:'#533AB7',bar:'#533AB7',dash:false};
+  if(isHome)       return{fill:HOME_COL_LIGHT,stroke:HOME_COL,dot:HOME_COL,text:HOME_COL,bar:HOME_COL,dash:false};
   if(!snapped)     return{fill:'none',stroke:GRAY,dot:GRAY,text:GRAY,bar:GRAY,dash:true};
   if(node.primary) return inKey
     ?{fill:'var(--inkey-fill)',stroke:'var(--inkey)',dot:'var(--inkey)',text:'var(--inkey)',bar:'var(--inkey)',dash:false}
@@ -4275,12 +4364,24 @@ function render(){
     // Nut label for upper segment fundamental
     const nutG2=document.getElementById('dyn-nut');
     const nutYc=nutEffY(), nutFS2=26, nutInfoFS2=15, nutRowH2=nutFS2+10;
+    const nutHomeLabel2=remapDegree(1)||'1';
+    const nutKd2=uNi.snapped?chromDeg(uNi.midi,homeKey):'—';
+    const nutKeyCol2=uNi.snapped?(isInKey(uNi.midi)?'#0F6E56':'rgba(153,60,29,0.6)'):GRAY;
     nutG2.appendChild(mk('text',{x:SDEG_X,y:nutYc+9,'font-size':nutFS2,'font-weight':'500',
       'text-anchor':'middle',fill:SUB_COL_UPPER,opacity:0.75},'1'));
     nutG2.appendChild(mk('text',{x:HOME_X,y:nutYc+9,'font-size':nutFS2,'font-weight':'500',
-      fill:SUB_COL_UPPER},uNote));
-    nutG2.appendChild(mk('text',{x:NOTE_X,y:nutYc+9,'font-size':nutInfoFS2,
-      fill:SUB_COL_UPPER,opacity:0.7},Math.round(uFreq)+' Hz'));
+      fill:SUB_COL_UPPER},nutHomeLabel2));
+    if(uNi.snapped){
+      nutG2.appendChild(mk('text',{x:KD_RX,y:nutYc+9,'font-size':nutFS2,'font-weight':'500',
+        'text-anchor':'end',fill:nutKeyCol2},nutKd2));
+      nutG2.appendChild(mk('text',{x:NOTE_X,y:nutYc+9,'font-size':nutFS2,'font-weight':'500',
+        fill:nutKeyCol2},uNote));
+    } else {
+      nutG2.appendChild(mk('text',{x:KD_RX,y:nutYc+9,'font-size':nutInfoFS2,'text-anchor':'end',
+        fill:GRAY,opacity:0.3},'—'));
+      nutG2.appendChild(mk('text',{x:NOTE_X,y:nutYc+9,'font-size':nutInfoFS2,
+        fill:GRAY,opacity:0.3},'—'));
+    }
     const nutHitC=mk('rect',{x:0,y:nutYc-nutFS2*0.65,width:SVG_W,height:nutRowH2,
       fill:'transparent',class:'row-hit'});
     nutHitC.addEventListener('mousedown',()=>{
@@ -4323,10 +4424,10 @@ function render(){
   if(nodeView!=='nut'){
     const nutIsHome=isTonalCenter(1);
     const nutHomeLabel=remapDegree(1)||'1';
-    const nutColor=nutIsHome?'#533AB7':(fi.snapped?(isInKey(fi.midi)?'#0F6E56':'rgba(153,60,29,0.6)'):GRAY);
+    const nutColor=nutIsHome?HOME_COL:(fi.snapped?(isInKey(fi.midi)?'#0F6E56':'rgba(153,60,29,0.6)'):GRAY);
     // home ring behind nut if home node=fundamental
     if(nutIsHome){
-      nutG.appendChild(mk('circle',{cx:SX,cy:NY,r:16,fill:'none',stroke:'#533AB7','stroke-width':2,opacity:0.35}));
+      nutG.appendChild(mk('circle',{cx:SX,cy:NY,r:16,fill:'none',stroke:HOME_COL,'stroke-width':2,opacity:0.35}));
     }
     if(showPitchBars) nutG.appendChild(mk('rect',{x:BR-barW(1),y:nutY-5,width:barW(1),height:10,rx:2,fill:nutColor,opacity:0.55}));
     // Fixed string degree — dark grey bold, left of string
@@ -4394,7 +4495,7 @@ function render(){
 
     // home ring — large unfilled ring behind everything at this node position
     if(isHome){
-      homeRingsG.appendChild(mk('circle',{cx:SX,cy:y,r:16,fill:'none',stroke:'#533AB7','stroke-width':2,opacity:0.35}));
+      homeRingsG.appendChild(mk('circle',{cx:SX,cy:y,r:16,fill:'none',stroke:HOME_COL,'stroke-width':2,opacity:0.35}));
     }
 
     if(showPitchBars) g.appendChild(mk('rect',{x:BR-bw,y:y-(isT||isPri?7:5),width:bw,
@@ -4419,8 +4520,9 @@ function render(){
     g.appendChild(mk('text',{x:HOME_X,y:y+yOff,'font-size':fs,'font-weight':'500',fill:c.text},displayLabel));
     if(ni.snapped){
       const kd=chromDeg(ni.midi,homeKey);
-      g.appendChild(mk('text',{x:KD_RX,y:y+yOff,'font-size':fs,'font-weight':'500','text-anchor':'end',fill:c.text},kd));
-      g.appendChild(mk('text',{x:NOTE_X,y:y+yOff,'font-size':fs,'font-weight':'500',fill:c.text},ni.name+ni.octave));
+      const keyCol=isHome?(inKey?'#0F6E56':'rgba(153,60,29,0.6)'):c.text;
+      g.appendChild(mk('text',{x:KD_RX,y:y+yOff,'font-size':fs,'font-weight':'500','text-anchor':'end',fill:keyCol},kd));
+      g.appendChild(mk('text',{x:NOTE_X,y:y+yOff,'font-size':fs,'font-weight':'500',fill:keyCol},ni.name+ni.octave));
     } else {
       g.appendChild(mk('text',{x:KD_RX,y:y+yOff,'font-size':infoFS,'text-anchor':'end',fill:GRAY,opacity:0.3},'—'));
       g.appendChild(mk('text',{x:NOTE_X,y:y+yOff,'font-size':infoFS,fill:GRAY,opacity:0.3},'—'));
@@ -4647,6 +4749,7 @@ setTimeout(()=>{ try{
   render();
   initBR();
   initCoF();
+  updateAutoTuneUI();
 
   // Probe AudioContext availability — if creation hangs in a sandboxed iframe
   // this Promise races against a 500ms timeout and disables audio if it loses.
@@ -5114,18 +5217,41 @@ Node colors encode two independent properties simultaneously: whether the node i
 The home° column labels match the node color. The key° column shows chromatic degree names (♭2, ♭3, ♯4, ♭6, ♭7) for chromatic nodes.
 
 In capo view, the two segment layers use their own colors: **teal** for the lower segment (tub to capo) and **amber** for the upper segment (capo to nut). Home nodes within each segment are highlighted with a ring in the segment's color.
+
+## Part 5 · Thanks & References {#thanks}
+
+### Thanks
+
+This tool was built for personal learning and practice on the washtub bass — an instrument that rewards curiosity about physics, music theory, and the relationship between the two. If it is useful to you, that is a happy accident.
+
+Thanks to the many players, teachers, and writers who have documented the washtub bass and its cousins across folk, jug band, and old-time traditions. The instrument is simple in construction and endlessly interesting in practice.
+
+### Physics References
+
+The core frequency formula **f = (1/2L) × √(T/μ)** is standard wave mechanics, covered in any introductory physics text. The just intonation ratios used throughout the diagram follow the natural harmonic series and are well documented in tuning theory literature.
+
+### Music Theory References
+
+The modal system described in Part 2 follows standard Western theory. The Nashville Number System was developed in Nashville in the late 1950s by Neal Matthews Jr. of the Jordanaires and is documented in various country and contemporary music resources.
+
+The just intonation intervals used in this diagram — drawn directly from the harmonic series — connect to a long tradition of acoustic tuning theory including the work of Helmholtz (*On the Sensations of Tone*, 1863) and Harry Partch (*Genesis of a Music*, 1949/1974).
+
+### Instrument References
+
+For more on the washtub bass and related one-string bass instruments, resources include the collections of the American Folklife Center at the Library of Congress, and various old-time and jug band instructional materials available in print and online.
 `;
 
 
 // Anchor map: button key → h2 id attribute value
 const README_ANCHORS={
-  physics:'physics', theory:'theory', instrument:'instrument', app:'app'
+  physics:'physics', theory:'theory', instrument:'instrument', app:'app', thanks:'thanks'
 };
 const README_TITLES={
   physics:'Part 1 · String Physics',
   theory:'Part 2 · Music Theory',
   instrument:'Part 3 · The Washtub Bass',
-  app:'Part 4 · The String Map App'
+  app:'Part 4 · The String Map App',
+  thanks:'Part 5 · Thanks & References'
 };
 
 // Reverse map: anchor id → title
@@ -5133,7 +5259,8 @@ const README_ANCHOR_TITLES={
   physics:'Part 1 · String Physics',
   theory:'Part 2 · Music Theory',
   instrument:'Part 3 · The Washtub Bass',
-  app:'Part 4 · The String Map App'
+  app:'Part 4 · The String Map App',
+  thanks:'Part 5 · Thanks & References'
 };
 
 let _readmeOpen=false;
@@ -5231,7 +5358,9 @@ document.addEventListener('touchstart',e=>{
     _sbStartTy=ty;
     showIndicator();
     e.stopPropagation();
-    e.preventDefault();
+    // NOTE: no preventDefault here — calling it on touchstart cancels synthetic
+    // click events, which breaks button taps. preventDefault in touchmove is
+    // sufficient to suppress native scroll during drag.
   },{passive:false});
 
   sb.addEventListener('touchmove',e=>{
@@ -5251,6 +5380,19 @@ document.addEventListener('touchstart',e=>{
     _sbDrag=false;
     setTimeout(()=>{ind.style.display='none';},600);
   },{passive:true});
+
+  // Desktop: mouse wheel on sidebar scrolls the canvas vertically
+  sb.addEventListener('wheel',e=>{
+    e.preventDefault();
+    const sbH=sb.clientHeight||1;
+    const fullSvgH=1440*sc;
+    const ratio=fullSvgH/sbH;
+    ty -= e.deltaY * ratio * 0.5;
+    clamp(); applyT();
+    showIndicator();
+    clearTimeout(sb._wheelIndTimer);
+    sb._wheelIndTimer=setTimeout(()=>{ind.style.display='none';},600);
+  },{passive:false});
 })();
 
 window.addEventListener('resize',()=>{clamp();applyT();});
