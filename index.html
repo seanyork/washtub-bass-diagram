@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Washtub Bass String Map · v6.0</title>
+<title>Washtub Bass String Map · v6.1</title>
 <style>
 *{box-sizing:border-box;}
 body{margin:0;padding:0;font-family:system-ui,sans-serif;background:#fff;color:#1a1a1a;font-size:13px;overflow:hidden;overscroll-behavior:none;touch-action:none;}
@@ -284,6 +284,11 @@ input[type=range]{width:110px;cursor:pointer;}
 @media(prefers-color-scheme:dark){.br-readme-btn{background:#333;}}
 .br-readme-btn:active{background:rgba(83,58,183,0.08);border-color:#533AB7;}
 .br-readme-btn-lbl{font-size:7px;color:#888;text-transform:uppercase;letter-spacing:0.04em;}
+/* ── Node / Wave Visualization ──────────────────────────────────── */
+@keyframes vizFadeOut {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
 /* ══ end v4 APP SHELL CSS ═══════════════════════════════════════════ */
 </style>
 </head>
@@ -555,6 +560,7 @@ input[type=range]{width:110px;cursor:pointer;}
   <g id="capo-sub-nodes"></g>
   <g id="capo-label-hits"></g>
 </g>
+<g id="viz-layer" pointer-events="none"></g>
       </div><!-- end svg-inner -->
       <!-- label panel: absolute, pointer-events:none, never shifts layout -->
       <div id="label-panel"><div id="label-inner"></div></div>
@@ -1723,10 +1729,12 @@ function renderBRCtx(){
   // If a right panel is active, it takes over all three rows
   if(brRightPanel){
     ctx.innerHTML=renderRightPanel(brRightPanel);
+    setTimeout(wireAllBRSliders,0);
     return;
   }
   // Otherwise show node-view context
   ctx.innerHTML=renderNodeViewCtx(brNodeView);
+  setTimeout(wireAllBRSliders,0);
 }
 
 // ── Node view context rows ────────────────────────────────────────
@@ -1877,6 +1885,27 @@ function renderAudioPanel(){
                 <div class="br-sl-thumb" style="left:${(volume*100).toFixed(1)}%"></div>
               </div>
               <span class="br-sl-val" id="br-vol-val">${Math.round(volume*100)}%</span>
+            </div>
+          </div>
+          <div class="br-ctx-row" style="gap:3px;">
+            <span class="br-chip-lbl">viz</span>
+            <div class="br-poly-btn${nodeViz?' on':''}" onclick="toggleNodeViz();renderBRCtx()" title="Pulsing circles on node press">node</div>
+            <div class="br-poly-btn${waveViz?' on':''}" onclick="toggleWaveViz();renderBRCtx()" title="Standing wave on node press">wave</div>
+            <div style="width:0.5px;background:rgba(128,128,128,0.15);align-self:stretch;margin:0 2px;"></div>
+            <div class="br-sl-wrap">
+              <span class="br-sl-lbl">amp</span>
+              <div class="br-sl-track" id="br-amp-track">
+                <div class="br-sl-thumb" style="left:${(((vizAmp-5)/55)*100).toFixed(1)}%"></div>
+              </div>
+              <span class="br-sl-val" id="br-amp-val">${vizAmp.toFixed(0)}</span>
+            </div>
+            <div style="width:0.5px;background:rgba(128,128,128,0.15);align-self:stretch;margin:0 2px;"></div>
+            <div class="br-sl-wrap">
+              <span class="br-sl-lbl">dur</span>
+              <div class="br-sl-track" id="br-vdur-track">
+                <div class="br-sl-thumb" style="left:${(((vizDur-0.1)/3.9)*100).toFixed(1)}%"></div>
+              </div>
+              <span class="br-sl-val" id="br-vdur-val">${vizDur.toFixed(1)}s</span>
             </div>
           </div>`;
 }
@@ -2133,6 +2162,52 @@ function wireAllBRSliders(){
     track.addEventListener('pointercancel',e=>{
       _dragging=false;
     });
+  })();
+
+  // ── Viz: amplitude ────────────────────────────────────────────
+  (function wireAmpSlider(){
+    const track=document.getElementById('br-amp-track');
+    if(!track||track._wired) return;
+    track._wired=true;
+    const AMP_MIN=5, AMP_MAX=60;
+    function update(clientX){
+      const r=track.getBoundingClientRect();
+      if(r.width<1) return;
+      const pct=Math.max(0,Math.min(1,(clientX-r.left)/r.width));
+      vizAmp=Math.round(AMP_MIN+pct*(AMP_MAX-AMP_MIN));
+      const thumb=track.querySelector('.br-sl-thumb');
+      if(thumb) thumb.style.left=(pct*100).toFixed(1)+'%';
+      const val=document.getElementById('br-amp-val');
+      if(val) val.textContent=vizAmp;
+    }
+    let _d=false;
+    track.addEventListener('pointerdown',e=>{e.preventDefault();track.setPointerCapture(e.pointerId);_d=true;update(e.clientX);});
+    track.addEventListener('pointermove',e=>{if(!_d)return;update(e.clientX);});
+    track.addEventListener('pointerup',e=>{_d=false;track.releasePointerCapture(e.pointerId);});
+    track.addEventListener('pointercancel',()=>{_d=false;});
+  })();
+
+  // ── Viz: duration ─────────────────────────────────────────────
+  (function wireVdurSlider(){
+    const track=document.getElementById('br-vdur-track');
+    if(!track||track._wired) return;
+    track._wired=true;
+    const DUR_MIN=0.1, DUR_MAX=4.0;
+    function update(clientX){
+      const r=track.getBoundingClientRect();
+      if(r.width<1) return;
+      const pct=Math.max(0,Math.min(1,(clientX-r.left)/r.width));
+      vizDur=Math.max(DUR_MIN,Math.min(DUR_MAX,DUR_MIN+pct*(DUR_MAX-DUR_MIN)));
+      const thumb=track.querySelector('.br-sl-thumb');
+      if(thumb) thumb.style.left=(pct*100).toFixed(1)+'%';
+      const val=document.getElementById('br-vdur-val');
+      if(val) val.textContent=vizDur.toFixed(1)+'s';
+    }
+    let _d=false;
+    track.addEventListener('pointerdown',e=>{e.preventDefault();track.setPointerCapture(e.pointerId);_d=true;update(e.clientX);});
+    track.addEventListener('pointermove',e=>{if(!_d)return;update(e.clientX);});
+    track.addEventListener('pointerup',e=>{_d=false;track.releasePointerCapture(e.pointerId);});
+    track.addEventListener('pointercancel',()=>{_d=false;});
   })();
 
   // ── Audio: vol ────────────────────────────────────────────────
@@ -2913,6 +2988,11 @@ function updateCapoReadouts(){
 function playCapoBoth(){
   playTone(capoUpperFreq());
   playTone(capoLowerFreq());
+  const cy_=capoYpx(), nutY_=nutEffY();
+  triggerCapoViz(null, CAPO_COL, [
+    {topY:nutY_, botY:cy_, frac:1.0, harm:1, color:SUB_COL_UPPER},
+    {topY:cy_,   botY:TY,  frac:1.0, harm:1, color:SUB_COL_LOWER}
+  ]);
 }
 
 function toggleCapoArp(on){
@@ -3085,15 +3165,15 @@ function updateCapoSubNodes(){
       fill:'transparent',class:'row-hit'});
     lHit.addEventListener('mousedown',()=>{ try{
       const pKey=node.frac*cf;
-      if(_togglePin(pKey, false)){ playTone(lFreq); _showSubNode(node,'lower',lFreq,cf,lY); }
-      else playTone(lFreq);
+      if(_togglePin(pKey, false)){ playTone(lFreq); triggerCapoViz(lY, lCol, [{topY:capoYpx(), botY:TY, frac:node.frac, harm:node.harm, color:lCol}]); _showSubNode(node,'lower',lFreq,cf,lY); }
+      else { playTone(lFreq); triggerCapoViz(lY, lCol, [{topY:capoYpx(), botY:TY, frac:node.frac, harm:node.harm, color:lCol}]); }
     }catch(e){} });
     lHit.addEventListener('mouseenter',()=>{ try{ if(_pinnedFrac!==null&&_pinnedFrac!==node.frac*cf) return; _showSubNode(node,'lower',lFreq,cf,lY); }catch(e){} });
     lHit.addEventListener('mouseleave',()=>{ try{ clearStrip(); if(!_pinnedFrac) hideLabel(); }catch(e){} });
     lHit.addEventListener('touchstart',()=>{ try{
       const pKey=node.frac*cf;
-      if(_togglePin(pKey, true)){ playTone(lFreq); _showSubNode(node,'lower',lFreq,cf,lY); }
-      else playTone(lFreq);
+      if(_togglePin(pKey, true)){ playTone(lFreq); triggerCapoViz(lY, lCol, [{topY:capoYpx(), botY:TY, frac:node.frac, harm:node.harm, color:lCol}]); _showSubNode(node,'lower',lFreq,cf,lY); }
+      else { playTone(lFreq); triggerCapoViz(lY, lCol, [{topY:capoYpx(), botY:TY, frac:node.frac, harm:node.harm, color:lCol}]); }
     }catch(e){} },{passive:true});
     lHit.addEventListener('touchend',()=>{ try{ clearStrip(); if(!_pinnedFrac) hideLabel(); }catch(e){} },{passive:true});
     g.appendChild(lHit);
@@ -3154,15 +3234,15 @@ function updateCapoSubNodes(){
       fill:'transparent',class:'row-hit'});
     uHit.addEventListener('mousedown',()=>{ try{
       const pKey=cf+node.frac*(1-cf);
-      if(_togglePin(pKey, false)){ playTone(uFreq); _showSubNode(node,'upper',uFreq,cf,uY); }
-      else playTone(uFreq);
+      if(_togglePin(pKey, false)){ playTone(uFreq); triggerCapoViz(uY, uCol, [{topY:nutEffY(), botY:capoYpx(), frac:node.frac, harm:node.harm, color:uCol}]); _showSubNode(node,'upper',uFreq,cf,uY); }
+      else { playTone(uFreq); triggerCapoViz(uY, uCol, [{topY:nutEffY(), botY:capoYpx(), frac:node.frac, harm:node.harm, color:uCol}]); }
     }catch(e){} });
     uHit.addEventListener('mouseenter',()=>{ try{ if(_pinnedFrac!==null&&_pinnedFrac!==(cf+node.frac*(1-cf))) return; _showSubNode(node,'upper',uFreq,cf,uY); }catch(e){} });
     uHit.addEventListener('mouseleave',()=>{ try{ clearStrip(); if(!_pinnedFrac) hideLabel(); }catch(e){} });
     uHit.addEventListener('touchstart',()=>{ try{
       const pKey=cf+node.frac*(1-cf);
-      if(_togglePin(pKey, true)){ playTone(uFreq); _showSubNode(node,'upper',uFreq,cf,uY); }
-      else playTone(uFreq);
+      if(_togglePin(pKey, true)){ playTone(uFreq); triggerCapoViz(uY, uCol, [{topY:nutEffY(), botY:capoYpx(), frac:node.frac, harm:node.harm, color:uCol}]); _showSubNode(node,'upper',uFreq,cf,uY); }
+      else { playTone(uFreq); triggerCapoViz(uY, uCol, [{topY:nutEffY(), botY:capoYpx(), frac:node.frac, harm:node.harm, color:uCol}]); }
     }catch(e){} },{passive:true});
     uHit.addEventListener('touchend',()=>{ try{ clearStrip(); if(!_pinnedFrac) hideLabel(); }catch(e){} },{passive:true});
     g.appendChild(uHit);
@@ -3351,13 +3431,15 @@ function updateCapoLayer(){
   const BTN_X=346, BTN_W=104, BTN_H=28, BTN_R=5, BTN_GAP=18;
   const buttons=[
     {label:'▲  top',   dy:-(BTN_H+BTN_GAP),
-     action:()=>{ playTone(capoUpperFreq()); _showCapoEndNode('upper',cf); },
+     action:()=>{ playTone(capoUpperFreq()); _showCapoEndNode('upper',cf);
+       triggerCapoViz(null, SUB_COL_UPPER, [{topY:nutY, botY:cy, frac:1.0, harm:1, color:SUB_COL_UPPER}]); },
      strip:()=>showStrip(capoUpperFreq(), cn.phi, '↑ '+cn.label, CAPO_COL)},
     {label:cn.label+' · '+cn.itvl, dy:0,
      action:()=>{ playCapoBoth(); showStripBoth(); },
      strip:()=>showStripBoth()},
     {label:'▼  bottom',dy:BTN_H+BTN_GAP,
-     action:()=>{ playTone(capoLowerFreq()); _showCapoEndNode('lower',cf); },
+     action:()=>{ playTone(capoLowerFreq()); _showCapoEndNode('lower',cf);
+       triggerCapoViz(null, SUB_COL_LOWER, [{topY:cy, botY:TY, frac:1.0, harm:1, color:SUB_COL_LOWER}]); },
      strip:()=>showStrip(capoLowerFreq(), 1-cn.phi, '↓ '+cn.label, CAPO_COL)},
   ];
   buttons.forEach(({label,dy,action,strip})=>{
@@ -3612,6 +3694,12 @@ function setPoly(on,btn){
 // Find nearest octave of home key root within playable range
 let _tuneSeqTimer=null; // pending sequential tone timer — cancelled on new tune call
 let capoArp=false;      // capo arp mode: play individual voices then chord on snap
+let nodeViz=false;      // pulsing circle animation on node press
+let waveViz=false;      // standing wave visualization on node press
+let vizAmp=18;          // wave arch half-amplitude px; also scales node viz circles
+let vizDur=1.0;         // viz fade duration in seconds (independent of tone duration)
+// Future: consider separate vizNodeAmp, vizWaveAmp, vizNodeDur, vizWaveDur
+// for independent control of each viz type's appearance and timing.
 let _arpTimers=[];      // array of pending arp step timers
 
 function clearArpTimers(){
@@ -3640,6 +3728,140 @@ function playCapoTransition(oldU, oldL, newU, newL){
     _arpTimers.push(setTimeout(()=>{ playTone(newU); playTone(newL); }, D*5+G));
   }
 }
+
+// ══════════════════════════════════════════════════════════════════
+// ── Node / Wave Visualization ─────────────────────────────────────
+// All viz code is contained here. State flags: nodeViz, waveViz.
+// Entry points:
+//   triggerViz(frac, harm, svgY, color)        — full-string and nut view
+//   triggerCapoViz(svgY, nodeColor, segs)       — capo view
+//     segs: [{topY,botY,frac,harm,color}, ...]
+// Safe to disable by setting both flags false — no other code
+// depends on this section. SVG group #viz-layer is always present
+// but empty when both flags are off.
+//
+// vizAmp controls wave arch amplitude and node circle size.
+// vizDur controls fade duration, shared by both viz types.
+// Future: consider vizNodeAmp, vizWaveAmp, vizNodeDur, vizWaveDur
+// for independent control of each viz type's amplitude and timing.
+// ══════════════════════════════════════════════════════════════════
+
+function toggleNodeViz(){ nodeViz=!nodeViz; }
+function toggleWaveViz(){ waveViz=!waveViz; }
+
+function clearViz(){
+  const vl=document.getElementById('viz-layer');
+  if(vl) vl.innerHTML='';
+}
+
+// Node viz: three concentric circles at node position, fading over vizDur.
+// vizAmp scales the circle radii (base radii: 12, 22, 32 at vizAmp=18).
+function _drawNodeViz(svgY, color){
+  const vl=document.getElementById('viz-layer');
+  if(!vl) return;
+  const scale=vizAmp/18;
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.style.animation=`vizFadeOut ${vizDur}s ease-out forwards`;
+  [12,22,32].forEach((r,i)=>{
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',SX); c.setAttribute('cy',svgY);
+    c.setAttribute('r',Math.max(2,Math.round(r*scale)));
+    c.setAttribute('fill','none');
+    c.setAttribute('stroke',color); c.setAttribute('stroke-width','1.5');
+    c.setAttribute('opacity',String(0.7-i*0.2));
+    g.appendChild(c);
+  });
+  vl.appendChild(g);
+}
+
+// Shared segment wave helper — appends harm arches to group g,
+// spanning from topY (segment top) to botY (segment bottom).
+// frac: node position in segment (1.0=top, 0.0=bottom).
+// Arches above the node are dashed; arches below are solid.
+// extraOpacity: override opacity (used for non-speaking zone in nut view).
+function _drawSegmentWave(g, topY, botY, frac, harm, color, extraOpacity){
+  if(!harm||harm<1) return;
+  const segH=botY-topY;
+  const archH=segH/harm;
+  const archesAbove=Math.round(harm*(1-frac));
+  for(let k=0;k<harm;k++){
+    const y1=topY+k*archH, y2=topY+(k+1)*archH, midY=(y1+y2)/2;
+    const dir=(k%2===0)?-vizAmp:vizAmp; // alternating left/right
+    const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('d',`M ${SX} ${y1.toFixed(1)} Q ${(SX+dir).toFixed(1)} ${midY.toFixed(1)} ${SX} ${y2.toFixed(1)}`);
+    p.setAttribute('fill','none');
+    p.setAttribute('stroke',color); p.setAttribute('stroke-width','1.8');
+    if(k<archesAbove) p.setAttribute('stroke-dasharray','5 4');
+    if(extraOpacity!==undefined) p.setAttribute('opacity',String(extraOpacity));
+    g.appendChild(p);
+  }
+}
+
+// Full-string / nut-height wave viz.
+// Draws harm arches from speaking top to bridge; dashed above node, solid below.
+// In nut view also extends dashed continuation above effective nut up to main nut.
+function _drawWaveViz(frac, harm, color){
+  if(nodeView==='capo') return; // capo handled by _drawCapoWaveViz
+  const vl=document.getElementById('viz-layer');
+  if(!vl||!harm||harm<1) return;
+  const speakingTop=(nodeView==='nut')?nutEffY():NY;
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.style.animation=`vizFadeOut ${vizDur}s ease-out forwards`;
+  _drawSegmentWave(g, speakingTop, TY, frac, harm, color, undefined);
+  // Nut view: dashed continuation above effective nut (non-speaking zone)
+  if(nodeView==='nut' && nutEffY()>NY){
+    const nutY=nutEffY();
+    const archH=(TY-nutY)/harm;
+    const archesAbove=Math.round(harm*(1-frac));
+    let k=archesAbove, y2=nutY;
+    while(y2>NY+4){
+      const y1=Math.max(NY,y2-archH), midY=(y1+y2)/2;
+      const dir=(k%2===0)?-vizAmp:vizAmp;
+      const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+      p.setAttribute('d',`M ${SX} ${y2.toFixed(1)} Q ${(SX+dir).toFixed(1)} ${midY.toFixed(1)} ${SX} ${y1.toFixed(1)}`);
+      p.setAttribute('fill','none');
+      p.setAttribute('stroke',color); p.setAttribute('stroke-width','1.8');
+      p.setAttribute('stroke-dasharray','5 4'); p.setAttribute('opacity','0.28');
+      g.appendChild(p);
+      y2=y1; k++;
+    }
+  }
+  vl.appendChild(g);
+}
+
+// Capo wave viz — draws waves for one or both segments.
+// segs: [{topY, botY, frac, harm, color}, ...]
+// topY/botY are SVG y-coordinates of segment boundaries.
+// frac is the node position within the segment (1.0=top, 0.0=bottom).
+function _drawCapoWaveViz(segs){
+  const vl=document.getElementById('viz-layer');
+  if(!vl) return;
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.style.animation=`vizFadeOut ${vizDur}s ease-out forwards`;
+  segs.forEach(({topY,botY,frac,harm,color})=>{
+    _drawSegmentWave(g,topY,botY,frac,harm,color,undefined);
+  });
+  vl.appendChild(g);
+}
+
+// Full-string / nut-height entry point.
+// frac: node position (1.0=nut/top, 0.0=bridge). harm: harmonic number.
+// svgY: SVG y-coord of node. color: node display color.
+function triggerViz(frac, harm, svgY, color){
+  clearViz();
+  if(nodeViz) _drawNodeViz(svgY, color);
+  if(waveViz) _drawWaveViz(frac, harm, color);
+}
+
+// Capo entry point.
+// svgY: SVG y for node circles (null = skip node viz, e.g. "both" button).
+// nodeColor: color for circles. segs: segment wave data array.
+function triggerCapoViz(svgY, nodeColor, segs){
+  clearViz();
+  if(nodeViz && svgY!==null) _drawNodeViz(svgY, nodeColor);
+  if(waveViz) _drawCapoWaveViz(segs);
+}
+// ══ end Node / Wave Visualization ════════════════════════════════
 
 function tuneToKey(){
   const L=effectiveSpeakingLength()*IN_TO_M, mu=muKgM;
@@ -4135,7 +4357,7 @@ function updateNutMarker(){
   const _nutLabel=remapDegree(1)||'1';
   hitEl.addEventListener('click',()=>{
     if(!nutDidDrag){
-      playTone(fund);
+      playTone(fund); triggerViz(1.0, 1, ny, nutAnnColor);
       if(_togglePin(1.0, false)){ showStrip(fund,1.0,_nutLabel,_nutColor); showLabel(_nutPseudo); }
       else playTone(fund); // unpin
     }
@@ -4153,7 +4375,7 @@ function updateNutMarker(){
     if(!_pinnedFrac){const rh=document.getElementById('row-hl');if(rh)rh.innerHTML='';}
   });
   hitEl.addEventListener('touchstart',()=>{
-    playTone(fund);
+    playTone(fund); triggerViz(1.0, 1, ny, nutAnnColor);
     if(_togglePin(1.0, true)){ showStrip(fund,1.0,_nutLabel,_nutColor); showLabel(_nutPseudo); }
     else playTone(fund); // unpin
   },{passive:true});
@@ -4610,8 +4832,8 @@ function render(){
     const nutHit=mk('rect',{x:0,y:nutY-nutFS*0.65,width:SVG_W,height:nutRowH,fill:'transparent',class:'row-hit'});
     const _nutNode={frac:1.0,ratio:1,fs:'1/1',rs:'1:1',desc:'fundamental',label:'1',primary:true,tonic:false};
     nutHit.addEventListener('mousedown',()=>{
-      if(_togglePin(1.0, false)){ playTone(fund); showStrip(fund,1.0,nutHomeLabel,nutColor); showLabel(_nutNode); }
-      else playTone(fund);
+      if(_togglePin(1.0, false)){ playTone(fund); triggerViz(1.0, 1, NY, nutColor); showStrip(fund,1.0,nutHomeLabel,nutColor); showLabel(_nutNode); }
+      else { playTone(fund); triggerViz(1.0, 1, NY, nutColor); }
     });
     nutHit.addEventListener('mouseenter',()=>{
       if(_pinnedFrac!==null&&_pinnedFrac!==1.0) return;
@@ -4619,8 +4841,8 @@ function render(){
     });
     nutHit.addEventListener('mouseleave',()=>{ clearStrip(); });
     nutHit.addEventListener('touchstart',()=>{
-      if(_togglePin(1.0, true)){ playTone(fund); showStrip(fund,1.0,nutHomeLabel,nutColor); showLabel(_nutNode); }
-      else playTone(fund);
+      if(_togglePin(1.0, true)){ playTone(fund); triggerViz(1.0, 1, NY, nutColor); showStrip(fund,1.0,nutHomeLabel,nutColor); showLabel(_nutNode); }
+      else { playTone(fund); triggerViz(1.0, 1, NY, nutColor); }
     },{passive:true});
     nutHit.addEventListener('touchend',()=>{ clearStrip(); },{passive:true});
     nutG.appendChild(nutHit);
@@ -4696,8 +4918,8 @@ function render(){
 
     const hitRect=mk('rect',{x:0,y:y-rowH/2,width:SVG_W,height:rowH,fill:'transparent',class:'row-hit'});
     hitRect.addEventListener('mousedown',()=>{ try{
-      if(_togglePin(node.frac, false)){ playTone(freq); showStrip(freq,node.frac,displayLabel,c.text); }
-      else playTone(freq);
+      if(_togglePin(node.frac, false)){ playTone(freq); triggerViz(node.frac, node.harm, y, c.text); showStrip(freq,node.frac,displayLabel,c.text); }
+      else { playTone(freq); triggerViz(node.frac, node.harm, y, c.text); }
     }catch(e){} });
     hitRect.addEventListener('mouseenter',()=>{ try{
       if(_pinnedFrac!==null&&_pinnedFrac!==node.frac) return;
@@ -4705,10 +4927,8 @@ function render(){
     }catch(e){} });
     hitRect.addEventListener('mouseleave',()=>{ try{ clearStrip(); }catch(e){} });
     hitRect.addEventListener('touchstart',()=>{ try{
-
-      if(_togglePin(node.frac, true)){ playTone(freq); showStrip(freq,node.frac,displayLabel,c.text); showRuler(y,upperIn,lowerIn,node.fs,freq); }
-      else playTone(freq);
-
+      if(_togglePin(node.frac, true)){ playTone(freq); triggerViz(node.frac, node.harm, y, c.text); showStrip(freq,node.frac,displayLabel,c.text); showRuler(y,upperIn,lowerIn,node.fs,freq); }
+      else { playTone(freq); triggerViz(node.frac, node.harm, y, c.text); }
     }catch(e){} },{passive:true});
     hitRect.addEventListener('touchend',()=>{ try{ clearStrip(); }catch(e){} },{passive:true});
     g.appendChild(hitRect);
