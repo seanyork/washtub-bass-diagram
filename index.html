@@ -3694,10 +3694,10 @@ function setPoly(on,btn){
 // Find nearest octave of home key root within playable range
 let _tuneSeqTimer=null; // pending sequential tone timer — cancelled on new tune call
 let capoArp=false;      // capo arp mode: play individual voices then chord on snap
-let nodeViz=false;      // pulsing circle animation on node press
-let waveViz=false;      // standing wave visualization on node press
-let vizAmp=18;          // wave arch half-amplitude px; also scales node viz circles
-let vizDur=1.0;         // viz fade duration in seconds (independent of tone duration)
+let nodeViz=true;       // pulsing circle animation on node press
+let waveViz=true;       // standing wave visualization on node press
+let vizAmp=60;          // wave arch half-amplitude px; also scales node viz circles
+let vizDur=4.0;         // viz fade duration in seconds (independent of tone duration)
 // Future: consider separate vizNodeAmp, vizWaveAmp, vizNodeDur, vizWaveDur
 // for independent control of each viz type's appearance and timing.
 let _arpTimers=[];      // array of pending arp step timers
