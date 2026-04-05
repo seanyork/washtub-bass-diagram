@@ -486,8 +486,6 @@ input[type=range]{width:110px;cursor:pointer;}
       <div id="svg-inner">
 <svg id="main-svg" width="1380" height="1440" viewBox="0 0 1380 1440" xmlns="http://www.w3.org/2000/svg">
 
-<!-- Pitch axis (left of string) -->
-
 <!-- Column headers -->
 <text id="col-strdeg" x="438" y="22" text-anchor="middle" font-size="16" font-weight="600" fill="currentColor">str°</text>
 <text id="col-homedeg" x="502" y="22" text-anchor="start" font-size="16" font-weight="600" fill="currentColor">home°</text>
@@ -525,7 +523,6 @@ input[type=range]{width:110px;cursor:pointer;}
 
 
 <!-- Dynamic -->
-<g id="dyn-ruler" style="display:none;"></g>
 <g id="row-hl"></g>
 <g id="dyn-home-shade"></g>
 <g id="dyn-home-rings"></g>
@@ -737,7 +734,6 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 //   mk()                  — SVG element factory
 //   fontSize()            — dynamic font size based on node spacing
 //   gcdFn/complementFrac()— fraction math for ruler labels
-//   showRuler/clearRuler()— SVG ruler annotation (to be replaced in Step 5)
 //   showStrip/clearStrip/showStripBoth/stripVoiceHTML() — tone strip (Step 4)
 //   hideHoldPanel()       — clear hold panel SVG group
 //
@@ -1627,14 +1623,6 @@ render = function(){
 
 setTimeout(()=>{
   drawRulerSVG(null);
-  // TODO: remove old ruler SVG elements completely in cleanup pass
-  const oldRuler=document.getElementById('dyn-ruler');
-  if(oldRuler) oldRuler.style.display='none';
-  // Hide pitch axis lines/labels (inline SVG elements at top of main-svg)
-  // They are the first children: 4 lines + 1 horizontal + 4 text labels
-  // Simplest: set opacity=0 on the containing groups
-  // Since they're loose elements, wrap approach: just zero opacity on main-svg children up to dyn-ruler
-  // Actually easiest: add a CSS rule to hide them
 },0);
 
 // ── End Step 5 ruler + sidebar wiring ═════════════════════════════
@@ -4881,69 +4869,6 @@ function complementFrac(fs){
   return cn===0?'0':`${cn/g}/${d/g}`;
 }
 
-function showRuler(nodeY, upperIn, lowerIn, nodeFs, nodeFreq, upperFracStr, rulerColor){
-  clearRuler();
-  const g=document.getElementById('dyn-ruler');
-  const nutY=nutEffY();
-  const gap=8;
-  const labelFS=36;
-  const fund=fundFreq();
-  const speakingIn=effectiveSpeakingLength();
-  const COL=rulerColor||RULER_COL;
-  const mkr=(tag,attrs)=>{
-    const el=document.createElementNS('http://www.w3.org/2000/svg',tag);
-    for(const[k,v]of Object.entries(attrs))el.setAttribute(k,v);
-    return el;
-  };
-  const hash=(y,op,hw,sw)=>mkr('line',{x1:RX-hw,x2:RX+hw,y1:y,y2:y,stroke:COL,
-    'stroke-width':sw||1.5,opacity:op});
-
-  // lines: array of strings, stacked outward from node hash
-  const label=(y,lines,anchor)=>{
-    lines.forEach((txt,i)=>{
-      if(!txt) return;
-      const ly=anchor==='above'
-        ? y - labelFS*0.2 - i*labelFS*1.0
-        : y + labelFS*0.9 + i*labelFS*1.0;
-      const el=mkr('text',{x:RLX,y:ly,'font-size':labelFS,'text-anchor':'end',
-        fill:COL,'font-weight':i===0?'500':'400',opacity:i===0?1:i===1?0.65:0.45});
-      el.textContent=txt; g.appendChild(el);
-    });
-  };
-
-  // Top hash (nut) — light
-  g.appendChild(hash(nutY,0.5,10,1.5));
-  // Middle hash (node) — heavy
-  g.appendChild(hash(nodeY,1.0,14,3));
-  // Bottom hash (tub) — light
-  g.appendChild(hash(TY,0.5,10,1.5));
-
-  // Upper segment
-  if(upperIn > 0.5 && nodeY-nutY > gap*3){
-    g.appendChild(mkr('line',{x1:RX,x2:RX,y1:nutY+gap,y2:nodeY-gap,stroke:COL,
-      'stroke-width':1,'marker-start':'url(#arrow)','marker-end':'url(#arrow)'}));
-    const ufrac=upperFracStr||complementFrac(nodeFs);
-    const upperFreq=upperIn>0 ? fund*(speakingIn/upperIn) : 0;
-    const uni=upperFreq>0 ? noteInfo(upperFreq) : null;
-    const uNote=uni&&uni.snapped ? uni.name+uni.octave : '';
-    const uFreq=upperFreq>0 ? upperFreq.toFixed(1)+' Hz' : '';
-    label(nodeY-gap-4, [fmtLen(upperIn), ufrac, uFreq, uNote], 'above');
-  }
-
-  // Lower segment
-  if(TY-nodeY > gap*3){
-    g.appendChild(mkr('line',{x1:RX,x2:RX,y1:nodeY+gap,y2:TY-gap,stroke:COL,
-      'stroke-width':1,'marker-start':'url(#arrow)','marker-end':'url(#arrow)'}));
-    const lni=nodeFreq ? noteInfo(nodeFreq) : null;
-    const lNote=lni&&lni.snapped ? lni.name+lni.octave : '';
-    const lFreq=nodeFreq ? nodeFreq.toFixed(1)+' Hz' : '';
-    label(nodeY+gap+4, [fmtLen(lowerIn), nodeFs, lFreq, lNote], 'below');
-  }
-}
-
-function clearRuler(){
-  document.getElementById('dyn-ruler').innerHTML='';
-}
 
 // ── Status update ─────────────────────────────────────────────────
 function updateStatus(){
@@ -4967,7 +4892,6 @@ function render(){
   document.getElementById('dyn-nut').innerHTML='';
   if(nodeView==='capo') updateCapoSubNodes();
   document.getElementById('dyn-home-rings').innerHTML='';
-  document.getElementById('dyn-ruler').innerHTML='';
   hideHoldPanel();
   if(nodeView==='capo'){
     const cn=CAPO_NODES[capoNodeIdx];
@@ -5018,7 +4942,6 @@ function render(){
     },{passive:true});
     nutHitC.addEventListener('touchend',()=>{ if(!_pinnedFrac) hideLabel(); },{passive:true});
     nutG2.appendChild(nutHitC);
-    showRuler(capoYpx(), capoUpperIn(), capoLowerIn(), '1\u2212'+cn.phiStr, capoLowerFreq(), cn.phiStr, CAPO_COL);
     return;
   }
   const g=document.getElementById('dyn-nodes');
@@ -5173,11 +5096,11 @@ function render(){
     }catch(e){} });
     hitRect.addEventListener('mouseenter',()=>{ try{
       if(_pinnedFrac!==null&&_pinnedFrac!==node.frac) return;
-      showStrip(freq,node.frac,displayLabel,c.text); showRuler(y,upperIn,lowerIn,node.fs,freq);
+      showStrip(freq,node.frac,displayLabel,c.text);
     }catch(e){} });
     hitRect.addEventListener('mouseleave',()=>{ try{ clearStrip(); }catch(e){} });
     hitRect.addEventListener('touchstart',()=>{ try{
-      if(_togglePin(node.frac, true)){ playTone(freq); triggerViz(node.frac, node.harm, y, c.text); showStrip(freq,node.frac,displayLabel,c.text); showRuler(y,upperIn,lowerIn,node.fs,freq); }
+      if(_togglePin(node.frac, true)){ playTone(freq); triggerViz(node.frac, node.harm, y, c.text); showStrip(freq,node.frac,displayLabel,c.text); }
       else { playTone(freq); triggerViz(node.frac, node.harm, y, c.text); }
     }catch(e){} },{passive:true});
     hitRect.addEventListener('touchend',()=>{ try{ clearStrip(); }catch(e){} },{passive:true});
