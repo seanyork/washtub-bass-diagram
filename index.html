@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Washtub Bass String Map · v6.5</title>
 <style>
 *{box-sizing:border-box;}
@@ -176,7 +176,7 @@ input[type=range]{width:110px;cursor:pointer;}
 .sb-idle{font-size:9px;color:#ccc;font-style:italic;padding:6px 5px;}
 
 /* bottom rail */
-#bottom-rail{height:76px;flex-shrink:0;border-top:0.5px solid rgba(128,128,128,0.18);display:flex;background:rgb(250,250,250);position:relative;z-index:16;touch-action:none;}
+#bottom-rail{height:76px;flex-shrink:0;border-top:0.5px solid rgba(128,128,128,0.18);display:flex;background:rgb(250,250,250);position:relative;z-index:16;touch-action:none;padding-bottom:env(safe-area-inset-bottom,0px);}
 @media(prefers-color-scheme:dark){#bottom-rail{background:#252525;}}
 #br-nv{width:40px;border-right:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 3px;gap:2px;flex-shrink:0;}
 .br-nvb{width:32px;height:20px;font-size:9px;border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;color:#666;display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;}
@@ -189,7 +189,7 @@ input[type=range]{width:110px;cursor:pointer;}
 .br-ctx-idle{font-size:8.5px;color:#ccc;font-style:italic;}
 .br-more-bar{flex:1 1 0%;height:1.5px;background:rgba(128,128,128,0.15);border-radius:1px;}
 .br-more-lbl{font-size:8px;color:#bbb;white-space:nowrap;}
-#br-ap{width:44px;flex-shrink:0;border-left:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 6px 4px 3px;gap:2px;}
+#br-ap{width:44px;flex-shrink:0;border-left:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px max(6px,env(safe-area-inset-right,0px)) 4px 3px;gap:2px;}
 .br-apb{width:36px;height:18px;font-size:7.5px;border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;color:#555;display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;}
 .br-apb-on{background:#533AB7;color:#fff;border-color:#533AB7;}
 @media(prefers-color-scheme:dark){.br-apb{background:#333;color:#aaa;}}
@@ -5917,6 +5917,7 @@ document.addEventListener('touchstart',e=>{
 
   sb.addEventListener('touchstart',e=>{
     _sbDrag=true;
+    _suppressHover=true;
     _sbStartY=e.touches[0].clientY;
     _sbStartTy=ty;
     showIndicator();
@@ -5935,6 +5936,7 @@ document.addEventListener('touchstart',e=>{
 
   sb.addEventListener('touchend',()=>{
     _sbDrag=false;
+    _suppressHover=false;
     setTimeout(()=>{ind.style.display='none';},600);
   },{passive:true});
 
@@ -5942,12 +5944,13 @@ document.addEventListener('touchstart',e=>{
   let _msbDrag=false, _msbStartY=0, _msbStartTy=0;
 
   sb.addEventListener('mousedown',e=>{
-    if(e.target.closest('button,input,select')) return; // don't steal interactive element clicks
+    if(e.target.closest('button,input,select')) return;
     _msbDrag=true;
+    _suppressHover=true;
     _msbStartY=e.clientY;
     _msbStartTy=ty;
     showIndicator();
-    e.preventDefault(); // prevent text selection during drag
+    e.preventDefault();
   });
 
   window.addEventListener('mousemove',e=>{
@@ -5958,6 +5961,7 @@ document.addEventListener('touchstart',e=>{
   window.addEventListener('mouseup',()=>{
     if(!_msbDrag) return;
     _msbDrag=false;
+    _suppressHover=false;
     setTimeout(()=>{ind.style.display='none';},600);
   });
 
@@ -5966,11 +5970,12 @@ document.addEventListener('touchstart',e=>{
   window.addEventListener('wheel',e=>{
     if(!e.target.closest('#sidebar, #rrail')) return;
     e.preventDefault();
+    _suppressHover=true;
     ty -= e.deltaY;
     clamp(); applyT();
     showIndicator();
     clearTimeout(sb._wheelIndTimer);
-    sb._wheelIndTimer=setTimeout(()=>{ind.style.display='none';},600);
+    sb._wheelIndTimer=setTimeout(()=>{ind.style.display='none'; _suppressHover=false;},600);
   },{passive:false});
 })();
 
