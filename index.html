@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v6.6.5</title>
+<title>Washtub Bass String Map · v6.6.9</title>
 <style>
 *{box-sizing:border-box;}
 body{margin:0;padding:0;font-family:system-ui,sans-serif;background:#fff;color:#1a1a1a;font-size:13px;overflow:hidden;overscroll-behavior:none;touch-action:none;}
@@ -242,28 +242,42 @@ input[type=range]{width:110px;cursor:pointer;}
 #cof-wrap{position:absolute;left:0;bottom:0;width:170px;height:170px;z-index:14;pointer-events:auto;}
 #cof-canvas{display:block;cursor:grab;}
 #cof-canvas.spinning{cursor:grabbing;}
-/* ── Play zone ── */
-#play-zone{position:absolute;left:56px;bottom:0;z-index:14;width:170px;display:none;flex-direction:column;background:#fff;border-top:0.5px solid rgba(128,128,128,0.2);border-right:0.5px solid rgba(128,128,128,0.2);border-top-right-radius:10px;border-top-left-radius:10px;overflow:hidden;}
+/* ── Play zone: play-btn-row only, sits above CoF ── */
+/* IMPORTANT: left:56px keeps this right of the left rail.
+   CoF wheel (cof-wrap) stays at left:0 — do not merge these. */
+#play-zone{position:absolute;left:56px;bottom:170px;z-index:14;width:130px;display:none;flex-direction:column;}
 @media(prefers-color-scheme:dark){#play-zone{background:#1e1e1e;}}
-#play-zone #cof-wrap{position:static !important;left:auto !important;bottom:auto !important;z-index:auto !important;width:170px;height:170px;}
-#play-ctrl-panel{display:none;padding:8px 8px 6px;border-bottom:0.5px solid rgba(128,128,128,0.15);flex-direction:column;gap:5px;}
-#play-ctrl-panel.open{display:flex;}
-.pcp-row{display:flex;align-items:center;gap:3px;flex-wrap:wrap;}
-.pcp-lbl{font-size:7.5px;color:#888;width:36px;flex-shrink:0;text-transform:uppercase;letter-spacing:0.04em;}
-.pcp-btn{height:17px;padding:0 5px;font-size:7.5px;font-weight:600;border:0.5px solid rgba(128,128,128,0.28);border-radius:3px;background:var(--color-background-primary,#fff);color:#555;cursor:pointer;white-space:nowrap;}
-.pcp-btn.on{background:#533AB7;color:#fff;border-color:#533AB7;}
-.pcp-btn:disabled{opacity:0.35;cursor:default;}
-@media(prefers-color-scheme:dark){.pcp-btn{background:#2a2a2a;color:#aaa;}}
-#play-btn-row{display:flex;height:46px;border-bottom:0.5px solid rgba(128,128,128,0.15);flex-shrink:0;}
-#play-go-btn{flex:1;background:#0F6E56;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:0 10px;border-right:0.5px solid rgba(255,255,255,0.15);}
-#play-go-btn.playing{background:#993C1D;}
+/* ── Play drawer: slides up above play row, scrollable, capped at top of canvas ── */
+#play-drawer{position:absolute;left:56px;bottom:216px;top:0;z-index:14;width:130px;display:none;overflow-y:auto;background:#fff;border:0.5px solid rgba(83,58,183,0.2);border-bottom:none;border-radius:8px 8px 0 0;flex-direction:column;}
+@media(prefers-color-scheme:dark){#play-drawer{background:#1e1e1e;}}
+#play-drawer::-webkit-scrollbar{width:3px;}
+#play-drawer::-webkit-scrollbar-thumb{background:rgba(128,128,128,0.25);border-radius:2px;}
+/* play drawer section structure */
+.pd-sec{display:flex;flex-direction:column;gap:3px;padding:6px 6px 4px;}
+.pd-sec+.pd-sec{border-top:0.5px solid rgba(128,128,128,0.12);}
+.pd-lbl{font-size:7px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:#888;text-align:center;margin-top:2px;}
+@media(prefers-color-scheme:dark){.pd-lbl{color:#666;}}
+.pd-row{display:flex;gap:3px;}
+.pd-vr{width:0.5px;background:rgba(128,128,128,0.2);flex-shrink:0;align-self:stretch;}
+.pd-col-lbls{display:flex;margin-top:2px;}
+.pd-col-lbl{flex:1;min-width:0;text-align:center;font-size:7px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#888;}
+@media(prefers-color-scheme:dark){.pd-col-lbl{color:#666;}}
+/* buttons — flex:1 min-width:0 on BOTH button and gap ensures equal column widths */
+.pd-btn{flex:1;min-width:0;height:26px;font-size:10px;font-weight:600;border:0.5px solid rgba(128,128,128,0.25);border-radius:4px;background:var(--inkey-fill,#fff);color:var(--color-text-primary,#1a1a1a);display:flex;align-items:center;justify-content:center;white-space:nowrap;cursor:pointer;}
+.pd-btn.on{background:#533AB7;color:#fff;border-color:#533AB7;}
+@media(prefers-color-scheme:dark){.pd-btn{background:#2a2a2a;color:#ddd;}.pd-btn.on{background:#533AB7;color:#fff;border-color:#533AB7;}}
+/* dim entire section when not applicable */
+.pd-dim{opacity:0.18;pointer-events:none;}
+/* play row */
+#play-btn-row{display:flex;height:46px;border-top:0.5px solid rgba(83,58,183,0.15);flex-shrink:0;}
+#play-go-btn{flex:1;background:radial-gradient(ellipse at 40% 50%,#fff 0%,#C8EDD9 100%);border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:0 10px;border-right:0.5px solid #A8DFC4;}
+#play-go-btn.playing{background:radial-gradient(ellipse at 40% 50%,#fff 0%,#F5C0C0 100%);border-right:0.5px solid #E8ABAB;}
 .pg-icon{display:flex;align-items:flex-end;gap:2px;height:14px;flex-shrink:0;}
-.pg-icon .pgb{width:3px;border-radius:1px;background:rgba(255,255,255,0.85);}
+.pg-icon .pgb{width:3px;border-radius:1px;background:rgba(26,26,26,0.5);}
 .pg-meta{display:flex;flex-direction:column;gap:2px;text-align:left;overflow:hidden;}
-.pg-title{font-size:10px;font-weight:700;color:#fff;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.pg-sub{font-size:8px;color:rgba(255,255,255,0.72);line-height:1.3;white-space:nowrap;}
-#play-panel-toggle{width:40px;flex-shrink:0;background:#0F6E56;opacity:0.72;border:none;color:#fff;font-size:8px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-#play-panel-toggle.open{background:rgba(83,58,183,0.85);opacity:1;}
+.pg-title{font-size:10px;font-weight:700;color:#1a1a1a;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pg-sub{font-size:8px;color:#555;line-height:1.3;white-space:nowrap;}
+#play-panel-toggle{width:40px;flex-shrink:0;background:radial-gradient(ellipse at 50% 50%,#fff 0%,#D8D5F8 100%);border:none;color:#3C3489;font-size:8px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 
 #scale-picker{position:absolute;left:44px;top:50px;z-index:50;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,0.14);padding:4px 0;min-width:160px;display:none;}
 @media(prefers-color-scheme:dark){#scale-picker{background:#2a2a2a;}}
@@ -656,49 +670,86 @@ input[type=range]{width:110px;cursor:pointer;}
   <div id="scale-picker"></div>
   <div id="home-picker"></div>
 
-  <!-- Play zone: play controls + CoF wheel — shown/hidden together via toggleCoF -->
-  <div id="play-zone">
-    <div id="play-ctrl-panel">
-      <div class="pcp-row" id="pcp-seq-row">
-        <span class="pcp-lbl">sequence</span>
-        <button class="pcp-btn on" onclick="setPlaySeq('1oct',this)">1-oct</button>
-        <button class="pcp-btn" onclick="setPlaySeq('full',this)">full</button>
-        <button class="pcp-btn" onclick="setPlaySeq('chord',this)">chord</button>
+  <!-- Play drawer: slides up above play row when open.
+       Capped by top:0 so it never enters the tone strip.
+       Sidebar auto-collapses on open; tx shifts right by PLAY_DRAWER_W. -->
+  <div id="play-drawer">
+    <!-- Spacer pushes all sections to the bottom of the drawer -->
+    <div style="flex:1;min-height:0;"></div>
+    <!-- Voices + Inversion: two independent columns, v-rule between.
+         .pd-gap MUST have flex:1 min-width:0 to keep 13th button same width as others. -->
+    <div class="pd-sec" id="pd-chord-voices">
+      <div class="pd-row">
+        <button class="pd-btn" id="pdv-13th" onclick="setPlayVoices('13th',this)">13th</button>
+        <div class="pd-vr"></div>
+        <!-- Ghost button: keeps 13th same width as other voice buttons. Never remove. -->
+        <button class="pd-btn" style="visibility:hidden;pointer-events:none;" tabindex="-1" aria-hidden="true"></button>
       </div>
-      <div class="pcp-row" id="pcp-voices-row">
-        <span class="pcp-lbl">voices</span>
-        <button class="pcp-btn on" onclick="setPlayVoices('triad',this)">triad</button>
-        <button class="pcp-btn" onclick="setPlayVoices('7th',this)">7th</button>
-        <button class="pcp-btn" onclick="setPlayVoices('9th',this)">9th</button>
-        <button class="pcp-btn" onclick="setPlayVoices('11th',this)">11th</button>
-        <button class="pcp-btn" onclick="setPlayVoices('13th',this)">13th</button>
+      <div class="pd-row">
+        <button class="pd-btn" id="pdv-11th" onclick="setPlayVoices('11th',this)">11th</button>
+        <div class="pd-vr"></div>
+        <button class="pd-btn" id="pdi-3rd" onclick="setPlayInversion(3,this)">3rd</button>
       </div>
-      <div class="pcp-row" id="pcp-inv-row">
-        <span class="pcp-lbl">inversion</span>
-        <button class="pcp-btn on" onclick="setPlayInversion(0,this)">root</button>
-        <button class="pcp-btn" onclick="setPlayInversion(1,this)">1st</button>
-        <button class="pcp-btn" onclick="setPlayInversion(2,this)">2nd</button>
-        <button class="pcp-btn" id="pcp-inv3" onclick="setPlayInversion(3,this)">3rd</button>
+      <div class="pd-row">
+        <button class="pd-btn" id="pdv-9th" onclick="setPlayVoices('9th',this)">9th</button>
+        <div class="pd-vr"></div>
+        <button class="pd-btn" id="pdi-2nd" onclick="setPlayInversion(2,this)">2nd</button>
       </div>
-      <div class="pcp-row" id="pcp-playas-row">
-        <span class="pcp-lbl">play as</span>
-        <button class="pcp-btn on" onclick="setPlayAs('arpup',this)">↑ arp</button>
-        <button class="pcp-btn" onclick="setPlayAs('arpdown',this)">↓ arp</button>
-        <button class="pcp-btn" onclick="setPlayAs('arpupdown',this)">↑↓</button>
-        <button class="pcp-btn" onclick="setPlayAs('block',this)">block</button>
+      <div class="pd-row">
+        <button class="pd-btn" id="pdv-7th" onclick="setPlayVoices('7th',this)">7th</button>
+        <div class="pd-vr"></div>
+        <button class="pd-btn" id="pdi-1st" onclick="setPlayInversion(1,this)">1st</button>
       </div>
-      <div class="pcp-row" id="pcp-dir-row">
-        <span class="pcp-lbl">direction</span>
-        <button class="pcp-btn on" onclick="setPlayDir('up',this)">↑ up</button>
-        <button class="pcp-btn" onclick="setPlayDir('down',this)">↓ down</button>
-        <button class="pcp-btn" onclick="setPlayDir('updown',this)">↑↓ both</button>
+      <div class="pd-row">
+        <button class="pd-btn on" id="pdv-triad" onclick="setPlayVoices('triad',this)">triad</button>
+        <div class="pd-vr"></div>
+        <button class="pd-btn on" id="pdi-root" onclick="setPlayInversion(0,this)">root</button>
       </div>
-      <div class="pcp-row">
-        <span class="pcp-lbl">root</span>
-        <button class="pcp-btn on" onclick="setPlayRoot('homenode',this)">home node</button>
-        <button class="pcp-btn" onclick="setPlayRoot('fundamental',this)">fundamental</button>
+      <div class="pd-col-lbls">
+        <div class="pd-col-lbl">voices</div>
+        <div style="width:0.5px;flex-shrink:0;"></div>
+        <div class="pd-col-lbl">invert</div>
       </div>
     </div>
+    <!-- Chord section: arpeg / block -->
+    <div class="pd-sec" id="pd-chord-section">
+      <div class="pd-row">
+        <button class="pd-btn on" id="pda-arpeg" onclick="setPlayChordStyle('arpeg',this)">arpeg</button>
+        <button class="pd-btn" id="pda-block" onclick="setPlayChordStyle('block',this)">block</button>
+      </div>
+      <div class="pd-lbl">chord</div>
+    </div>
+    <!-- Scale section: 1 oct / full -->
+    <div class="pd-sec" id="pd-scale-section">
+      <div class="pd-row">
+        <button class="pd-btn" id="pds-1oct" onclick="setPlayScaleStyle('1oct',this)">1 oct</button>
+        <button class="pd-btn" id="pds-full" onclick="setPlayScaleStyle('full',this)">full</button>
+      </div>
+      <div class="pd-lbl">scale</div>
+    </div>
+    <!-- Direction: dims only when chord+block active -->
+    <div class="pd-sec" id="pd-dir-section">
+      <div class="pd-row">
+        <button class="pd-btn on" id="pdd-up" onclick="setPlayDir('up',this)">↑</button>
+        <button class="pd-btn" id="pdd-down" onclick="setPlayDir('down',this)">↓</button>
+        <button class="pd-btn" id="pdd-updown" onclick="setPlayDir('updown',this)">↑↓</button>
+      </div>
+      <div class="pd-lbl">direction</div>
+    </div>
+    <!-- Root: home node or fundamental — applies to all modes -->
+    <div class="pd-sec">
+      <div class="pd-row">
+        <button class="pd-btn on" id="pdr-home" onclick="setPlayRoot('homenode',this)">home</button>
+        <button class="pd-btn" id="pdr-fund" onclick="setPlayRoot('fundamental',this)">fund.</button>
+      </div>
+      <div class="pd-lbl">root</div>
+    </div>
+  </div>
+
+  <!-- Play zone: play-btn-row only, sits above CoF (bottom:170px).
+       IMPORTANT: left:56px aligns to right of left rail.
+       CoF wheel (cof-wrap) is a SEPARATE element at left:0 — never merge them. -->
+  <div id="play-zone">
     <div id="play-btn-row">
       <button id="play-go-btn" onclick="playSequence()">
         <div class="pg-icon">
@@ -714,10 +765,14 @@ input[type=range]{width:110px;cursor:pointer;}
       </button>
       <button id="play-panel-toggle" onclick="togglePlayPanel()">open</button>
     </div>
-    <div id="cof-wrap">
-      <canvas id="cof-canvas" width="160" height="160"></canvas>
-      <div id="cof-dot"></div>
-    </div>
+  </div>
+
+  <!-- CoF wheel — MUST remain at left:0 bottom:0, clamped to device left edge.
+       Do NOT move inside play-zone or offset with left-rail width.
+       The left rail (z-index:15) sits on top of it intentionally. -->
+  <div id="cof-wrap" style="display:none;">
+    <canvas id="cof-canvas" width="160" height="160"></canvas>
+    <div id="cof-dot"></div>
   </div>
 
   <!-- README slideup panel -->
@@ -1830,7 +1885,7 @@ function renderBRCtx(){
 // ── Node view context rows ────────────────────────────────────────
 function renderNodeViewCtx(view){
   if(view==='full'){
-    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.6.5</span></div>
+    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.6.9</span></div>
             <div class="br-ctx-row" style="gap:5px;justify-content:center;">
               <div class="br-readme-btn" onclick="openReadme('instrument')">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2430,115 +2485,166 @@ function initBR(){
 // ── End Steps 6–12 bottom rail wiring ════════════════════════════
 
 // ── Play Zone ═════════════════════════════════════════════════════
+// Drawer width used for tx shift on open/close.
+// MUST match #play-drawer width in CSS (130px).
+const PLAY_DRAWER_W = 130;
 
 // State
-let playSeq       = '1oct';    // '1oct' | 'full' | 'chord'
-let playVoices    = 'triad';   // 'triad'|'7th'|'9th'|'11th'|'13th'
-let playInversion = 0;         // 0=root 1=1st 2=2nd 3=3rd
-let playAs        = 'arpup';   // 'arpup'|'arpdown'|'arpupdown'|'block'
-let playDir       = 'up';      // 'up'|'down'|'updown'
-let playRoot      = 'homenode';// 'homenode'|'fundamental'
+let playSeq       = 'chord';  // 'chord' | 'scale-1oct' | 'scale-full'
+let playVoices    = 'triad';  // 'triad'|'7th'|'9th'|'11th'|'13th'
+let playInversion = 0;        // 0=root 1=1st 2=2nd 3=3rd
+let playChordStyle = 'arpeg'; // 'arpeg'|'block'
+let playDir       = 'up';     // 'up'|'down'|'updown'
+let playRoot      = 'homenode';
 let _playTimers   = [];
 let _playActive   = false;
 let _playPanelOpen = false;
+let _sidebarWasOpen = false;  // sidebar state before drawer opened
 
-// Row visibility — chord-only rows hidden in scale/full modes
-function _updatePlayCtrlVisibility(){
-  const isChord = playSeq==='chord';
-  ['pcp-voices-row','pcp-inv-row','pcp-playas-row'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.style.display = isChord ? '' : 'none';
+// ── Dimming ────────────────────────────────────────────────────────
+function _updatePlayDimming(){
+  const isChord = playSeq === 'chord';
+  const isBlock = isChord && playChordStyle === 'block';
+  // Only voices/inversion dims — based on whether scale mode is active
+  const cv = document.getElementById('pd-chord-voices');
+  if(cv) cv.classList.toggle('pd-dim', !isChord);
+  // Chord and scale sections (#pd-chord-section, #pd-scale-section) NEVER dim —
+  // both are always clickable so the user can switch modes freely.
+  // Direction dims only when chord+block is selected (no arpeggiation order applies)
+  const ds = document.getElementById('pd-dir-section');
+  if(ds) ds.classList.toggle('pd-dim', isBlock);
+}
+
+// ── Button sync helpers ────────────────────────────────────────────
+function _syncVoice(v){
+  ['triad','7th','9th','11th','13th'].forEach(k=>{
+    const b=document.getElementById('pdv-'+k.replace('/',''));
+    if(b) b.classList.toggle('on', k===v);
   });
-  const dirRow = document.getElementById('pcp-dir-row');
-  if(dirRow) dirRow.style.display = isChord ? 'none' : '';
-  // 3rd inversion only meaningful for 7th+
-  const inv3 = document.getElementById('pcp-inv3');
-  if(inv3) inv3.disabled = (playVoices==='triad');
-  if(playVoices==='triad' && playInversion===3){ playInversion=0; _syncBtns('pcp-inv-row',0); }
+}
+function _syncInversion(n){
+  [{id:'pdi-root',v:0},{id:'pdi-1st',v:1},{id:'pdi-2nd',v:2},{id:'pdi-3rd',v:3}].forEach(o=>{
+    const b=document.getElementById(o.id);
+    if(b) b.classList.toggle('on', o.v===n);
+  });
+}
+function _syncChordStyle(s){
+  const ba=document.getElementById('pda-arpeg');
+  const bb=document.getElementById('pda-block');
+  if(ba) ba.classList.toggle('on', s==='arpeg');
+  if(bb) bb.classList.toggle('on', s==='block');
+}
+function _syncScaleStyle(s){
+  const b1=document.getElementById('pds-1oct');
+  const bf=document.getElementById('pds-full');
+  if(b1) b1.classList.toggle('on', s==='1oct');
+  if(bf) bf.classList.toggle('on', s==='full');
+}
+function _syncDir(d){
+  [{id:'pdd-up',v:'up'},{id:'pdd-down',v:'down'},{id:'pdd-updown',v:'updown'}].forEach(o=>{
+    const b=document.getElementById(o.id);
+    if(b) b.classList.toggle('on', o.v===d);
+  });
+}
+function _syncRoot(r){
+  const bh=document.getElementById('pdr-home');
+  const bf=document.getElementById('pdr-fund');
+  if(bh) bh.classList.toggle('on', r==='homenode');
+  if(bf) bf.classList.toggle('on', r==='fundamental');
 }
 
-function _syncBtns(rowId, activeVal){
-  const row = document.getElementById(rowId);
-  if(!row) return;
-  row.querySelectorAll('.pcp-btn').forEach((b,i)=>b.classList.toggle('on', i===activeVal));
-}
+// ── Setters ────────────────────────────────────────────────────────
+function setPlayVoices(v){ playVoices=v; _syncVoice(v); updatePlayBtn(); }
+function setPlayInversion(n){ playInversion=n; _syncInversion(n); updatePlayBtn(); }
 
-function setPlaySeq(v,btn){
-  playSeq=v;
-  btn.closest('.pcp-row').querySelectorAll('.pcp-btn').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  _updatePlayCtrlVisibility();
-  updatePlayBtn();
+function setPlayChordStyle(s){
+  playSeq='chord'; playChordStyle=s;
+  _syncChordStyle(s);
+  // Deselect scale buttons visually when chord is active
+  ['pds-1oct','pds-full'].forEach(id=>{ const b=document.getElementById(id); if(b) b.classList.remove('on'); });
+  _updatePlayDimming(); updatePlayBtn();
 }
-function setPlayVoices(v,btn){
-  playVoices=v;
-  btn.closest('.pcp-row').querySelectorAll('.pcp-btn').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  _updatePlayCtrlVisibility();
-  updatePlayBtn();
+function setPlayScaleStyle(s){
+  playSeq='scale-'+s;
+  _syncScaleStyle(s);
+  // Deselect chord style buttons visually when scale is active
+  ['pda-arpeg','pda-block'].forEach(id=>{ const b=document.getElementById(id); if(b) b.classList.remove('on'); });
+  _updatePlayDimming(); updatePlayBtn();
 }
-function setPlayInversion(v,btn){
-  playInversion=v;
-  btn.closest('.pcp-row').querySelectorAll('.pcp-btn').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  updatePlayBtn();
-}
-function setPlayAs(v,btn){
-  playAs=v;
-  btn.closest('.pcp-row').querySelectorAll('.pcp-btn').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  updatePlayBtn();
-}
-function setPlayDir(v,btn){
-  playDir=v;
-  btn.closest('.pcp-row').querySelectorAll('.pcp-btn').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  updatePlayBtn();
-}
-function setPlayRoot(v,btn){
-  playRoot=v;
-  btn.closest('.pcp-row').querySelectorAll('.pcp-btn').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  updatePlayBtn();
+function setPlayDir(d){ playDir=d; _syncDir(d); updatePlayBtn(); }
+function setPlayRoot(r){ playRoot=r; _syncRoot(r); updatePlayBtn(); }
+
+// ── Panel open / close ─────────────────────────────────────────────
+function _refanAfterLayout(){
+  // Clear stale fan lines and redraw with updated geometry.
+  // Called whenever canvas or sidebar layout changes due to drawer.
+  const fo=document.getElementById('fan-overlay');
+  if(fo) fo.innerHTML='';
+  if(_lastVizArgs) refreshViz();
 }
 
 function togglePlayPanel(){
   _playPanelOpen = !_playPanelOpen;
-  const panel = document.getElementById('play-ctrl-panel');
-  const btn   = document.getElementById('play-panel-toggle');
-  if(panel) panel.classList.toggle('open', _playPanelOpen);
-  if(btn){ btn.textContent = _playPanelOpen ? 'hide' : 'open'; btn.classList.toggle('open', _playPanelOpen); }
+  const drawer = document.getElementById('play-drawer');
+  const btn    = document.getElementById('play-panel-toggle');
+
+  if(_playPanelOpen){
+    // Save sidebar state and auto-collapse to give canvas room
+    _sidebarWasOpen = !sidebarCollapsed;
+    if(!sidebarCollapsed) toggleSidebar();
+    // Shift string right by drawer width so it stays visible
+    tx += PLAY_DRAWER_W;
+    if(drawer) drawer.style.display = 'flex';
+    if(btn){ btn.textContent='hide'; btn.classList.add('open'); }
+  } else {
+    if(drawer) drawer.style.display = 'none';
+    if(btn){ btn.textContent='open'; btn.classList.remove('open'); }
+    // Shift string back
+    tx -= PLAY_DRAWER_W;
+    // Restore sidebar if it was open before
+    if(_sidebarWasOpen && sidebarCollapsed) toggleSidebar();
+  }
+  clamp(); applyT();
+  _refanAfterLayout();
 }
 
-// Build label string for play button
+// ── Patch toggleSidebar: recalc fan when drawer is open ─────────────
+const _origToggleSidebar_play = toggleSidebar;
+toggleSidebar = function(){
+  _origToggleSidebar_play();
+  if(_playPanelOpen){
+    // Sidebar changed while drawer is open — refresh fan geometry
+    clamp(); applyT();
+    _refanAfterLayout();
+  }
+};
+
+// ── Play button label ───────────────────────────────────────────────
 function _playLabel(){
   const rootNote = NOTES[homeKey];
   const modeName = MODE_NAMES[currentMode];
-  if(playSeq==='1oct') return rootNote+' '+modeName;
-  if(playSeq==='full') return rootNote+' '+modeName+' (full)';
-  // chord
-  const voiceMap = {triad:'',  '7th':' 7','9th':' 9','11th':' 11','13th':' 13'};
-  // chord quality from mode tonic triad
+  if(playSeq==='scale-1oct') return rootNote+' '+modeName;
+  if(playSeq==='scale-full') return rootNote+' '+modeName+' (full)';
+  // chord — derive quality from mode
+  const voiceMap = {triad:'','7th':' 7','9th':' 9','11th':' 11','13th':' 13'};
   const steps = MODE_SCALES[currentMode];
-  const third = steps[0]+steps[1]; // semitones 1→3
-  const fifth  = third+steps[2]+steps[3]; // semitones 1→5
+  const third = steps[0]+steps[1];
+  const fifth  = third+steps[2]+steps[3];
   let quality = '';
   if(third===3 && fifth===7) quality='dim';
   else if(third===3) quality='m';
   else if(third===4 && fifth===8) quality='aug';
-  else quality='';
-  const invMap = {0:'',1:'/'+rootNote,2:'',3:''};
   return rootNote+(quality||'')+voiceMap[playVoices];
 }
 
 function _playSubLabel(){
   if(playSeq==='chord'){
-    const invNames = ['root pos','1st inv','2nd inv','3rd inv'];
-    const asMap = {arpup:'arp \u2191',arpdown:'arp \u2193',arpupdown:'arp \u2191\u2193',block:'block'};
-    return invNames[playInversion]+' \xb7 '+asMap[playAs];
+    const invNames=['root pos','1st inv','2nd inv','3rd inv'];
+    return playChordStyle==='block'
+      ? invNames[playInversion]+' · block'
+      : invNames[playInversion]+' · arp '+{up:'↑',down:'↓',updown:'↑↓'}[playDir];
   }
-  const dirMap = {up:'\u2191 up',down:'\u2193 down',updown:'\u2191\u2193 both'};
-  return dirMap[playDir];
+  return {up:'↑ up',down:'↓ dn',updown:'↑↓ both'}[playDir];
 }
 
 function updatePlayBtn(){
@@ -2546,75 +2652,88 @@ function updatePlayBtn(){
   const subEl   = document.querySelector('#play-go-btn .pg-sub');
   const iconEl  = document.querySelector('#play-go-btn .pg-icon');
   if(!titleEl) return;
-  titleEl.textContent = '\u25b6 ' + _playLabel();
-  subEl.textContent   = _playSubLabel();
-  // Icon: bars for scale, stacked lines for chord
+  titleEl.textContent = (_playActive?'■ ':'▶ ') + _playLabel();
+  if(subEl) subEl.textContent = _playSubLabel();
   if(iconEl){
-    if(playSeq==='chord'){
-      iconEl.innerHTML = [14,14,14].map(h=>`<div class="pgb" style="height:${h}px;width:3px;margin-bottom:2px;"></div>`).join('');
-      iconEl.style.flexDirection='column';
-      iconEl.style.alignItems='center';
-      iconEl.style.height='auto';
+    const isChord = playSeq==='chord';
+    if(isChord){
+      iconEl.style.cssText='display:flex;flex-direction:column;align-items:center;gap:2px;height:auto;';
+      iconEl.innerHTML=['<div class="pgb" style="height:2px;width:12px;"></div>',
+        '<div class="pgb" style="height:2px;width:12px;"></div>',
+        '<div class="pgb" style="height:2px;width:12px;"></div>'].join('');
     } else {
-      const heights = playDir==='down' ? [14,11,8,5] : [5,8,11,14];
-      iconEl.innerHTML = heights.map(h=>`<div class="pgb" style="height:${h}px"></div>`).join('');
-      iconEl.style.flexDirection='row';
-      iconEl.style.alignItems='flex-end';
-      iconEl.style.height='14px';
+      const h = playDir==='down'?[14,11,8,5]:[5,8,11,14];
+      iconEl.style.cssText='display:flex;flex-direction:row;align-items:flex-end;gap:2px;height:14px;';
+      iconEl.innerHTML=h.map(n=>`<div class="pgb" style="height:${n}px;width:3px;"></div>`).join('');
     }
   }
 }
 
-// Build the sequence of frequencies to play
+// ── Build note sequence ─────────────────────────────────────────────
 function buildPlayFreqs(){
   const fund = fundFreq();
   const hnRatio = homeNodeRatio();
-  // Root frequency: home node or fundamental
   const rootFreq = playRoot==='homenode' ? fund*hnRatio : fund;
 
   if(playSeq==='chord'){
     const steps = MODE_SCALES[currentMode];
-    // Build semitone offsets for chord degrees
-    const semi = [0]; // root
-    let acc=0;
+    // Build cumulative semitone offsets for all 7 scale degrees
+    const semi=[0]; let acc=0;
     for(let i=0;i<6;i++){ acc+=steps[i]; semi.push(acc); }
-    // Voice count: triad=3 notes (1,3,5), 7th=4, 9th=5, 11th=6, 13th=7
-    const voiceCount = {triad:3,'7th':4,'9th':5,'11th':6,'13th':7}[playVoices];
-    // Chord degrees: 1,3,5,7,9,11,13 = indices 0,2,4,6,1(+oct),3(+oct),5(+oct)
-    const degIdxs = [0,2,4,6,1,3,5]; // scale degree indices
-    let freqs = degIdxs.slice(0,voiceCount).map(idx=>{
-      const st = semi[idx % 7] + Math.floor(idx/7)*12;
+    // Chord tone indices (0-based scale degrees): 1,3,5,7,9,11,13 = 0,2,4,6,1+7,3+7,5+7
+    const degIdxs=[0,2,4,6,1,3,5];
+    const voiceCount={triad:3,'7th':4,'9th':5,'11th':6,'13th':7}[playVoices];
+    // 9th,11th,13th voiced in next higher octave (conventional)
+    let freqs=degIdxs.slice(0,voiceCount).map((idx,pos)=>{
+      const octShift = pos>=4 ? 12 : 0; // 9th and above go up an octave
+      const st = semi[idx%7] + Math.floor(idx/7)*12 + octShift;
       return rootFreq * Math.pow(2, st/12);
     });
-    // Apply inversion: rotate by moving bottom note(s) up an octave
-    for(let inv=0; inv<playInversion; inv++){
-      freqs.push(freqs.shift()*2);
-    }
+    // Apply inversion: rotate lowest note(s) up an octave
+    for(let inv=0;inv<playInversion;inv++) freqs.push(freqs.shift()*2);
     return freqs;
   }
 
-  if(playSeq==='full'){
-    // All 14 nodes sorted by ratio (ascending pitch), plus fundamental
-    let freqs = [{freq:fund, frac:1.0, harm:1}];
-    NODES.forEach(n=>freqs.push({freq:fund*n.ratio, frac:n.frac, harm:n.harm}));
-    freqs.sort((a,b)=>a.freq-b.freq);
-    return freqs;
-  }
-
-  // 1oct: one octave of the current mode from root
   const steps = MODE_SCALES[currentMode];
-  const freqObjs = [{freq:rootFreq, frac:null}];
+  if(playSeq==='scale-full'){
+    // All 14 NODES sorted by pitch, plus the fundamental
+    let all=[{freq:fund,frac:1.0,harm:1}];
+    NODES.forEach(n=>all.push({freq:fund*n.ratio,frac:n.frac,harm:n.harm}));
+    all.sort((a,b)=>a.freq-b.freq);
+    return all;
+  }
+  // scale-1oct: 8 notes (root + 7 steps)
+  const freqObjs=[{freq:rootFreq,frac:null}];
   let f=rootFreq;
   steps.forEach(st=>{ f*=Math.pow(2,st/12); freqObjs.push({freq:f,frac:null}); });
   return freqObjs;
 }
 
+// ── Sequence playback ───────────────────────────────────────────────
 function stopPlaySequence(){
   _playTimers.forEach(t=>clearTimeout(t)); _playTimers=[];
   _playActive=false;
   const btn=document.getElementById('play-go-btn');
   if(btn) btn.classList.remove('playing');
   stopActive();
+  updatePlayBtn();
+}
+
+function _nodeForFreq(freq){
+  const fund=fundFreq();
+  let best=null, bestD=Infinity;
+  NODES.forEach(n=>{ const d=Math.abs(fund*n.ratio-freq); if(d<bestD){bestD=d;best=n;} });
+  return (bestD/Math.max(freq,1)<0.02 && best) ? best : null;
+}
+
+function _vizForFreq(freq){
+  const node=_nodeForFreq(freq);
+  if(!node) return;
+  const ni=noteInfo(freq);
+  const inKey=ni.snapped?isInKey(ni.midi):false;
+  const col=isTonalCenter(node.ratio)?HOME_COL:
+    node.primary?(inKey?'var(--inkey)':'#993C1D'):(inKey?'var(--inkey)':'#D85A30');
+  triggerViz(node.frac, node.harm, nY(node.frac), col);
 }
 
 function playSequence(){
@@ -2622,72 +2741,59 @@ function playSequence(){
   _playActive=true;
   const btn=document.getElementById('play-go-btn');
   if(btn) btn.classList.add('playing');
+  updatePlayBtn();
 
-  const D = toneDuration*1000;
-  const G = Math.max(30, toneSpacing*1000);
-  const step = D+G;
-
-  let rawFreqs = buildPlayFreqs();
+  const D=toneDuration*1000;
+  const G=Math.max(30,toneSpacing*1000);
+  const step=D+G;
+  let rawFreqs=buildPlayFreqs();
 
   if(playSeq==='chord'){
-    if(playAs==='block'){
-      // All simultaneous
-      rawFreqs.forEach(f=>playTone(typeof f==='object'?f.freq:f));
-      _playTimers.push(setTimeout(stopPlaySequence, D));
+    // Extract plain frequencies
+    const freqs=rawFreqs.map(f=>typeof f==='object'?f.freq:f);
+    if(playChordStyle==='block'){
+      freqs.forEach(f=>playTone(f));
+      freqs.forEach(f=>_vizForFreq(f));
+      _playTimers.push(setTimeout(stopPlaySequence,D));
       return;
     }
     // Arpeggio
-    let seq = rawFreqs.map(f=>typeof f==='object'?f.freq:f);
-    if(playAs==='arpdown') seq = [...seq].reverse();
-    if(playAs==='arpupdown') seq = [...seq, ...[...seq].reverse().slice(1)];
+    let seq=[...freqs];
+    if(playDir==='down') seq=[...seq].reverse();
+    if(playDir==='updown') seq=[...seq,...[...seq].reverse().slice(1)];
     seq.forEach((f,i)=>{
-      _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); }, i*step));
+      _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); _vizForFreq(f); },i*step));
     });
-    _playTimers.push(setTimeout(stopPlaySequence, seq.length*step));
+    _playTimers.push(setTimeout(stopPlaySequence,seq.length*step));
     return;
   }
 
-  // Scale sequences — rawFreqs are objects with {freq, frac, harm}
-  let seq = rawFreqs.map(f=>typeof f==='object'?f.freq:f);
+  // Scale sequences
+  let seq=rawFreqs.map(f=>typeof f==='object'?f.freq:f);
   if(playDir==='down') seq=[...seq].reverse();
-  if(playDir==='updown') seq=[...seq, ...[...seq].reverse().slice(1)];
-
-  // For viz: find matching NODES entry by freq proximity
-  const fund=fundFreq();
-  function vizForFreq(f){
-    let best=null, bestD=Infinity;
-    NODES.forEach(n=>{ const d=Math.abs(fund*n.ratio-f); if(d<bestD){bestD=d;best=n;} });
-    if(bestD/f < 0.01 && best){
-      triggerViz(best.frac, best.harm, nY(best.frac), resolveNodeColor(best, f));
-    }
-  }
-  function resolveNodeColor(node, freq){
-    const ni=noteInfo(freq);
-    const inKey=ni.snapped?isInKey(ni.midi):false;
-    if(isTonalCenter(node.ratio)) return HOME_COL;
-    if(!ni.snapped) return '#B4B2A9';
-    return node.primary ? (inKey?'var(--inkey)':'#993C1D') : (inKey?'var(--inkey)':'#D85A30');
-  }
-
+  if(playDir==='updown') seq=[...seq,...[...seq].reverse().slice(1)];
   seq.forEach((f,i)=>{
-    _playTimers.push(setTimeout(()=>{
-      stopActive();
-      playTone(f);
-      vizForFreq(f);
-    }, i*step));
+    _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); _vizForFreq(f); },i*step));
   });
-  _playTimers.push(setTimeout(stopPlaySequence, seq.length*step));
+  _playTimers.push(setTimeout(stopPlaySequence,seq.length*step));
 }
 
-// Hook into updateStatus so play button label stays current
-const _updateStatus_play = updateStatus;
-updateStatus = function(){
-  _updateStatus_play();
-  updatePlayBtn();
-};
+// ── Patch updateStatus ─────────────────────────────────────────────
+const _updateStatus_play=updateStatus;
+updateStatus=function(){ _updateStatus_play(); updatePlayBtn(); };
 
-// Init play zone state on load
-setTimeout(()=>{ _updatePlayCtrlVisibility(); updatePlayBtn(); }, 50);
+// ── Init ───────────────────────────────────────────────────────────
+setTimeout(()=>{
+  _updatePlayDimming();
+  _syncVoice(playVoices);
+  _syncInversion(playInversion);
+  _syncChordStyle(playChordStyle);
+  // Scale buttons start deselected since chord is default
+  ['pds-1oct','pds-full'].forEach(id=>{ const b=document.getElementById(id); if(b) b.classList.remove('on'); });
+  _syncDir(playDir);
+  _syncRoot(playRoot);
+  updatePlayBtn();
+},50);
 
 // ── v4 CoF WHEEL + PICKERS (Steps 13–14) ══════════════════════════
 
@@ -2916,10 +3022,15 @@ function spinToPos(pos){
 })();
 
 toggleCoF = function(){
+  // If drawer is open and CoF is being hidden, close drawer first to restore tx + sidebar
+  if(_playPanelOpen && cofVisible) togglePlayPanel();
   cofVisible=!cofVisible;
-  const wrap=document.getElementById('play-zone');
-  if(!wrap) return;
-  wrap.style.display=cofVisible?'flex':'none';
+  // CoF wheel and play zone are separate elements — toggle both together.
+  // cof-wrap is always at left:0 bottom:0 (device left edge). Do not merge into play-zone.
+  const cofWrap=document.getElementById('cof-wrap');
+  const playZone=document.getElementById('play-zone');
+  if(cofWrap) cofWrap.style.display=cofVisible?'block':'none';
+  if(playZone) playZone.style.display=cofVisible?'flex':'none';
   if(cofVisible){ initCoF(); updatePlayBtn(); }
   closePickers();
   updateLeftRailChips();
