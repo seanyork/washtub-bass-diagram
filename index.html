@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v6.7.7</title>
+<title>Washtub Bass String Map · v6.8.3</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -167,8 +167,10 @@ input[type=range]{width:110px;cursor:pointer;}
 #sb-toggle{width:100%;height:22px;border:none;border-bottom:0.5px solid rgba(128,128,128,0.15);background:transparent;font-size:7.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#533AB7;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;gap:4px;}
 #sb-toggle.collapsed{color:#aaa;}
 #sidebar.collapsed>*:not(#sb-toggle){display:none !important;}
-#sidebar.collapsed{background:transparent !important;border-left-color:transparent !important;}
-#sidebar.collapsed #sb-toggle{background:rgba(83,58,183,0.07);border-radius:0 0 0 4px;}
+/* When collapsed, take sidebar out of flex flow so canvas-wrap fills the space.
+   Toggle button floats absolutely over the right edge — canvas shows through. */
+#sidebar.collapsed{position:absolute;right:0;top:0;bottom:0;background:transparent !important;border-left:none !important;z-index:14;}
+#sidebar.collapsed #sb-toggle{background:rgba(83,58,183,0.09);border-radius:0 0 0 5px;}
 @media(prefers-color-scheme:dark){#sb-toggle{color:#8b80d4;}#sb-toggle.collapsed{color:#555;}}
 /* capo ruler perspective toggle — bottom of sidebar, capo mode only */
 #capo-ruler-persp{display:none;flex-shrink:0;flex-direction:column;align-items:stretch;padding:4px 5px 5px;gap:2px;border-top:0.5px solid rgba(128,128,128,0.15);}
@@ -653,7 +655,7 @@ input[type=range]{width:110px;cursor:pointer;}
         <div class="crp-lbl">labels</div>
         <div class="crp-row">
           <button class="crp-btn" id="clt-lower" onclick="setCapoSubLabelMode('lower')">↓</button>
-          <button class="crp-btn on" id="clt-both"  onclick="setCapoSubLabelMode('both')">both</button>
+          <button class="crp-btn on" id="clt-both"  onclick="setCapoSubLabelMode('both')">↑↓</button>
           <button class="crp-btn" id="clt-upper" onclick="setCapoSubLabelMode('upper')">↑</button>
         </div>
       </div>
@@ -987,12 +989,54 @@ function fitH(){
 }
 
 // ── fitV — fit full string height vertically ──────────────────────
-// Scales so the full 1440px SVG height fits in the canvas, resets pan.
 function fitV(){
   sc=canvas.clientHeight/1440;
   tx=0; ty=0;
   smartPan();
   applyT();
+}
+
+// ── fitVPlay — v-fit with tight horizontal label fitting ─────────
+// Used when play zone is open. Prefers v-fit sc (full string visible)
+// but falls back to h-fit sc if the available width is too narrow to
+// show the label span [SDEG_X, NOTE_X+55] at v-fit zoom (e.g. ruler open).
+function fitVPlay(){
+  const cw=canvas.clientWidth;
+  const leftOffset=(_playPanelOpen&&cofVisible)?PLAY_DRAWER_W:0;
+  const availW=cw-leftOffset;
+  const span=(NOTE_X+55)-SDEG_X; // ~235 SVG units
+  const pad=4;
+  const scV=canvas.clientHeight/1440;
+  const scH=Math.max(scMn,(availW-pad*2)/span);
+  sc=Math.min(scMx,Math.min(scV,scH)); // use whichever fits both axes
+  ty=0;
+  const labelMid=(SDEG_X+(NOTE_X+55))/2;
+  tx=leftOffset+availW/2-labelMid*sc;
+  // Ensure left labels clear the drawer
+  const lEdge=tx+SDEG_X*sc;
+  if(lEdge<leftOffset+pad) tx+=leftOffset+pad-lEdge;
+  // Ensure right of note column fits in canvas
+  const rEdge=tx+(NOTE_X+55)*sc;
+  if(rEdge>cw-pad) tx-=rEdge-(cw-pad);
+  clamp();
+  applyT();
+}
+
+// ── _warmAudioCtx — silent primer to wake up audio pipeline ───────
+// Prevents first-note delay on iOS by initialising the hardware pipeline
+// before the user presses play. Call when play zone becomes visible.
+function _warmAudioCtx(){
+  try{
+    const ctx=getCtx();
+    if(!ctx) return; // audio disabled in this context (e.g. iframe renderer)
+    if(ctx.state==='suspended'){ ctx.resume().catch(()=>{}); }
+    const s=ctx.createOscillator();
+    const g=ctx.createGain();
+    g.gain.setValueAtTime(0,ctx.currentTime);
+    s.connect(g); g.connect(ctx.destination);
+    s.start(ctx.currentTime);
+    s.stop(ctx.currentTime+0.06);
+  }catch(e){}
 }
 
 // ── Vertical tension slider sync ──────────────────────────────────
@@ -1932,7 +1976,7 @@ function renderBRCtx(){
 // ── Node view context rows ────────────────────────────────────────
 function renderNodeViewCtx(view){
   if(view==='full'){
-    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.7.7</span></div>
+    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.8.3</span></div>
             <div class="br-ctx-row" style="gap:5px;justify-content:center;">
               <div class="br-readme-btn" onclick="openReadme('instrument')">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2644,26 +2688,26 @@ function togglePlayPanel(){
     tx += PLAY_DRAWER_W;
     if(drawer) drawer.style.display = 'flex';
     if(btn){ btn.textContent='hide'; btn.classList.add('open'); }
+    // v-fit on open: full string visible for scale/chord watching (#43)
+    requestAnimationFrame(()=>{ fitVPlay(); _refanAfterLayout(); });
   } else {
     if(drawer) drawer.style.display = 'none';
     if(btn){ btn.textContent='open'; btn.classList.remove('open'); }
-    // Shift string back, restore sidebar first so zoom accounts for it
+    // Shift string back, restore sidebar first so pan accounts for it
     tx -= PLAY_DRAWER_W;
     if(_sidebarWasOpen && sidebarCollapsed) toggleSidebar();
+    // smartPan on close: reposition without jarring zoom change (#42)
+    requestAnimationFrame(()=>{ smartPan(); clamp(); applyT(); _refanAfterLayout(); });
   }
-  // Full smart zoom re-fit for new viewport — string view is priority in play mode
-  zoomTo1();
-  _refanAfterLayout();
 }
 
-// ── Patch toggleSidebar: smart zoom + fan recalc when drawer is open ──
+// ── Patch toggleSidebar: v-fit when drawer is open (#43) ──────────────
 const _origToggleSidebar_play = toggleSidebar;
 toggleSidebar = function(){
   _origToggleSidebar_play();
   if(_playPanelOpen){
-    // Sidebar changed while drawer is open — re-fit string for new viewport
-    zoomTo1();
-    _refanAfterLayout();
+    // Sidebar changed while drawer is open — v-fit for full string view (deferred for iOS)
+    requestAnimationFrame(()=>{ fitVPlay(); _refanAfterLayout(); });
   }
 };
 
@@ -2816,7 +2860,19 @@ function _hlNodeForFreq(freq){
 
 function playSequence(){
   if(_playActive){ stopPlaySequence(); return; }
+  // Ensure Web Audio context is running before starting — avoids short/disjointed first note
+  const ctx = getCtx();
+  if(!ctx){ _startPlaySequence(); return; } // audio disabled — start immediately
+  if(ctx.state==='suspended'){
+    ctx.resume().then(()=>{ _startPlaySequence(); }).catch(()=>{ _startPlaySequence(); });
+  } else {
+    _startPlaySequence();
+  }
+}
+
+function _startPlaySequence(){
   _playActive=true;
+  _warmAudioCtx(); // silent primer — ensures pipeline is warm before first tone
   // Save and clear pin so row highlights aren't blocked during playback
   _savedPinFrac=_pinnedFrac;
   _pinnedFrac=null;
@@ -3111,7 +3167,7 @@ toggleCoF = function(){
   const playZone=document.getElementById('play-zone');
   if(cofWrap) cofWrap.style.display=cofVisible?'block':'none';
   if(playZone) playZone.style.display=cofVisible?'flex':'none';
-  if(cofVisible){ initCoF(); updatePlayBtn(); }
+  if(cofVisible){ initCoF(); updatePlayBtn(); _warmAudioCtx(); }
   closePickers();
   updateLeftRailChips();
 };
