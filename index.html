@@ -3,10 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v6.6.9</title>
+<title>Washtub Bass String Map · v6.7.7</title>
 <style>
 *{box-sizing:border-box;}
-body{margin:0;padding:0;font-family:system-ui,sans-serif;background:#fff;color:#1a1a1a;font-size:13px;overflow:hidden;overscroll-behavior:none;touch-action:none;}
+html{background:#1a1a1a;}
+@media(prefers-color-scheme:dark){html{background:#111;}}
+body{margin:0;padding:0;font-family:system-ui,sans-serif;background:#1a1a1a;color:#1a1a1a;font-size:13px;overflow:hidden;overscroll-behavior:none;touch-action:none;display:flex;justify-content:center;}
 html{overflow:hidden;overscroll-behavior:none;}
 :root{--inkey:#1a1a1a;--inkey-fill:rgba(0,0,0,0.06);}
 @media(prefers-color-scheme:dark){body{background:#1a1a1a;color:#e0e0e0;}:root{--inkey:#d8d8d0;--inkey-fill:rgba(255,255,255,0.08);}}
@@ -74,7 +76,11 @@ input[type=range]{width:110px;cursor:pointer;}
 @media(prefers-color-scheme:dark){#tone-strip .strip-label{color:#666;}#tone-strip .strip-seg-row{color:#666;}#tone-strip .strip-idle{color:#555;}}
 
 /* ══ v4 APP SHELL CSS ══════════════════════════════════════════════ */
-#app-shell{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;background:#fff;position:relative;}
+/* Max-width 430px: constrains to portrait/phone layout on desktop.
+   Optimised for iPhone 16e (390×844 CSS pts). Wider screens show
+   the app centred with a dark surround — making it wider degrades usability. */
+#app-shell{display:flex;flex-direction:column;width:100%;max-width:430px;height:100vh;height:100dvh;overflow:hidden;background:#fff;position:relative;}
+@media(prefers-color-scheme:dark){#app-shell{background:#1a1a1a;}}
 @media(prefers-color-scheme:dark){#app-shell{background:#1a1a1a;}}
 
 /* top tone strip */
@@ -161,6 +167,8 @@ input[type=range]{width:110px;cursor:pointer;}
 #sb-toggle{width:100%;height:22px;border:none;border-bottom:0.5px solid rgba(128,128,128,0.15);background:transparent;font-size:7.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#533AB7;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;gap:4px;}
 #sb-toggle.collapsed{color:#aaa;}
 #sidebar.collapsed>*:not(#sb-toggle){display:none !important;}
+#sidebar.collapsed{background:transparent !important;border-left-color:transparent !important;}
+#sidebar.collapsed #sb-toggle{background:rgba(83,58,183,0.07);border-radius:0 0 0 4px;}
 @media(prefers-color-scheme:dark){#sb-toggle{color:#8b80d4;}#sb-toggle.collapsed{color:#555;}}
 /* capo ruler perspective toggle — bottom of sidebar, capo mode only */
 #capo-ruler-persp{display:none;flex-shrink:0;flex-direction:column;align-items:stretch;padding:4px 5px 5px;gap:2px;border-top:0.5px solid rgba(128,128,128,0.15);}
@@ -170,6 +178,9 @@ input[type=range]{width:110px;cursor:pointer;}
 .crp-btn{font-size:9px;font-weight:600;height:18px;flex:1;border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;background:transparent;color:#888;cursor:pointer;}
 .crp-btn.on{background:rgba(83,58,183,0.1);color:#533AB7;border-color:rgba(83,58,183,0.4);}
 @media(prefers-color-scheme:dark){.crp-btn{color:#aaa;}}
+/* capo sub-node label toggle */
+#capo-label-toggle{display:none;flex-shrink:0;flex-direction:column;align-items:stretch;padding:4px 5px 5px;gap:2px;border-top:0.5px solid rgba(128,128,128,0.15);}
+#capo-label-toggle.visible{display:flex;}
 @media(prefers-color-scheme:dark){#sidebar{background:#1e1e1e;}}
 #sb-upper{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:4px 5px;min-height:0;}
 #sb-lower{display:flex;flex-direction:column;justify-content:flex-start;padding:4px 5px;min-height:0;}
@@ -239,6 +250,11 @@ input[type=range]{width:110px;cursor:pointer;}
 .ov-btn{height:22px;padding:0 8px;font-size:9px;border:0.5px solid rgba(128,128,128,0.3);border-radius:3px;color:#555;background:#fff;white-space:nowrap;display:inline-flex;align-items:center;cursor:pointer;}
 .ov-btn.danger{border-color:rgba(153,60,29,0.3);color:rgba(153,60,29,0.8);}
 /* ── CoF + picker overlays ── */
+/* ══ CoF wheel positioning — DO NOT CHANGE ══════════════════════════
+   cof-wrap MUST stay at left:0 bottom:0 (device left edge, behind left-rail).
+   play-zone and play-drawer are at left:56px (right of left-rail).
+   These two systems are SEPARATE. Never merge cof-wrap into play-zone.
+   The left-rail (z-index:15) intentionally sits on top of the CoF wheel. */
 #cof-wrap{position:absolute;left:0;bottom:0;width:170px;height:170px;z-index:14;pointer-events:auto;}
 #cof-canvas{display:block;cursor:grab;}
 #cof-canvas.spinning{cursor:grabbing;}
@@ -248,7 +264,8 @@ input[type=range]{width:110px;cursor:pointer;}
 #play-zone{position:absolute;left:56px;bottom:170px;z-index:14;width:130px;display:none;flex-direction:column;}
 @media(prefers-color-scheme:dark){#play-zone{background:#1e1e1e;}}
 /* ── Play drawer: slides up above play row, scrollable, capped at top of canvas ── */
-#play-drawer{position:absolute;left:56px;bottom:216px;top:0;z-index:14;width:130px;display:none;overflow-y:auto;background:#fff;border:0.5px solid rgba(83,58,183,0.2);border-bottom:none;border-radius:8px 8px 0 0;flex-direction:column;}
+/* Play drawer — top:50px keeps it below the tone strip; bottom:238px keeps it above play-btn-row (170 CoF + 22 toggle + 46 go). Scrollable within this bounded area. */
+#play-drawer{position:absolute;left:56px;bottom:238px;top:50px;z-index:14;width:130px;display:none;overflow-y:auto;background:#fff;border:0.5px solid rgba(83,58,183,0.2);border-bottom:none;border-radius:8px 8px 0 0;flex-direction:column;}
 @media(prefers-color-scheme:dark){#play-drawer{background:#1e1e1e;}}
 #play-drawer::-webkit-scrollbar{width:3px;}
 #play-drawer::-webkit-scrollbar-thumb{background:rgba(128,128,128,0.25);border-radius:2px;}
@@ -269,15 +286,17 @@ input[type=range]{width:110px;cursor:pointer;}
 /* dim entire section when not applicable */
 .pd-dim{opacity:0.18;pointer-events:none;}
 /* play row */
-#play-btn-row{display:flex;height:46px;border-top:0.5px solid rgba(83,58,183,0.15);flex-shrink:0;}
-#play-go-btn{flex:1;background:radial-gradient(ellipse at 40% 50%,#fff 0%,#C8EDD9 100%);border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:0 10px;border-right:0.5px solid #A8DFC4;}
-#play-go-btn.playing{background:radial-gradient(ellipse at 40% 50%,#fff 0%,#F5C0C0 100%);border-right:0.5px solid #E8ABAB;}
+/* play-btn-row: toggle strip on top (full width, 22px), go button below (full width, 46px) */
+#play-btn-row{display:flex;flex-direction:column;border-top:0.5px solid rgba(83,58,183,0.15);flex-shrink:0;}
+#play-go-btn{width:100%;height:46px;background:radial-gradient(ellipse at 50% 50%,#fff 0%,#C8EDD9 100%);border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:0 10px;}
+#play-go-btn.playing{background:radial-gradient(ellipse at 50% 50%,#fff 0%,#F5C0C0 100%);}
 .pg-icon{display:flex;align-items:flex-end;gap:2px;height:14px;flex-shrink:0;}
 .pg-icon .pgb{width:3px;border-radius:1px;background:rgba(26,26,26,0.5);}
 .pg-meta{display:flex;flex-direction:column;gap:2px;text-align:left;overflow:hidden;}
 .pg-title{font-size:10px;font-weight:700;color:#1a1a1a;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .pg-sub{font-size:8px;color:#555;line-height:1.3;white-space:nowrap;}
-#play-panel-toggle{width:40px;flex-shrink:0;background:radial-gradient(ellipse at 50% 50%,#fff 0%,#D8D5F8 100%);border:none;color:#3C3489;font-size:8px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+/* play-panel-toggle: full-width strip, locked to top of play-btn-row, always visible */
+#play-panel-toggle{width:100%;height:22px;flex-shrink:0;background:radial-gradient(ellipse at 50% 50%,#fff 0%,#D8D5F8 100%);border:none;border-bottom:0.5px solid rgba(83,58,183,0.2);color:#3C3489;font-size:8px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 
 #scale-picker{position:absolute;left:44px;top:50px;z-index:50;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,0.14);padding:4px 0;min-width:160px;display:none;}
 @media(prefers-color-scheme:dark){#scale-picker{background:#2a2a2a;}}
@@ -630,6 +649,14 @@ input[type=range]{width:110px;cursor:pointer;}
           <button class="crp-btn"    id="crp-str" onclick="setCapoRulerPerspective('fullstring')">str</button>
         </div>
       </div>
+      <div id="capo-label-toggle">
+        <div class="crp-lbl">labels</div>
+        <div class="crp-row">
+          <button class="crp-btn" id="clt-lower" onclick="setCapoSubLabelMode('lower')">↓</button>
+          <button class="crp-btn on" id="clt-both"  onclick="setCapoSubLabelMode('both')">both</button>
+          <button class="crp-btn" id="clt-upper" onclick="setCapoSubLabelMode('upper')">↑</button>
+        </div>
+      </div>
     </div>
 
   <!-- Overlay SVG: inside app-body, spans canvas+ruler for fan lines + shade -->
@@ -751,6 +778,8 @@ input[type=range]{width:110px;cursor:pointer;}
        CoF wheel (cof-wrap) is a SEPARATE element at left:0 — never merge them. -->
   <div id="play-zone">
     <div id="play-btn-row">
+      <!-- Toggle strip always on top of play button, full width, locks in place -->
+      <button id="play-panel-toggle" onclick="togglePlayPanel()">open</button>
       <button id="play-go-btn" onclick="playSequence()">
         <div class="pg-icon">
           <div class="pgb" style="height:5px"></div>
@@ -763,7 +792,6 @@ input[type=range]{width:110px;cursor:pointer;}
           <div class="pg-sub">1-oct · ↑ up</div>
         </div>
       </button>
-      <button id="play-panel-toggle" onclick="togglePlayPanel()">open</button>
     </div>
   </div>
 
@@ -942,17 +970,18 @@ function updateLeftRailChips(){
 
 // ── fitH — proper horizontal pan ─────────────────────────────────
 // Keeps current sc. Pans tx so the string column sits at ~35% from
-// the left edge of the canvas, leaving room for label panel on right.
-// SVG has explicit pixel dimensions (1380×1440) so there is no
-// letterboxing — SVG x=480 (string) maps directly to inner div px 480.
-// DEV NOTE (future): Improve to account for node text label widths at
-// high zoom, and for ruler label panel width when active, rather than
-// using a fixed 35% heuristic.
+// the effective left edge of usable canvas space.
+// When the play drawer is open it occupies PLAY_DRAWER_W px from the
+// canvas left — the string must clear that boundary so labels aren't
+// hidden underneath it. When the ruler+sidebar are open their width
+// is already reflected in canvas.clientWidth (they are flex siblings).
 function fitH(){
   const cw=canvas.clientWidth;
-  // String is at SVG x=480; after our transform its screen x = tx + 480*sc
-  // Target: string at 35% of canvas width
-  tx=cw*0.35 - 480*sc;
+  // Effective left boundary: play drawer width if open, else 0
+  const leftOffset=(_playPanelOpen&&cofVisible)?PLAY_DRAWER_W:0;
+  const availW=cw-leftOffset;
+  // Target: string at 35% of available width, offset by drawer
+  tx=leftOffset + availW*0.35 - 480*sc;
   clamp();
   applyT();
 }
@@ -1682,7 +1711,7 @@ function showLabel(node){
   const _H=_rr?(_rr.clientHeight||300):300;
   const _TOP=66, _BOT=54, _MH=_H-_TOP-_BOT;
   const _dotY=(_H-_BOT)-node.frac*_MH; // miniY with corrected formula
-  const _dotFrac=_dotY/_H;
+  const _dotFrac=_sbDotFrac(_H, _dotY);
   if(upper){
     upper.style.flex=String(_dotFrac);
     upper.innerHTML=`<div class="sb-len">${upperIn}</div><div class="sb-hz">${upperHz} Hz</div><div class="sb-note" style="color:${uCol};">${uNote}</div>`;
@@ -1706,7 +1735,25 @@ function hideLabel(){
   if(lower){ lower.style.flex='0'; lower.innerHTML=''; }
 }
 
-// ── Viewport / applyT ─────────────────────────────────────────────
+// Compute the flex fraction for sb-upper that aligns #sb-hrule with
+// the ruler dot at _dotY (px from sidebar top). Accounts for the
+// fixed-height children above (sb-toggle) and below (capo controls)
+// so the h-rule always tracks the dot correctly regardless of capo mode.
+function _sbDotFrac(_H, _dotY){
+  const sbTog=document.getElementById('sb-toggle');
+  const togH=sbTog?sbTog.clientHeight:22;
+  const hruleH=0.5;
+  let capoH=0;
+  ['capo-root-toggle','capo-ruler-persp','capo-label-toggle'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el && el.classList.contains('visible')) capoH+=el.clientHeight;
+  });
+  const flexTotal=_H-togH-hruleH-capoH;
+  const upperPx=Math.max(0,_dotY-togH-hruleH);
+  return flexTotal>0?upperPx/flexTotal:0.5;
+}
+
+
 function updateVP(){
   try{
     if(_activeNode) drawRulerSVG(_activeNode);
@@ -1885,7 +1932,7 @@ function renderBRCtx(){
 // ── Node view context rows ────────────────────────────────────────
 function renderNodeViewCtx(view){
   if(view==='full'){
-    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.6.9</span></div>
+    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.7.7</span></div>
             <div class="br-ctx-row" style="gap:5px;justify-content:center;">
               <div class="br-readme-btn" onclick="openReadme('instrument')">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2500,6 +2547,7 @@ let _playTimers   = [];
 let _playActive   = false;
 let _playPanelOpen = false;
 let _sidebarWasOpen = false;  // sidebar state before drawer opened
+let _savedPinFrac = null;     // pinned node saved before playback, restored after
 
 // ── Dimming ────────────────────────────────────────────────────────
 function _updatePlayDimming(){
@@ -2599,22 +2647,22 @@ function togglePlayPanel(){
   } else {
     if(drawer) drawer.style.display = 'none';
     if(btn){ btn.textContent='open'; btn.classList.remove('open'); }
-    // Shift string back
+    // Shift string back, restore sidebar first so zoom accounts for it
     tx -= PLAY_DRAWER_W;
-    // Restore sidebar if it was open before
     if(_sidebarWasOpen && sidebarCollapsed) toggleSidebar();
   }
-  clamp(); applyT();
+  // Full smart zoom re-fit for new viewport — string view is priority in play mode
+  zoomTo1();
   _refanAfterLayout();
 }
 
-// ── Patch toggleSidebar: recalc fan when drawer is open ─────────────
+// ── Patch toggleSidebar: smart zoom + fan recalc when drawer is open ──
 const _origToggleSidebar_play = toggleSidebar;
 toggleSidebar = function(){
   _origToggleSidebar_play();
   if(_playPanelOpen){
-    // Sidebar changed while drawer is open — refresh fan geometry
-    clamp(); applyT();
+    // Sidebar changed while drawer is open — re-fit string for new viewport
+    zoomTo1();
     _refanAfterLayout();
   }
 };
@@ -2713,6 +2761,16 @@ function buildPlayFreqs(){
 function stopPlaySequence(){
   _playTimers.forEach(t=>clearTimeout(t)); _playTimers=[];
   _playActive=false;
+  // Restore pinned node state
+  if(_savedPinFrac!==null){
+    _pinnedFrac=_savedPinFrac;
+    _savedPinFrac=null;
+    const restoredNode=NODES.find(n=>Math.abs(n.frac-_pinnedFrac)<0.002);
+    if(restoredNode) showLabel(restoredNode);
+  } else {
+    _savedPinFrac=null;
+    hideLabel();
+  }
   const btn=document.getElementById('play-go-btn');
   if(btn) btn.classList.remove('playing');
   stopActive();
@@ -2721,6 +2779,8 @@ function stopPlaySequence(){
 
 function _nodeForFreq(freq){
   const fund=fundFreq();
+  // Include the fundamental (nut row) — it is not in the NODES array
+  if(Math.abs(freq/fund-1)<0.02) return {frac:1.0,harm:1,ratio:1,primary:true,tonic:false};
   let best=null, bestD=Infinity;
   NODES.forEach(n=>{ const d=Math.abs(fund*n.ratio-freq); if(d<bestD){bestD=d;best=n;} });
   return (bestD/Math.max(freq,1)<0.02 && best) ? best : null;
@@ -2729,6 +2789,12 @@ function _nodeForFreq(freq){
 function _vizForFreq(freq){
   const node=_nodeForFreq(freq);
   if(!node) return;
+  // Fundamental / nut row — not in NODES, trigger viz at nut position
+  if(node.ratio===1){
+    const nutY=nodeView==='nut'?nutEffY():NY;
+    triggerViz(1.0, 1, nutY, HOME_COL);
+    return;
+  }
   const ni=noteInfo(freq);
   const inKey=ni.snapped?isInKey(ni.midi):false;
   const col=isTonalCenter(node.ratio)?HOME_COL:
@@ -2736,9 +2802,24 @@ function _vizForFreq(freq){
   triggerViz(node.frac, node.harm, nY(node.frac), col);
 }
 
+// Highlight the row for a given freq during playback (ruler + sidebar update)
+function _hlNodeForFreq(freq){
+  const node=_nodeForFreq(freq);
+  if(!node) return;
+  if(node.ratio===1){
+    // Nut / fundamental row — set row highlight at nut position
+    setRowHL(1.0);
+    return;
+  }
+  showLabel(node);
+}
+
 function playSequence(){
   if(_playActive){ stopPlaySequence(); return; }
   _playActive=true;
+  // Save and clear pin so row highlights aren't blocked during playback
+  _savedPinFrac=_pinnedFrac;
+  _pinnedFrac=null;
   const btn=document.getElementById('play-go-btn');
   if(btn) btn.classList.add('playing');
   updatePlayBtn();
@@ -2749,7 +2830,6 @@ function playSequence(){
   let rawFreqs=buildPlayFreqs();
 
   if(playSeq==='chord'){
-    // Extract plain frequencies
     const freqs=rawFreqs.map(f=>typeof f==='object'?f.freq:f);
     if(playChordStyle==='block'){
       freqs.forEach(f=>playTone(f));
@@ -2762,7 +2842,7 @@ function playSequence(){
     if(playDir==='down') seq=[...seq].reverse();
     if(playDir==='updown') seq=[...seq,...[...seq].reverse().slice(1)];
     seq.forEach((f,i)=>{
-      _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); _vizForFreq(f); },i*step));
+      _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); _vizForFreq(f); _hlNodeForFreq(f); },i*step));
     });
     _playTimers.push(setTimeout(stopPlaySequence,seq.length*step));
     return;
@@ -2773,7 +2853,7 @@ function playSequence(){
   if(playDir==='down') seq=[...seq].reverse();
   if(playDir==='updown') seq=[...seq,...[...seq].reverse().slice(1)];
   seq.forEach((f,i)=>{
-    _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); _vizForFreq(f); },i*step));
+    _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); _vizForFreq(f); _hlNodeForFreq(f); },i*step));
   });
   _playTimers.push(setTimeout(stopPlaySequence,seq.length*step));
 }
@@ -3381,6 +3461,16 @@ const CAPO_NODES=[
 let capoNodeIdx=3; // default: perfect fifth
 let capoTuneTarget='lower'; // which segment the Tune button targets in capo mode
 let capoRulerPerspective='segment'; // 'segment' | 'fullstring'
+let capoSubLabelMode='both'; // 'lower' | 'upper' | 'both' — which segment's labels are shown
+
+function setCapoSubLabelMode(mode){
+  capoSubLabelMode=mode;
+  ['lower','both','upper'].forEach(m=>{
+    const b=document.getElementById('clt-'+m);
+    if(b) b.classList.toggle('on', m===mode);
+  });
+  updateCapoSubNodes();
+}
 
 function setCapoRulerPerspective(p){
   capoRulerPerspective=p;
@@ -3404,7 +3494,7 @@ function effectiveSpeakingLength(){
 }
 
 function setNodeView(view, btn){
-  _clearPin();
+  unpinAndClear(); // clear any pinned nodes and highlights from the previous mode
   nodeView=view;
   document.querySelectorAll('#view-full,#view-nut,#view-capo').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
@@ -3417,6 +3507,8 @@ function setNodeView(view, btn){
   if(crt) crt.classList.toggle('visible', view==='capo');
   const crp=document.getElementById('capo-ruler-persp');
   if(crp) crp.classList.toggle('visible', view==='capo');
+  const clt=document.getElementById('capo-label-toggle');
+  if(clt) clt.classList.toggle('visible', view==='capo');
   updateColHeaders();
   if(view!=='nut'){
     nutOffsetInches=0;
@@ -3652,7 +3744,7 @@ function _showCapoEndNode(seg, cf){
   const _H=_rr?(_rr.clientHeight||300):300;
   const _TOP=66,_BOT=54,_MH=_H-_TOP-_BOT;
   const _dotY=(_H-_BOT)-pseudoNode.frac*_MH;
-  const _dotFrac=_dotY/_H;
+  const _dotFrac=_sbDotFrac(_H, _dotY);
   const col=seg==='lower'?SUB_COL_LOWER:SUB_COL_UPPER;
   if(upper){ upper.style.flex=String(_dotFrac); upper.innerHTML=''; }
   if(lower){ lower.style.flex=String(1-_dotFrac);
@@ -3730,8 +3822,8 @@ function updateCapoSubNodes(){
       g.appendChild(mkS('circle',{cx:SX,cy:lY,r:16,fill:'none',stroke:lCol,'stroke-width':2,opacity:0.55}));
     }
 
-    // labels — str° for all nodes; home°, key°, note for all nodes
-    {
+    // labels — conditional on capoSubLabelMode
+    if(capoSubLabelMode==='both'||capoSubLabelMode==='lower'){
       const lNi2=noteInfo(lFreq);
       const lKd=lNi2.snapped?chromDeg(lNi2.midi,homeKey):'—';
       const lInKey=lNi2.snapped?isInKey(lNi2.midi):false;
@@ -3802,8 +3894,8 @@ function updateCapoSubNodes(){
       g.appendChild(mkS('circle',{cx:SX,cy:uY,r:16,fill:'none',stroke:uCol,'stroke-width':2,opacity:0.55}));
     }
 
-    // labels — str°, home°, key°, note for all upper nodes
-    {
+    // labels — conditional on capoSubLabelMode
+    if(capoSubLabelMode==='both'||capoSubLabelMode==='upper'){
       const uNi2=noteInfo(uFreq);
       const uKd=uNi2.snapped?chromDeg(uNi2.midi,homeKey):'—';
       const uInKey=uNi2.snapped?isInKey(uNi2.midi):false;
@@ -3907,7 +3999,7 @@ function _showSubNode(node, seg, freq, cf, diagY){
   const _TOP=66,_BOT=54,_MH=_H-_TOP-_BOT;
   // Use pseudoNode.frac (full-string frac) for dot position, not segment-local frac
   const _dotY=(_H-_BOT)-pseudoNode.frac*_MH;
-  const _dotFrac=_dotY/_H;
+  const _dotFrac=_sbDotFrac(_H, _dotY);
   if(upper){ upper.style.flex=String(_dotFrac);
     upper.innerHTML=`<div class="sb-len">${upperIn}</div><div class="sb-hz">${uHz} Hz</div><div class="sb-note">${uNote}</div>`; }
   if(lower){ lower.style.flex=String(1-_dotFrac);
@@ -4772,7 +4864,9 @@ const BR=425, BMW=240, BMR=4;           // pitch bars shifted left to make room 
 // For practical playing guidance this is acceptable, but labels derived from
 // these positions carry that approximation. This is documented in the README.
 const _SEMI=Math.pow(2,-1/12);
-const CHROM_TICKS=[1.0, 3/4, 3/5, 1/2, 3/8, 3/10].map(f=>f*_SEMI);
+// Ticks at 1 ET semitone above each lower node in every whole-step gap:
+// nut→2 (9/8), 2→3 (10/9), 4→5 (9/8), 5→6 (10/9), 6→7 (9/8) — both octaves
+const CHROM_TICKS=[1.0, 8/9, 3/4, 2/3, 3/5, 1/2, 4/9, 3/8, 1/3, 3/10].map(f=>f*_SEMI);
 
 // Patch render() to populate dyn-chrom-ticks after each full render
 const _render_chromTicks=render;
@@ -5615,27 +5709,29 @@ function clamp(){
 // If no node active, preserve current vertical scroll fraction.
 function smartPan(){
   const cw=canvas.clientWidth, ch=canvas.clientHeight;
-  // Horizontal: pin string column
-  tx=cw*0.27 - SX*sc;
-  // Vertical
+  // When play drawer is open it occupies PLAY_DRAWER_W px from canvas left.
+  // The left rail (56px) is already excluded from canvas.clientWidth since
+  // canvas-wrap starts after it. Combined effective boundary = PLAY_DRAWER_W
+  // in canvas coords (= left-rail + play-zone from screen left).
+  const leftOffset=(_playPanelOpen&&cofVisible)?PLAY_DRAWER_W:0;
+  const availW=cw-leftOffset;
+  tx=leftOffset + availW*0.27 - SX*sc;
   if(_activeFrac!==null){
-    // Node SVG y (string runs NY→TY, frac measured from TY upward)
     const nodeSvgY=TY - _activeFrac*SPX;
-    // Centre in canvas
     ty=ch/2 - nodeSvgY*sc;
   }
-  // else: leave ty unchanged (user may have panned)
   clamp();
 }
 
 // ── Smart column fit zoom ─────────────────────────────────────────
 // Fits str°, home°, key°, note columns (SDEG_X → NOTE_X+55) in the
-// canvas width with comfortable padding. NOTE_X+55 accommodates 3-char
-// note names like F#2. This is the "natural reading zoom" for the device.
+// available canvas width with comfortable padding.
+// When play drawer is open, available width is reduced by PLAY_DRAWER_W.
 function smartFitZoom(){
+  const leftOffset=(_playPanelOpen&&cofVisible)?PLAY_DRAWER_W:0;
   const span=(NOTE_X+55)-SDEG_X; // SVG units: ~235
   const padding=14; // px each side
-  return Math.min(scMx, Math.max(scMn, (canvas.clientWidth - padding*2) / span));
+  return Math.min(scMx, Math.max(scMn, (canvas.clientWidth - leftOffset - padding*2) / span));
 }
 
 function zoomTo1(){
