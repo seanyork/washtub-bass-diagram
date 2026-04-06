@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v6.6.1</title>
+<title>Washtub Bass String Map · v6.6.5</title>
 <style>
 *{box-sizing:border-box;}
 body{margin:0;padding:0;font-family:system-ui,sans-serif;background:#fff;color:#1a1a1a;font-size:13px;overflow:hidden;overscroll-behavior:none;touch-action:none;}
@@ -158,6 +158,10 @@ input[type=range]{width:110px;cursor:pointer;}
 @media(prefers-color-scheme:dark){.crt-opt{color:#aaa;}}
 /* sidebar */
 #sidebar{width:72px;flex-shrink:0;border-left:0.5px solid rgba(128,128,128,0.15);background:#fff;display:flex;flex-direction:column;overflow:hidden;position:relative;touch-action:none;}
+#sb-toggle{width:100%;height:22px;border:none;border-bottom:0.5px solid rgba(128,128,128,0.15);background:transparent;font-size:7.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#533AB7;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;gap:4px;}
+#sb-toggle.collapsed{color:#aaa;}
+#sidebar.collapsed>*:not(#sb-toggle){display:none !important;}
+@media(prefers-color-scheme:dark){#sb-toggle{color:#8b80d4;}#sb-toggle.collapsed{color:#555;}}
 /* capo ruler perspective toggle — bottom of sidebar, capo mode only */
 #capo-ruler-persp{display:none;flex-shrink:0;flex-direction:column;align-items:stretch;padding:4px 5px 5px;gap:2px;border-top:0.5px solid rgba(128,128,128,0.15);}
 #capo-ruler-persp.visible{display:flex;}
@@ -238,6 +242,29 @@ input[type=range]{width:110px;cursor:pointer;}
 #cof-wrap{position:absolute;left:0;bottom:0;width:170px;height:170px;z-index:14;pointer-events:auto;}
 #cof-canvas{display:block;cursor:grab;}
 #cof-canvas.spinning{cursor:grabbing;}
+/* ── Play zone ── */
+#play-zone{position:absolute;left:56px;bottom:0;z-index:14;width:170px;display:none;flex-direction:column;background:#fff;border-top:0.5px solid rgba(128,128,128,0.2);border-right:0.5px solid rgba(128,128,128,0.2);border-top-right-radius:10px;border-top-left-radius:10px;overflow:hidden;}
+@media(prefers-color-scheme:dark){#play-zone{background:#1e1e1e;}}
+#play-zone #cof-wrap{position:static !important;left:auto !important;bottom:auto !important;z-index:auto !important;width:170px;height:170px;}
+#play-ctrl-panel{display:none;padding:8px 8px 6px;border-bottom:0.5px solid rgba(128,128,128,0.15);flex-direction:column;gap:5px;}
+#play-ctrl-panel.open{display:flex;}
+.pcp-row{display:flex;align-items:center;gap:3px;flex-wrap:wrap;}
+.pcp-lbl{font-size:7.5px;color:#888;width:36px;flex-shrink:0;text-transform:uppercase;letter-spacing:0.04em;}
+.pcp-btn{height:17px;padding:0 5px;font-size:7.5px;font-weight:600;border:0.5px solid rgba(128,128,128,0.28);border-radius:3px;background:var(--color-background-primary,#fff);color:#555;cursor:pointer;white-space:nowrap;}
+.pcp-btn.on{background:#533AB7;color:#fff;border-color:#533AB7;}
+.pcp-btn:disabled{opacity:0.35;cursor:default;}
+@media(prefers-color-scheme:dark){.pcp-btn{background:#2a2a2a;color:#aaa;}}
+#play-btn-row{display:flex;height:46px;border-bottom:0.5px solid rgba(128,128,128,0.15);flex-shrink:0;}
+#play-go-btn{flex:1;background:#0F6E56;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:0 10px;border-right:0.5px solid rgba(255,255,255,0.15);}
+#play-go-btn.playing{background:#993C1D;}
+.pg-icon{display:flex;align-items:flex-end;gap:2px;height:14px;flex-shrink:0;}
+.pg-icon .pgb{width:3px;border-radius:1px;background:rgba(255,255,255,0.85);}
+.pg-meta{display:flex;flex-direction:column;gap:2px;text-align:left;overflow:hidden;}
+.pg-title{font-size:10px;font-weight:700;color:#fff;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pg-sub{font-size:8px;color:rgba(255,255,255,0.72);line-height:1.3;white-space:nowrap;}
+#play-panel-toggle{width:40px;flex-shrink:0;background:#0F6E56;opacity:0.72;border:none;color:#fff;font-size:8px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+#play-panel-toggle.open{background:rgba(83,58,183,0.85);opacity:1;}
+
 #scale-picker{position:absolute;left:44px;top:50px;z-index:50;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,0.14);padding:4px 0;min-width:160px;display:none;}
 @media(prefers-color-scheme:dark){#scale-picker{background:#2a2a2a;}}
 #scale-picker.visible{display:block;}
@@ -389,8 +416,7 @@ input[type=range]{width:110px;cursor:pointer;}
 <!-- ════ v4 APP SHELL ════════════════════════════════════════════ -->
 <div id="app-shell">
 
-  <!-- DEV banner spacer — keeps content below fixed banner -->
-  <div style="height:22px;flex-shrink:0;"></div>
+  <!-- DEV banner spacer — collapsed (banner hidden) -->
 
   <!-- top tone strip -->
   <div id="new-tone-strip">
@@ -570,6 +596,7 @@ input[type=range]{width:110px;cursor:pointer;}
 
     <!-- sidebar: flex-ratio h-rule -->
     <div id="sidebar">
+      <button id="sb-toggle" onclick="toggleSidebar()">RULER ›</button>
       <div id="sb-upper"></div>
       <div id="sb-hrule"></div>
       <div id="sb-lower"></div>
@@ -629,10 +656,68 @@ input[type=range]{width:110px;cursor:pointer;}
   <div id="scale-picker"></div>
   <div id="home-picker"></div>
 
-  <!-- CoF wheel — z:14, bottom rail z:16 covers lower half -->
-  <div id="cof-wrap" style="display:none;">
-    <canvas id="cof-canvas" width="160" height="160"></canvas>
-    <div id="cof-dot"></div>
+  <!-- Play zone: play controls + CoF wheel — shown/hidden together via toggleCoF -->
+  <div id="play-zone">
+    <div id="play-ctrl-panel">
+      <div class="pcp-row" id="pcp-seq-row">
+        <span class="pcp-lbl">sequence</span>
+        <button class="pcp-btn on" onclick="setPlaySeq('1oct',this)">1-oct</button>
+        <button class="pcp-btn" onclick="setPlaySeq('full',this)">full</button>
+        <button class="pcp-btn" onclick="setPlaySeq('chord',this)">chord</button>
+      </div>
+      <div class="pcp-row" id="pcp-voices-row">
+        <span class="pcp-lbl">voices</span>
+        <button class="pcp-btn on" onclick="setPlayVoices('triad',this)">triad</button>
+        <button class="pcp-btn" onclick="setPlayVoices('7th',this)">7th</button>
+        <button class="pcp-btn" onclick="setPlayVoices('9th',this)">9th</button>
+        <button class="pcp-btn" onclick="setPlayVoices('11th',this)">11th</button>
+        <button class="pcp-btn" onclick="setPlayVoices('13th',this)">13th</button>
+      </div>
+      <div class="pcp-row" id="pcp-inv-row">
+        <span class="pcp-lbl">inversion</span>
+        <button class="pcp-btn on" onclick="setPlayInversion(0,this)">root</button>
+        <button class="pcp-btn" onclick="setPlayInversion(1,this)">1st</button>
+        <button class="pcp-btn" onclick="setPlayInversion(2,this)">2nd</button>
+        <button class="pcp-btn" id="pcp-inv3" onclick="setPlayInversion(3,this)">3rd</button>
+      </div>
+      <div class="pcp-row" id="pcp-playas-row">
+        <span class="pcp-lbl">play as</span>
+        <button class="pcp-btn on" onclick="setPlayAs('arpup',this)">↑ arp</button>
+        <button class="pcp-btn" onclick="setPlayAs('arpdown',this)">↓ arp</button>
+        <button class="pcp-btn" onclick="setPlayAs('arpupdown',this)">↑↓</button>
+        <button class="pcp-btn" onclick="setPlayAs('block',this)">block</button>
+      </div>
+      <div class="pcp-row" id="pcp-dir-row">
+        <span class="pcp-lbl">direction</span>
+        <button class="pcp-btn on" onclick="setPlayDir('up',this)">↑ up</button>
+        <button class="pcp-btn" onclick="setPlayDir('down',this)">↓ down</button>
+        <button class="pcp-btn" onclick="setPlayDir('updown',this)">↑↓ both</button>
+      </div>
+      <div class="pcp-row">
+        <span class="pcp-lbl">root</span>
+        <button class="pcp-btn on" onclick="setPlayRoot('homenode',this)">home node</button>
+        <button class="pcp-btn" onclick="setPlayRoot('fundamental',this)">fundamental</button>
+      </div>
+    </div>
+    <div id="play-btn-row">
+      <button id="play-go-btn" onclick="playSequence()">
+        <div class="pg-icon">
+          <div class="pgb" style="height:5px"></div>
+          <div class="pgb" style="height:8px"></div>
+          <div class="pgb" style="height:11px"></div>
+          <div class="pgb" style="height:14px"></div>
+        </div>
+        <div class="pg-meta">
+          <div class="pg-title">▶ G Ionian</div>
+          <div class="pg-sub">1-oct · ↑ up</div>
+        </div>
+      </button>
+      <button id="play-panel-toggle" onclick="togglePlayPanel()">open</button>
+    </div>
+    <div id="cof-wrap">
+      <canvas id="cof-canvas" width="160" height="160"></canvas>
+      <div id="cof-dot"></div>
+    </div>
   </div>
 
   <!-- README slideup panel -->
@@ -1142,6 +1227,7 @@ const _drawFanOverlay = (withinFs, crossFs, activeFrac, isSeg_, segType_, otherS
   const fo=document.getElementById('fan-overlay');
   if(!fo) return;
   fo.innerHTML='';
+  if(sidebarCollapsed) return;
   const abody=document.getElementById('app-body');
   const cv=document.getElementById('canvas-wrap');
   const rr=document.getElementById('rrail');
@@ -1207,9 +1293,24 @@ const _drawFanOverlay = (withinFs, crossFs, activeFrac, isSeg_, segType_, otherS
   });
 };
 
+let sidebarCollapsed = false;
+function toggleSidebar(){
+  sidebarCollapsed = !sidebarCollapsed;
+  const rr = document.getElementById('rrail');
+  const sb = document.getElementById('sidebar');
+  const btn = document.getElementById('sb-toggle');
+  rr.style.display = sidebarCollapsed ? 'none' : '';
+  sb.classList.toggle('collapsed', sidebarCollapsed);
+  btn.textContent = sidebarCollapsed ? '\u2039  RULER' : 'RULER  \u203a';
+  btn.classList.toggle('collapsed', sidebarCollapsed);
+  document.getElementById('fan-overlay').innerHTML = '';
+  clamp(); applyT();
+  if(!sidebarCollapsed && _activeNode) drawRulerSVG(_activeNode);
+}
+
 function drawRulerSVG(node){
   try{
-
+  if(sidebarCollapsed) return;
   const rrail=document.getElementById('rrail');
   const svg=document.getElementById('rr-svg');
   if(!rrail||!svg) return;
@@ -1729,7 +1830,7 @@ function renderBRCtx(){
 // ── Node view context rows ────────────────────────────────────────
 function renderNodeViewCtx(view){
   if(view==='full'){
-    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.5</span></div>
+    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.6.5</span></div>
             <div class="br-ctx-row" style="gap:5px;justify-content:center;">
               <div class="br-readme-btn" onclick="openReadme('instrument')">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2328,6 +2429,266 @@ function initBR(){
 
 // ── End Steps 6–12 bottom rail wiring ════════════════════════════
 
+// ── Play Zone ═════════════════════════════════════════════════════
+
+// State
+let playSeq       = '1oct';    // '1oct' | 'full' | 'chord'
+let playVoices    = 'triad';   // 'triad'|'7th'|'9th'|'11th'|'13th'
+let playInversion = 0;         // 0=root 1=1st 2=2nd 3=3rd
+let playAs        = 'arpup';   // 'arpup'|'arpdown'|'arpupdown'|'block'
+let playDir       = 'up';      // 'up'|'down'|'updown'
+let playRoot      = 'homenode';// 'homenode'|'fundamental'
+let _playTimers   = [];
+let _playActive   = false;
+let _playPanelOpen = false;
+
+// Row visibility — chord-only rows hidden in scale/full modes
+function _updatePlayCtrlVisibility(){
+  const isChord = playSeq==='chord';
+  ['pcp-voices-row','pcp-inv-row','pcp-playas-row'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display = isChord ? '' : 'none';
+  });
+  const dirRow = document.getElementById('pcp-dir-row');
+  if(dirRow) dirRow.style.display = isChord ? 'none' : '';
+  // 3rd inversion only meaningful for 7th+
+  const inv3 = document.getElementById('pcp-inv3');
+  if(inv3) inv3.disabled = (playVoices==='triad');
+  if(playVoices==='triad' && playInversion===3){ playInversion=0; _syncBtns('pcp-inv-row',0); }
+}
+
+function _syncBtns(rowId, activeVal){
+  const row = document.getElementById(rowId);
+  if(!row) return;
+  row.querySelectorAll('.pcp-btn').forEach((b,i)=>b.classList.toggle('on', i===activeVal));
+}
+
+function setPlaySeq(v,btn){
+  playSeq=v;
+  btn.closest('.pcp-row').querySelectorAll('.pcp-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  _updatePlayCtrlVisibility();
+  updatePlayBtn();
+}
+function setPlayVoices(v,btn){
+  playVoices=v;
+  btn.closest('.pcp-row').querySelectorAll('.pcp-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  _updatePlayCtrlVisibility();
+  updatePlayBtn();
+}
+function setPlayInversion(v,btn){
+  playInversion=v;
+  btn.closest('.pcp-row').querySelectorAll('.pcp-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  updatePlayBtn();
+}
+function setPlayAs(v,btn){
+  playAs=v;
+  btn.closest('.pcp-row').querySelectorAll('.pcp-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  updatePlayBtn();
+}
+function setPlayDir(v,btn){
+  playDir=v;
+  btn.closest('.pcp-row').querySelectorAll('.pcp-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  updatePlayBtn();
+}
+function setPlayRoot(v,btn){
+  playRoot=v;
+  btn.closest('.pcp-row').querySelectorAll('.pcp-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  updatePlayBtn();
+}
+
+function togglePlayPanel(){
+  _playPanelOpen = !_playPanelOpen;
+  const panel = document.getElementById('play-ctrl-panel');
+  const btn   = document.getElementById('play-panel-toggle');
+  if(panel) panel.classList.toggle('open', _playPanelOpen);
+  if(btn){ btn.textContent = _playPanelOpen ? 'hide' : 'open'; btn.classList.toggle('open', _playPanelOpen); }
+}
+
+// Build label string for play button
+function _playLabel(){
+  const rootNote = NOTES[homeKey];
+  const modeName = MODE_NAMES[currentMode];
+  if(playSeq==='1oct') return rootNote+' '+modeName;
+  if(playSeq==='full') return rootNote+' '+modeName+' (full)';
+  // chord
+  const voiceMap = {triad:'',  '7th':' 7','9th':' 9','11th':' 11','13th':' 13'};
+  // chord quality from mode tonic triad
+  const steps = MODE_SCALES[currentMode];
+  const third = steps[0]+steps[1]; // semitones 1→3
+  const fifth  = third+steps[2]+steps[3]; // semitones 1→5
+  let quality = '';
+  if(third===3 && fifth===7) quality='dim';
+  else if(third===3) quality='m';
+  else if(third===4 && fifth===8) quality='aug';
+  else quality='';
+  const invMap = {0:'',1:'/'+rootNote,2:'',3:''};
+  return rootNote+(quality||'')+voiceMap[playVoices];
+}
+
+function _playSubLabel(){
+  if(playSeq==='chord'){
+    const invNames = ['root pos','1st inv','2nd inv','3rd inv'];
+    const asMap = {arpup:'arp \u2191',arpdown:'arp \u2193',arpupdown:'arp \u2191\u2193',block:'block'};
+    return invNames[playInversion]+' \xb7 '+asMap[playAs];
+  }
+  const dirMap = {up:'\u2191 up',down:'\u2193 down',updown:'\u2191\u2193 both'};
+  return dirMap[playDir];
+}
+
+function updatePlayBtn(){
+  const titleEl = document.querySelector('#play-go-btn .pg-title');
+  const subEl   = document.querySelector('#play-go-btn .pg-sub');
+  const iconEl  = document.querySelector('#play-go-btn .pg-icon');
+  if(!titleEl) return;
+  titleEl.textContent = '\u25b6 ' + _playLabel();
+  subEl.textContent   = _playSubLabel();
+  // Icon: bars for scale, stacked lines for chord
+  if(iconEl){
+    if(playSeq==='chord'){
+      iconEl.innerHTML = [14,14,14].map(h=>`<div class="pgb" style="height:${h}px;width:3px;margin-bottom:2px;"></div>`).join('');
+      iconEl.style.flexDirection='column';
+      iconEl.style.alignItems='center';
+      iconEl.style.height='auto';
+    } else {
+      const heights = playDir==='down' ? [14,11,8,5] : [5,8,11,14];
+      iconEl.innerHTML = heights.map(h=>`<div class="pgb" style="height:${h}px"></div>`).join('');
+      iconEl.style.flexDirection='row';
+      iconEl.style.alignItems='flex-end';
+      iconEl.style.height='14px';
+    }
+  }
+}
+
+// Build the sequence of frequencies to play
+function buildPlayFreqs(){
+  const fund = fundFreq();
+  const hnRatio = homeNodeRatio();
+  // Root frequency: home node or fundamental
+  const rootFreq = playRoot==='homenode' ? fund*hnRatio : fund;
+
+  if(playSeq==='chord'){
+    const steps = MODE_SCALES[currentMode];
+    // Build semitone offsets for chord degrees
+    const semi = [0]; // root
+    let acc=0;
+    for(let i=0;i<6;i++){ acc+=steps[i]; semi.push(acc); }
+    // Voice count: triad=3 notes (1,3,5), 7th=4, 9th=5, 11th=6, 13th=7
+    const voiceCount = {triad:3,'7th':4,'9th':5,'11th':6,'13th':7}[playVoices];
+    // Chord degrees: 1,3,5,7,9,11,13 = indices 0,2,4,6,1(+oct),3(+oct),5(+oct)
+    const degIdxs = [0,2,4,6,1,3,5]; // scale degree indices
+    let freqs = degIdxs.slice(0,voiceCount).map(idx=>{
+      const st = semi[idx % 7] + Math.floor(idx/7)*12;
+      return rootFreq * Math.pow(2, st/12);
+    });
+    // Apply inversion: rotate by moving bottom note(s) up an octave
+    for(let inv=0; inv<playInversion; inv++){
+      freqs.push(freqs.shift()*2);
+    }
+    return freqs;
+  }
+
+  if(playSeq==='full'){
+    // All 14 nodes sorted by ratio (ascending pitch), plus fundamental
+    let freqs = [{freq:fund, frac:1.0, harm:1}];
+    NODES.forEach(n=>freqs.push({freq:fund*n.ratio, frac:n.frac, harm:n.harm}));
+    freqs.sort((a,b)=>a.freq-b.freq);
+    return freqs;
+  }
+
+  // 1oct: one octave of the current mode from root
+  const steps = MODE_SCALES[currentMode];
+  const freqObjs = [{freq:rootFreq, frac:null}];
+  let f=rootFreq;
+  steps.forEach(st=>{ f*=Math.pow(2,st/12); freqObjs.push({freq:f,frac:null}); });
+  return freqObjs;
+}
+
+function stopPlaySequence(){
+  _playTimers.forEach(t=>clearTimeout(t)); _playTimers=[];
+  _playActive=false;
+  const btn=document.getElementById('play-go-btn');
+  if(btn) btn.classList.remove('playing');
+  stopActive();
+}
+
+function playSequence(){
+  if(_playActive){ stopPlaySequence(); return; }
+  _playActive=true;
+  const btn=document.getElementById('play-go-btn');
+  if(btn) btn.classList.add('playing');
+
+  const D = toneDuration*1000;
+  const G = Math.max(30, toneSpacing*1000);
+  const step = D+G;
+
+  let rawFreqs = buildPlayFreqs();
+
+  if(playSeq==='chord'){
+    if(playAs==='block'){
+      // All simultaneous
+      rawFreqs.forEach(f=>playTone(typeof f==='object'?f.freq:f));
+      _playTimers.push(setTimeout(stopPlaySequence, D));
+      return;
+    }
+    // Arpeggio
+    let seq = rawFreqs.map(f=>typeof f==='object'?f.freq:f);
+    if(playAs==='arpdown') seq = [...seq].reverse();
+    if(playAs==='arpupdown') seq = [...seq, ...[...seq].reverse().slice(1)];
+    seq.forEach((f,i)=>{
+      _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); }, i*step));
+    });
+    _playTimers.push(setTimeout(stopPlaySequence, seq.length*step));
+    return;
+  }
+
+  // Scale sequences — rawFreqs are objects with {freq, frac, harm}
+  let seq = rawFreqs.map(f=>typeof f==='object'?f.freq:f);
+  if(playDir==='down') seq=[...seq].reverse();
+  if(playDir==='updown') seq=[...seq, ...[...seq].reverse().slice(1)];
+
+  // For viz: find matching NODES entry by freq proximity
+  const fund=fundFreq();
+  function vizForFreq(f){
+    let best=null, bestD=Infinity;
+    NODES.forEach(n=>{ const d=Math.abs(fund*n.ratio-f); if(d<bestD){bestD=d;best=n;} });
+    if(bestD/f < 0.01 && best){
+      triggerViz(best.frac, best.harm, nY(best.frac), resolveNodeColor(best, f));
+    }
+  }
+  function resolveNodeColor(node, freq){
+    const ni=noteInfo(freq);
+    const inKey=ni.snapped?isInKey(ni.midi):false;
+    if(isTonalCenter(node.ratio)) return HOME_COL;
+    if(!ni.snapped) return '#B4B2A9';
+    return node.primary ? (inKey?'var(--inkey)':'#993C1D') : (inKey?'var(--inkey)':'#D85A30');
+  }
+
+  seq.forEach((f,i)=>{
+    _playTimers.push(setTimeout(()=>{
+      stopActive();
+      playTone(f);
+      vizForFreq(f);
+    }, i*step));
+  });
+  _playTimers.push(setTimeout(stopPlaySequence, seq.length*step));
+}
+
+// Hook into updateStatus so play button label stays current
+const _updateStatus_play = updateStatus;
+updateStatus = function(){
+  _updateStatus_play();
+  updatePlayBtn();
+};
+
+// Init play zone state on load
+setTimeout(()=>{ _updatePlayCtrlVisibility(); updatePlayBtn(); }, 50);
+
 // ── v4 CoF WHEEL + PICKERS (Steps 13–14) ══════════════════════════
 
 // ── Circle of Fifths ──────────────────────────────────────────────
@@ -2556,12 +2917,12 @@ function spinToPos(pos){
 
 toggleCoF = function(){
   cofVisible=!cofVisible;
-  const wrap=document.getElementById('cof-wrap');
+  const wrap=document.getElementById('play-zone');
   if(!wrap) return;
-  wrap.style.display=cofVisible?'block':'none';
-  if(cofVisible){ initCoF(); }
+  wrap.style.display=cofVisible?'flex':'none';
+  if(cofVisible){ initCoF(); updatePlayBtn(); }
   closePickers();
-  updateLeftRailChips(); // update chip open/closed state
+  updateLeftRailChips();
 };
 
 // Add center-tap detection to CoF canvas — tap inside innerR opens mode picker
