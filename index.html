@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v6.9.4</title>
+<title>Washtub Bass String Map · v6.9.11</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -250,6 +250,7 @@ input[type=range]{width:110px;cursor:pointer;}
 .ov-lbl{font-size:10px;color:#888;white-space:nowrap;min-width:46px;}
 .ov-field{height:22px;border:0.5px solid rgba(128,128,128,0.3);border-radius:3px;font-size:10px;font-weight:500;color:#533AB7;background:rgba(83,58,183,0.04);padding:0 5px;width:62px;flex-shrink:0;}
 .ov-btn{height:22px;padding:0 8px;font-size:9px;border:0.5px solid rgba(128,128,128,0.3);border-radius:3px;color:#555;background:#fff;white-space:nowrap;display:inline-flex;align-items:center;cursor:pointer;}
+.ov-btn.on{background:#533AB7;color:#fff;border-color:#533AB7;}
 .ov-btn.danger{border-color:rgba(153,60,29,0.3);color:rgba(153,60,29,0.8);}
 /* ── CoF + picker overlays ── */
 /* ══ CoF wheel positioning — DO NOT CHANGE ══════════════════════════
@@ -1358,6 +1359,7 @@ function _togglePin(frac, fromTouch){
   _setPin(frac, fromTouch); return true;
 }
 let _activeSegment=null; // 'lower'|'upper'|null — set when a capo sub-node is active // frac of pinned node, null when nothing pinned
+let _lastCapoSegment=null; // last segment user touched in capo mode — persists for playback
 let _lastStripArgs=null; // cache last showStrip call args for replay on tension change
 
 // ── Full ruler SVG redraw ─────────────────────────────────────────
@@ -1895,7 +1897,7 @@ let brNodeView = 'full';   // 'full' | 'nut' | 'capo'
 let brRightPanel = null;   // null | 'audio' | 'phys' | 'lgnd'
 let showPitchBars = false; // show/hide pitch bars + secondary info columns
 let overflowOpen = false;
-let autoTune = false;      // auto-tune string on key or mode change
+let autoTune = true;       // auto-tune string on key or mode change
 let toneSpacing = 0;       // seconds between sequential tones (before/after playback)
 
 function _maybeAutoTune(){ if(autoTune) tuneToKey(); }
@@ -1990,7 +1992,7 @@ function renderBRCtx(){
 // ── Node view context rows ────────────────────────────────────────
 function renderNodeViewCtx(view){
   if(view==='full'){
-    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.9.4</span></div>
+    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.9.11</span></div>
             <div class="br-ctx-row" style="gap:5px;justify-content:center;">
               <div class="br-readme-btn" onclick="openReadme('instrument')">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2103,7 +2105,6 @@ function renderAudioPanel(){
   const polyon=`<div class="br-poly-btn${polyOn?' on':''}" onclick="setPoly(true,this);renderBRCtx()">on</div>`;
   const polyoff=`<div class="br-poly-btn${!polyOn?' on':''}" onclick="setPoly(false,this);renderBRCtx()">off</div>`;
   const durPct=(toneDuration-0.2)/(4-0.2);
-  const volPct=volume;
   const spcPct=toneSpacing/1.0;
   return `<div class="br-ctx-row" style="gap:3px;">
             <span class="br-chip-lbl">wave</span>${wbtns}
@@ -2136,26 +2137,9 @@ function renderAudioPanel(){
               <span class="br-sl-val" id="br-vol-val">${Math.round(volume*100)}%</span>
             </div>
           </div>
-          <div class="br-ctx-row" style="gap:3px;">
-            <span class="br-chip-lbl">viz</span>
-            <div class="br-poly-btn${nodeViz?' on':''}" onclick="toggleNodeViz();renderBRCtx()" title="Pulsing circles on node press">node</div>
-            <div class="br-poly-btn${waveViz?' on':''}" onclick="toggleWaveViz();renderBRCtx()" title="Standing wave on node press">wave</div>
-            <div style="width:0.5px;background:rgba(128,128,128,0.15);align-self:stretch;margin:0 2px;"></div>
-            <div class="br-sl-wrap">
-              <span class="br-sl-lbl">amp</span>
-              <div class="br-sl-track" id="br-amp-track">
-                <div class="br-sl-thumb" style="left:${(((vizAmp-5)/55)*100).toFixed(1)}%"></div>
-              </div>
-              <span class="br-sl-val" id="br-amp-val">${vizAmp.toFixed(0)}</span>
-            </div>
-            <div style="width:0.5px;background:rgba(128,128,128,0.15);align-self:stretch;margin:0 2px;"></div>
-            <div class="br-sl-wrap">
-              <span class="br-sl-lbl">dur</span>
-              <div class="br-sl-track" id="br-vdur-track">
-                <div class="br-sl-thumb" style="left:${(((vizDur-0.1)/3.9)*100).toFixed(1)}%"></div>
-              </div>
-              <span class="br-sl-val" id="br-vdur-val">${vizDur.toFixed(1)}s</span>
-            </div>
+          <div class="br-ctx-row" style="gap:3px;padding:0;">
+            <div class="ov-btn" style="flex:1;text-align:center;font-size:9px;letter-spacing:0.04em;text-transform:uppercase;"
+              onclick="toggleOverflow();renderBRCtx()">visualization ${overflowOpen?'▴':'▾'}</div>
           </div>`;
 }
 
@@ -2294,6 +2278,35 @@ function renderOverflowPanel(){
         <div class="br-sl-track" id="ov-mu-sl" style="flex:1;"><div class="br-sl-thumb" style="left:${(muPct*100).toFixed(1)}%"></div></div>
         <span style="font-size:9px;color:#aaa;white-space:nowrap;">kg/m</span>
       </div>`;
+  } else if(brRightPanel==='audio'){
+    const AMP_MIN=5,AMP_MAX=60,DUR_MIN=0.1,DUR_MAX=4.0;
+    const nAmpPct=((vizNodeAmp-AMP_MIN)/(AMP_MAX-AMP_MIN)*100).toFixed(1);
+    const nDurPct=((vizNodeDur-DUR_MIN)/(DUR_MAX-DUR_MIN)*100).toFixed(1);
+    const wAmpPct=((vizWaveAmp-AMP_MIN)/(AMP_MAX-AMP_MIN)*100).toFixed(1);
+    const wDurPct=((vizWaveDur-DUR_MIN)/(DUR_MAX-DUR_MIN)*100).toFixed(1);
+    op.innerHTML=`
+      <div class="ov-title">visualization</div>
+      <div class="ov-row">
+        <span class="ov-lbl" style="color:#1D9E75;">node</span>
+        <div class="ov-btn${nodeViz?' on':''}" style="min-width:32px;text-align:center;" onclick="toggleNodeViz();renderOverflowPanel();renderBRCtx()">${nodeViz?'on':'off'}</div>
+        <span class="ov-lbl" style="min-width:28px;">amp</span>
+        <div class="br-sl-track" id="ov-namp-track" style="flex:1;"><div class="br-sl-thumb" style="left:${nAmpPct}%"></div></div>
+        <span class="br-sl-val" id="ov-namp-val" style="min-width:22px;">${vizNodeAmp.toFixed(0)}</span>
+        <span class="ov-lbl" style="min-width:24px;">dur</span>
+        <div class="br-sl-track" id="ov-ndur-track" style="flex:1;"><div class="br-sl-thumb" style="left:${nDurPct}%"></div></div>
+        <span class="br-sl-val" id="ov-ndur-val" style="min-width:28px;">${vizNodeDur.toFixed(1)}s</span>
+      </div>
+      <div class="ov-sep"></div>
+      <div class="ov-row">
+        <span class="ov-lbl" style="color:#C8821A;">wave</span>
+        <div class="ov-btn${waveViz?' on':''}" style="min-width:32px;text-align:center;" onclick="toggleWaveViz();renderOverflowPanel();renderBRCtx()">${waveViz?'on':'off'}</div>
+        <span class="ov-lbl" style="min-width:28px;">amp</span>
+        <div class="br-sl-track" id="ov-wamp-track" style="flex:1;"><div class="br-sl-thumb" style="left:${wAmpPct}%"></div></div>
+        <span class="br-sl-val" id="ov-wamp-val" style="min-width:22px;">${vizWaveAmp.toFixed(0)}</span>
+        <span class="ov-lbl" style="min-width:24px;">dur</span>
+        <div class="br-sl-track" id="ov-wdur-track" style="flex:1;"><div class="br-sl-thumb" style="left:${wDurPct}%"></div></div>
+        <span class="br-sl-val" id="ov-wdur-val" style="min-width:28px;">${vizWaveDur.toFixed(1)}s</span>
+      </div>`;
   } else {
     op.innerHTML='';
   }
@@ -2420,9 +2433,9 @@ function wireAllBRSliders(){
     });
   })();
 
-  // ── Viz: amplitude ────────────────────────────────────────────
-  (function wireAmpSlider(){
-    const track=document.getElementById('br-amp-track');
+  // ── Viz: node amp ─────────────────────────────────────────────
+  (function wireNAmpSlider(){
+    const track=document.getElementById('ov-namp-track');
     if(!track||track._wired) return;
     track._wired=true;
     const AMP_MIN=5, AMP_MAX=60;
@@ -2430,11 +2443,11 @@ function wireAllBRSliders(){
       const r=track.getBoundingClientRect();
       if(r.width<1) return;
       const pct=Math.max(0,Math.min(1,(clientX-r.left)/r.width));
-      vizAmp=Math.round(AMP_MIN+pct*(AMP_MAX-AMP_MIN));
+      vizNodeAmp=Math.round(AMP_MIN+pct*(AMP_MAX-AMP_MIN));
       const thumb=track.querySelector('.br-sl-thumb');
       if(thumb) thumb.style.left=(pct*100).toFixed(1)+'%';
-      const val=document.getElementById('br-amp-val');
-      if(val) val.textContent=vizAmp;
+      const val=document.getElementById('ov-namp-val');
+      if(val) val.textContent=vizNodeAmp.toFixed(0);
     }
     let _d=false;
     track.addEventListener('pointerdown',e=>{e.preventDefault();track.setPointerCapture(e.pointerId);_d=true;update(e.clientX);});
@@ -2443,9 +2456,9 @@ function wireAllBRSliders(){
     track.addEventListener('pointercancel',()=>{_d=false;});
   })();
 
-  // ── Viz: duration ─────────────────────────────────────────────
-  (function wireVdurSlider(){
-    const track=document.getElementById('br-vdur-track');
+  // ── Viz: node dur ─────────────────────────────────────────────
+  (function wireNDurSlider(){
+    const track=document.getElementById('ov-ndur-track');
     if(!track||track._wired) return;
     track._wired=true;
     const DUR_MIN=0.1, DUR_MAX=4.0;
@@ -2453,11 +2466,57 @@ function wireAllBRSliders(){
       const r=track.getBoundingClientRect();
       if(r.width<1) return;
       const pct=Math.max(0,Math.min(1,(clientX-r.left)/r.width));
-      vizDur=Math.max(DUR_MIN,Math.min(DUR_MAX,DUR_MIN+pct*(DUR_MAX-DUR_MIN)));
+      vizNodeDur=Math.max(DUR_MIN,Math.min(DUR_MAX,DUR_MIN+pct*(DUR_MAX-DUR_MIN)));
       const thumb=track.querySelector('.br-sl-thumb');
       if(thumb) thumb.style.left=(pct*100).toFixed(1)+'%';
-      const val=document.getElementById('br-vdur-val');
-      if(val) val.textContent=vizDur.toFixed(1)+'s';
+      const val=document.getElementById('ov-ndur-val');
+      if(val) val.textContent=vizNodeDur.toFixed(1)+'s';
+    }
+    let _d=false;
+    track.addEventListener('pointerdown',e=>{e.preventDefault();track.setPointerCapture(e.pointerId);_d=true;update(e.clientX);});
+    track.addEventListener('pointermove',e=>{if(!_d)return;update(e.clientX);});
+    track.addEventListener('pointerup',e=>{_d=false;track.releasePointerCapture(e.pointerId);});
+    track.addEventListener('pointercancel',()=>{_d=false;});
+  })();
+
+  // ── Viz: wave amp ─────────────────────────────────────────────
+  (function wireWAmpSlider(){
+    const track=document.getElementById('ov-wamp-track');
+    if(!track||track._wired) return;
+    track._wired=true;
+    const AMP_MIN=5, AMP_MAX=60;
+    function update(clientX){
+      const r=track.getBoundingClientRect();
+      if(r.width<1) return;
+      const pct=Math.max(0,Math.min(1,(clientX-r.left)/r.width));
+      vizWaveAmp=Math.round(AMP_MIN+pct*(AMP_MAX-AMP_MIN));
+      const thumb=track.querySelector('.br-sl-thumb');
+      if(thumb) thumb.style.left=(pct*100).toFixed(1)+'%';
+      const val=document.getElementById('ov-wamp-val');
+      if(val) val.textContent=vizWaveAmp.toFixed(0);
+    }
+    let _d=false;
+    track.addEventListener('pointerdown',e=>{e.preventDefault();track.setPointerCapture(e.pointerId);_d=true;update(e.clientX);});
+    track.addEventListener('pointermove',e=>{if(!_d)return;update(e.clientX);});
+    track.addEventListener('pointerup',e=>{_d=false;track.releasePointerCapture(e.pointerId);});
+    track.addEventListener('pointercancel',()=>{_d=false;});
+  })();
+
+  // ── Viz: wave dur ─────────────────────────────────────────────
+  (function wireWDurSlider(){
+    const track=document.getElementById('ov-wdur-track');
+    if(!track||track._wired) return;
+    track._wired=true;
+    const DUR_MIN=0.1, DUR_MAX=4.0;
+    function update(clientX){
+      const r=track.getBoundingClientRect();
+      if(r.width<1) return;
+      const pct=Math.max(0,Math.min(1,(clientX-r.left)/r.width));
+      vizWaveDur=Math.max(DUR_MIN,Math.min(DUR_MAX,DUR_MIN+pct*(DUR_MAX-DUR_MIN)));
+      const thumb=track.querySelector('.br-sl-thumb');
+      if(thumb) thumb.style.left=(pct*100).toFixed(1)+'%';
+      const val=document.getElementById('ov-wdur-val');
+      if(val) val.textContent=vizWaveDur.toFixed(1)+'s';
     }
     let _d=false;
     track.addEventListener('pointerdown',e=>{e.preventDefault();track.setPointerCapture(e.pointerId);_d=true;update(e.clientX);});
@@ -2872,10 +2931,105 @@ function updatePlayBtn(){
   }
 }
 
-// ── Build note sequence ─────────────────────────────────────────────
+// ── Capo playback segment selection ──────────────────────────────
+function _playCapoSegment(){
+  const cn=CAPO_NODES[capoNodeIdx];
+  const cf=1-cn.phi;
+  // Priority 1: labels mode forces a segment
+  if(capoSubLabelMode==='lower') return 'lower';
+  if(capoSubLabelMode==='upper') return 'upper';
+  // Priority 2: last touched segment
+  if(_lastCapoSegment) return _lastCapoSegment;
+  // Priority 3: segment whose fundamental is closest to home key root (any octave)
+  const lFreq=capoLowerFreq(), uFreq=capoUpperFreq();
+  const rootHz=REF_HZ*Math.pow(2,(homeKey+60-REF_MIDI)/12);
+  function octDist(f,r){ let ratio=f/r; while(ratio>2)ratio/=2; while(ratio<0.5)ratio*=2; return Math.abs(1-ratio); }
+  return octDist(lFreq,rootHz)<=octDist(uFreq,rootHz)?'lower':'upper';
+}
+
+// Find sub-node matching a frequency within the given capo segment
+function _nodeForFreqCapo(freq, seg){
+  const cn=CAPO_NODES[capoNodeIdx];
+  const cf=1-cn.phi;
+  const fund=fundFreq();
+  const segFund=seg==='lower'?fund/cf:fund/(1-cf);
+  let best=null, bestD=Infinity;
+  NODES.forEach(n=>{
+    const nFreq=n.ratio*segFund;
+    const d=Math.abs(nFreq-freq);
+    if(d<bestD){bestD=d;best=n;}
+  });
+  // Also check segment fundamental
+  const dFund=Math.abs(segFund-freq);
+  if(dFund<bestD) return {ratio:1,frac:seg==='lower'?cf:1-cf,harm:1,primary:true,_isFund:true,_seg:seg};
+  return bestD/Math.max(freq,1)<0.02?{...best,_seg:seg}:null;
+}
+
+// Trigger viz and row highlight for a capo sub-node frequency
+function _vizForFreqCapo(freq, seg){
+  const cn=CAPO_NODES[capoNodeIdx];
+  const cf=1-cn.phi;
+  const node=_nodeForFreqCapo(freq,seg);
+  if(!node) return;
+  const col=seg==='lower'?SUB_COL_LOWER:SUB_COL_UPPER;
+  if(node._isFund){
+    const capoY=capoYpx();
+    const segs=seg==='lower'
+      ?[{topY:capoY,botY:TY,frac:1.0,harm:1,color:col}]
+      :[{topY:nutEffY(),botY:capoY,frac:1.0,harm:1,color:col}];
+    triggerCapoViz(capoY,col,segs);
+    return;
+  }
+  const fullFrac=seg==='lower'?node.frac*cf:cf+node.frac*(1-cf);
+  const svgY=TY-fullFrac*SPX;
+  const segs=seg==='lower'
+    ?[{topY:capoYpx(),botY:TY,frac:node.frac,harm:node.harm,color:col}]
+    :[{topY:nutEffY(),botY:capoYpx(),frac:node.frac,harm:node.harm,color:col}];
+  triggerCapoViz(svgY,col,segs);
+}
+
+
 function buildPlayFreqs(){
   const fund = fundFreq();
   const hnRatio = homeNodeRatio();
+
+  // ── Capo view: build from the chosen segment ─────────────────────
+  if(nodeView==='capo'){
+    const seg=_playCapoSegment();
+    const cn=CAPO_NODES[capoNodeIdx];
+    const cf=1-cn.phi;
+    const segFund=seg==='lower'?fund/cf:fund/(1-cf);
+    const rootFreq=playRoot==='homenode'?segFund*hnRatio:segFund;
+
+    if(playSeq==='chord'){
+      const steps=MODE_SCALES[currentMode];
+      const semi=[0]; let acc=0;
+      for(let i=0;i<6;i++){acc+=steps[i];semi.push(acc);}
+      const voiceList=[1,3,5,7,9,11,13];
+      const octShiftAt=[9,11,13];
+      let freqs=voiceList.filter(v=>playVoiceSet[v]).map(v=>{
+        const idx=VOICE_DEG_IDX[v];
+        const st=semi[idx%7]+Math.floor(idx/7)*12+(octShiftAt.includes(v)?12:0);
+        return rootFreq*Math.pow(2,st/12);
+      });
+      for(let inv=0;inv<playInversion;inv++) if(freqs.length>1) freqs.push(freqs.shift()*2);
+      return freqs.map(f=>({freq:f,_seg:seg}));
+    }
+
+    // Scale sequences: all NODES within the segment
+    const allNodes=[{freq:segFund,frac:seg==='lower'?cf:1-cf,harm:1,_seg:seg,_isFund:true}];
+    NODES.forEach(n=>{
+      allNodes.push({freq:n.ratio*segFund,frac:n.frac,harm:n.harm,_seg:seg,_node:n});
+    });
+    if(playSeq==='scale-full') return allNodes.sort((a,b)=>a.freq-b.freq);
+    // 1-oct: scale steps from root
+    const steps=MODE_SCALES[currentMode];
+    const freqObjs=[{freq:rootFreq,_seg:seg}];
+    let f=rootFreq;
+    steps.forEach(st=>{f*=Math.pow(2,st/12);freqObjs.push({freq:f,_seg:seg});});
+    return freqObjs;
+  }
+
   const rootFreq = playRoot==='homenode' ? fund*hnRatio : fund;
 
   if(playSeq==='chord'){
@@ -2930,19 +3084,73 @@ function stopPlaySequence(){
   updatePlayBtn();
 }
 
-function _nodeForFreq(freq){
+// ── Playable node registry ────────────────────────────────────────
+// Single source of truth for all nodes that can be played, highlighted,
+// and shown in the tone strip. Add new node types here (47, 39, etc.)
+// and highlight/strip support comes for free.
+function getPlayableNodes(){
   const fund=fundFreq();
-  // Include the fundamental (nut row) — it is not in the NODES array
-  if(Math.abs(freq/fund-1)<0.02) return {frac:1.0,harm:1,ratio:1,primary:true,tonic:false};
-  let best=null, bestD=Infinity;
-  NODES.forEach(n=>{ const d=Math.abs(fund*n.ratio-freq); if(d<bestD){bestD=d;best=n;} });
-  return (bestD/Math.max(freq,1)<0.02 && best) ? best : null;
+  const esl=effectiveSpeakingLength();
+  const nodes=[];
+  // Nut / fundamental — always first
+  nodes.push({frac:1.0, ratio:1, harm:1, primary:true, tonic:false,
+    label:'1', fs:'1/1', rs:'1:1', desc:'fundamental',
+    freq:fund, _isNut:true});
+  // All 14 NODES
+  NODES.forEach(n=>{
+    nodes.push({...n, freq:fund*n.ratio});
+  });
+  return nodes;
 }
 
+// Match a freq to a playable node — strict tolerance, no nearest-match fallback.
+// Returns null if no node matches within 2%.
+function _nodeForFreq(freq){
+  if(nodeView==='capo') return null; // capo uses _nodeForFreqCapo
+  const nodes=getPlayableNodes();
+  for(const n of nodes){
+    if(Math.abs(n.freq/freq-1)<0.02) return n;
+  }
+  return null;
+}
+
+// Unified playback highlight + tone strip update.
+// Called for every note during playback — updates row highlight, sidebar ruler,
+// and top tone strip. Works for all current node types; future nodes added to
+// getPlayableNodes() automatically inherit this behaviour.
+function _showNodeForPlayback(node, freq){
+  if(!node) return;
+  setRowHL(node.frac);
+  // Derive display values
+  const ni=noteInfo(freq);
+  const inKey=ni.snapped?isInKey(ni.midi):false;
+  const displayLabel=remapDegree(node.ratio)||node.label;
+  const col=isTonalCenter(node.ratio)?HOME_COL:
+    node.primary?(inKey?'var(--inkey)':'#993C1D'):(inKey?'var(--inkey)':'#D85A30');
+  // Update tone strip (nts-right) via showStrip
+  showStrip(freq, node.frac, displayLabel, col);
+  if(node._isNut){
+    // Nut row: build pseudo-node matching the format showLabel expects,
+    // then call showLabel to update sidebar ruler split + dot position
+    const nutPseudo={frac:1.0, ratio:1, fs:'1/1', rs:'1:1',
+      label:displayLabel, primary:true, desc:'fundamental'};
+    showLabel(nutPseudo);
+  } else {
+    showLabel(node);
+  }
+}
+
+function _hlNodeForFreq(freq){
+  const node=_nodeForFreq(freq);
+  if(node) _showNodeForPlayback(node, freq);
+}
+
+
+
 function _vizForFreq(freq){
+  if(nodeView==='capo') return;
   const node=_nodeForFreq(freq);
   if(!node) return;
-  // Fundamental / nut row — not in NODES, trigger viz at nut position
   if(node.ratio===1){
     const nutY=nodeView==='nut'?nutEffY():NY;
     triggerViz(1.0, 1, nutY, HOME_COL);
@@ -2955,17 +3163,6 @@ function _vizForFreq(freq){
   triggerViz(node.frac, node.harm, nY(node.frac), col);
 }
 
-// Highlight the row for a given freq during playback (ruler + sidebar update)
-function _hlNodeForFreq(freq){
-  const node=_nodeForFreq(freq);
-  if(!node) return;
-  if(node.ratio===1){
-    // Nut / fundamental row — set row highlight at nut position
-    setRowHL(1.0);
-    return;
-  }
-  showLabel(node);
-}
 
 function playSequence(){
   if(_playActive){ stopPlaySequence(); return; }
@@ -2981,8 +3178,7 @@ function playSequence(){
 
 function _startPlaySequence(){
   _playActive=true;
-  _warmAudioCtx(); // silent primer — ensures pipeline is warm before first tone
-  // Save and clear pin so row highlights aren't blocked during playback
+  _warmAudioCtx();
   _savedPinFrac=_pinnedFrac;
   _pinnedFrac=null;
   const btn=document.getElementById('play-go-btn');
@@ -2994,31 +3190,37 @@ function _startPlaySequence(){
   const step=D+G;
   let rawFreqs=buildPlayFreqs();
 
+  // Choose viz/hl functions based on view
+  const isCapo=nodeView==='capo';
+  const _seg=isCapo?_playCapoSegment():null;
+  const _doViz=isCapo
+    ?(f=>_vizForFreqCapo(typeof f==='object'?f.freq:f, _seg))
+    :(f=>_vizForFreq(typeof f==='object'?f.freq:f));
+  const _doHl=isCapo?(f=>{}):(f=>_hlNodeForFreq(typeof f==='object'?f.freq:f));
+
   if(playSeq==='chord'){
     const freqs=rawFreqs.map(f=>typeof f==='object'?f.freq:f);
     if(playChordStyle==='block'){
       freqs.forEach(f=>playTone(f));
-      freqs.forEach(f=>_vizForFreq(f));
+      freqs.forEach(f=>_doViz(f));
       _playTimers.push(setTimeout(stopPlaySequence,D));
       return;
     }
-    // Arpeggio
     let seq=[...freqs];
     if(playDir==='down') seq=[...seq].reverse();
     if(playDir==='updown') seq=[...seq,...[...seq].reverse().slice(1)];
     seq.forEach((f,i)=>{
-      _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); _vizForFreq(f); _hlNodeForFreq(f); },i*step));
+      _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); _doViz(f); _doHl(f); },i*step));
     });
     _playTimers.push(setTimeout(stopPlaySequence,seq.length*step));
     return;
   }
 
-  // Scale sequences
   let seq=rawFreqs.map(f=>typeof f==='object'?f.freq:f);
   if(playDir==='down') seq=[...seq].reverse();
   if(playDir==='updown') seq=[...seq,...[...seq].reverse().slice(1)];
   seq.forEach((f,i)=>{
-    _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); _vizForFreq(f); _hlNodeForFreq(f); },i*step));
+    _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); _doViz(f); _doHl(f); },i*step));
   });
   _playTimers.push(setTimeout(stopPlaySequence,seq.length*step));
 }
@@ -4026,6 +4228,7 @@ function updateCapoSubNodes(){
     const lHit=mkS('rect',{x:0,y:lY-lRowH/2,width:SVG_W,height:lRowH,
       fill:'transparent',class:'row-hit'});
     lHit.addEventListener('mousedown',()=>{ try{
+      _lastCapoSegment='lower';
       const pKey=node.frac*cf;
       if(_togglePin(pKey, false)){ playTone(lFreq); triggerCapoViz(lY, lCol, [{topY:capoYpx(), botY:TY, frac:node.frac, harm:node.harm, color:lCol}]); _showSubNode(node,'lower',lFreq,cf,lY); }
       else { playTone(lFreq); triggerCapoViz(lY, lCol, [{topY:capoYpx(), botY:TY, frac:node.frac, harm:node.harm, color:lCol}]); }
@@ -4033,6 +4236,7 @@ function updateCapoSubNodes(){
     lHit.addEventListener('mouseenter',()=>{ try{ if(_pinnedFrac!==null&&_pinnedFrac!==node.frac*cf) return; _showSubNode(node,'lower',lFreq,cf,lY); }catch(e){} });
     lHit.addEventListener('mouseleave',()=>{ try{ clearStrip(); if(!_pinnedFrac) hideLabel(); }catch(e){} });
     lHit.addEventListener('touchstart',()=>{ try{
+      _lastCapoSegment='lower';
       const pKey=node.frac*cf;
       if(_togglePin(pKey, true)){ playTone(lFreq); triggerCapoViz(lY, lCol, [{topY:capoYpx(), botY:TY, frac:node.frac, harm:node.harm, color:lCol}]); _showSubNode(node,'lower',lFreq,cf,lY); }
       else { playTone(lFreq); triggerCapoViz(lY, lCol, [{topY:capoYpx(), botY:TY, frac:node.frac, harm:node.harm, color:lCol}]); }
@@ -4097,6 +4301,7 @@ function updateCapoSubNodes(){
     const uHit=mkS('rect',{x:0,y:uY-uRowH/2,width:SVG_W,height:uRowH,
       fill:'transparent',class:'row-hit'});
     uHit.addEventListener('mousedown',()=>{ try{
+      _lastCapoSegment='upper';
       const pKey=cf+node.frac*(1-cf);
       if(_togglePin(pKey, false)){ playTone(uFreq); triggerCapoViz(uY, uCol, [{topY:nutEffY(), botY:capoYpx(), frac:node.frac, harm:node.harm, color:uCol}]); _showSubNode(node,'upper',uFreq,cf,uY); }
       else { playTone(uFreq); triggerCapoViz(uY, uCol, [{topY:nutEffY(), botY:capoYpx(), frac:node.frac, harm:node.harm, color:uCol}]); }
@@ -4104,6 +4309,7 @@ function updateCapoSubNodes(){
     uHit.addEventListener('mouseenter',()=>{ try{ if(_pinnedFrac!==null&&_pinnedFrac!==(cf+node.frac*(1-cf))) return; _showSubNode(node,'upper',uFreq,cf,uY); }catch(e){} });
     uHit.addEventListener('mouseleave',()=>{ try{ clearStrip(); if(!_pinnedFrac) hideLabel(); }catch(e){} });
     uHit.addEventListener('touchstart',()=>{ try{
+      _lastCapoSegment='upper';
       const pKey=cf+node.frac*(1-cf);
       if(_togglePin(pKey, true)){ playTone(uFreq); triggerCapoViz(uY, uCol, [{topY:nutEffY(), botY:capoYpx(), frac:node.frac, harm:node.harm, color:uCol}]); _showSubNode(node,'upper',uFreq,cf,uY); }
       else { playTone(uFreq); triggerCapoViz(uY, uCol, [{topY:nutEffY(), botY:capoYpx(), frac:node.frac, harm:node.harm, color:uCol}]); }
@@ -4487,13 +4693,19 @@ function noteInfo(f){
 function chromDeg(midi,kr){return CHROM[((midi%12+12)%12-(kr%12+12)%12+12)%12];}
 function isInKey(midi){return diatonicPitchClasses().has(((midi%12)+12)%12);}
 
+const MODE_DEGREE={ionian:1,dorian:2,phrygian:3,lydian:4,mixolydian:5,aeolian:6,locrian:7};
 function setMode(mode, btn){
   currentMode=mode;
   document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
+  // 59: when auto-tune is on and a diatonic mode is selected, sync home node
+  if(autoTune && MODE_DEGREE[mode]!==undefined){
+    setHomeNode(MODE_DEGREE[mode]);
+  }
   updateTuneBtn();
   updateScaleSpelling();
   render();
+  _maybeAutoTune();
 }
 
 // ── Audio ─────────────────────────────────────────────────────────
@@ -4605,9 +4817,13 @@ let _tuneSeqTimer=null; // pending sequential tone timer — cancelled on new tu
 let capoArp=false;      // capo arp mode: play individual voices then chord on snap
 let nodeViz=true;       // pulsing circle animation on node press
 let waveViz=true;       // standing wave visualization on node press
-let vizAmp=60;          // wave arch half-amplitude px; also scales node viz circles
-let vizDur=4.0;         // viz fade duration in seconds (independent of tone duration)
-// Future: consider separate vizNodeAmp, vizWaveAmp, vizNodeDur, vizWaveDur
+let vizNodeAmp=30;      // node viz circle scale (amp units, same range as wave)
+let vizNodeDur=3.0;     // node viz fade duration in seconds
+let vizWaveAmp=60;      // wave arch half-amplitude px
+let vizWaveDur=3.0;     // wave viz fade duration in seconds
+// Legacy aliases — kept so any remaining refs don't break
+Object.defineProperty(window,'vizAmp',{get:()=>vizWaveAmp,set:v=>{vizWaveAmp=v;}});
+Object.defineProperty(window,'vizDur',{get:()=>vizWaveDur,set:v=>{vizWaveDur=v;}});
 // for independent control of each viz type's appearance and timing.
 let _arpTimers=[];      // array of pending arp step timers
 
@@ -4669,10 +4885,10 @@ function clearViz(){
 function _drawNodeViz(svgY, color){
   const vl=document.getElementById('viz-layer');
   if(!vl) return;
-  const scale=vizAmp/18;
+  const scale=vizNodeAmp/18;
   const g=document.createElementNS('http://www.w3.org/2000/svg','g');
   if(_pinnedFrac===null){
-    g.style.animation=`vizFadeOut ${vizDur}s ease-out forwards`;
+    g.style.animation=`vizFadeOut ${vizNodeDur}s ease-out forwards`;
   }
   [12,22,32].forEach((r,i)=>{
     const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
@@ -4698,7 +4914,7 @@ function _drawSegmentWave(g, topY, botY, frac, harm, color, extraOpacity){
   const archesAbove=Math.round(harm*(1-frac));
   for(let k=0;k<harm;k++){
     const y1=topY+k*archH, y2=topY+(k+1)*archH, midY=(y1+y2)/2;
-    const dir=(k%2===0)?-vizAmp:vizAmp; // alternating left/right
+    const dir=(k%2===0)?-vizWaveAmp:vizWaveAmp; // alternating left/right
     const p=document.createElementNS('http://www.w3.org/2000/svg','path');
     p.setAttribute('d',`M ${SX} ${y1.toFixed(1)} Q ${(SX+dir).toFixed(1)} ${midY.toFixed(1)} ${SX} ${y2.toFixed(1)}`);
     p.setAttribute('fill','none');
@@ -4719,7 +4935,7 @@ function _drawWaveViz(frac, harm, color){
   const speakingTop=(nodeView==='nut')?nutEffY():NY;
   const g=document.createElementNS('http://www.w3.org/2000/svg','g');
   if(_pinnedFrac===null){
-    g.style.animation=`vizFadeOut ${vizDur}s ease-out forwards`;
+    g.style.animation=`vizFadeOut ${vizWaveDur}s ease-out forwards`;
   }
   _drawSegmentWave(g, speakingTop, TY, frac, harm, color, undefined);
   vl.appendChild(g);
@@ -4734,7 +4950,7 @@ function _drawCapoWaveViz(segs){
   if(!vl) return;
   const g=document.createElementNS('http://www.w3.org/2000/svg','g');
   if(_pinnedFrac===null){
-    g.style.animation=`vizFadeOut ${vizDur}s ease-out forwards`;
+    g.style.animation=`vizFadeOut ${vizWaveDur}s ease-out forwards`;
   }
   segs.forEach(({topY,botY,frac,harm,color})=>{
     _drawSegmentWave(g,topY,botY,frac,harm,color,undefined);
