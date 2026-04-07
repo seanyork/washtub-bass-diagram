@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v6.8.3</title>
+<title>Washtub Bass String Map · v6.9.4</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -169,8 +169,8 @@ input[type=range]{width:110px;cursor:pointer;}
 #sidebar.collapsed>*:not(#sb-toggle){display:none !important;}
 /* When collapsed, take sidebar out of flex flow so canvas-wrap fills the space.
    Toggle button floats absolutely over the right edge — canvas shows through. */
-#sidebar.collapsed{position:absolute;right:0;top:0;bottom:0;background:transparent !important;border-left:none !important;z-index:14;}
-#sidebar.collapsed #sb-toggle{background:rgba(83,58,183,0.09);border-radius:0 0 0 5px;}
+#sidebar.collapsed{position:absolute;right:0;top:0;bottom:0;background:transparent !important;border-left:none !important;z-index:14;pointer-events:none;}
+#sidebar.collapsed #sb-toggle{background:rgba(83,58,183,0.09);border-radius:0 0 0 5px;pointer-events:auto;}
 @media(prefers-color-scheme:dark){#sb-toggle{color:#8b80d4;}#sb-toggle.collapsed{color:#555;}}
 /* capo ruler perspective toggle — bottom of sidebar, capo mode only */
 #capo-ruler-persp{display:none;flex-shrink:0;flex-direction:column;align-items:stretch;padding:4px 5px 5px;gap:2px;border-top:0.5px solid rgba(128,128,128,0.15);}
@@ -287,6 +287,9 @@ input[type=range]{width:110px;cursor:pointer;}
 @media(prefers-color-scheme:dark){.pd-btn{background:#2a2a2a;color:#ddd;}.pd-btn.on{background:#533AB7;color:#fff;border-color:#533AB7;}}
 /* dim entire section when not applicable */
 .pd-dim{opacity:0.18;pointer-events:none;}
+/* Voice label style cycle button */
+.pd-style-btn{width:100%;height:26px;font-size:9px;font-weight:600;border:0.5px solid rgba(83,58,183,0.35);border-radius:4px;background:#EEEDFE;color:#533AB7;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;white-space:nowrap;}
+@media(prefers-color-scheme:dark){.pd-style-btn{background:rgba(83,58,183,0.2);color:#AFA9EC;border-color:rgba(83,58,183,0.4);}}
 /* play row */
 /* play-btn-row: toggle strip on top (full width, 22px), go button below (full width, 46px) */
 #play-btn-row{display:flex;flex-direction:column;border-top:0.5px solid rgba(83,58,183,0.15);flex-shrink:0;}
@@ -709,28 +712,45 @@ input[type=range]{width:110px;cursor:pointer;}
          .pd-gap MUST have flex:1 min-width:0 to keep 13th button same width as others. -->
     <div class="pd-sec" id="pd-chord-voices">
       <div class="pd-row">
-        <button class="pd-btn" id="pdv-13th" onclick="setPlayVoices('13th',this)">13th</button>
+        <button class="pd-btn" id="pdv-13th" onclick="togglePlayVoice('13',this)">13th</button>
         <div class="pd-vr"></div>
         <!-- Ghost button: keeps 13th same width as other voice buttons. Never remove. -->
         <button class="pd-btn" style="visibility:hidden;pointer-events:none;" tabindex="-1" aria-hidden="true"></button>
       </div>
       <div class="pd-row">
-        <button class="pd-btn" id="pdv-11th" onclick="setPlayVoices('11th',this)">11th</button>
+        <button class="pd-btn" id="pdv-11th" onclick="togglePlayVoice('11',this)">11th</button>
         <div class="pd-vr"></div>
-        <button class="pd-btn" id="pdi-3rd" onclick="setPlayInversion(3,this)">3rd</button>
+        <button class="pd-btn" style="visibility:hidden;pointer-events:none;" tabindex="-1" aria-hidden="true"></button>
       </div>
       <div class="pd-row">
-        <button class="pd-btn" id="pdv-9th" onclick="setPlayVoices('9th',this)">9th</button>
+        <button class="pd-btn" id="pdv-9th" onclick="togglePlayVoice('9',this)">9th</button>
         <div class="pd-vr"></div>
-        <button class="pd-btn" id="pdi-2nd" onclick="setPlayInversion(2,this)">2nd</button>
+        <button class="pd-btn" style="visibility:hidden;pointer-events:none;" tabindex="-1" aria-hidden="true"></button>
       </div>
+      <!-- 7th: left col, 3rd inv right -->
       <div class="pd-row">
-        <button class="pd-btn" id="pdv-7th" onclick="setPlayVoices('7th',this)">7th</button>
+        <button class="pd-btn" id="pdv-7th" onclick="togglePlayVoice('7',this)">m7</button>
         <div class="pd-vr"></div>
-        <button class="pd-btn" id="pdi-1st" onclick="setPlayInversion(1,this)">1st</button>
+        <button class="pd-btn on" id="pdi-3rd" onclick="setPlayInversion(3,this)">3rd</button>
       </div>
+      <!-- 5th: left col, 2nd inv right -->
       <div class="pd-row">
-        <button class="pd-btn on" id="pdv-triad" onclick="setPlayVoices('triad',this)">triad</button>
+        <button class="pd-btn on" id="pdv-5" onclick="togglePlayVoice('5',this)">P5</button>
+        <div class="pd-vr"></div>
+        <button class="pd-btn on" id="pdi-2nd" onclick="setPlayInversion(2,this)">2nd</button>
+      </div>
+      <!-- 1+3: left col, 1st inv right -->
+      <div class="pd-row">
+        <div style="flex:1;min-width:0;display:flex;gap:3px;">
+          <button class="pd-btn on" id="pdv-1" onclick="togglePlayVoice('1',this)" style="flex:1;min-width:0;">P1</button>
+          <button class="pd-btn on" id="pdv-3" onclick="togglePlayVoice('3',this)" style="flex:1;min-width:0;">M3</button>
+        </div>
+        <div class="pd-vr"></div>
+        <button class="pd-btn on" id="pdi-1st" onclick="setPlayInversion(1,this)">1st</button>
+      </div>
+      <!-- style button: bottom row left col, root inv right -->
+      <div class="pd-row">
+        <button class="pd-style-btn" id="pd-style-btn" onclick="cycleVoiceLabelStyle()" style="flex:1;min-width:0;">↻ <span id="pd-style-example">m3 · P5</span></button>
         <div class="pd-vr"></div>
         <button class="pd-btn on" id="pdi-root" onclick="setPlayInversion(0,this)">root</button>
       </div>
@@ -996,28 +1016,22 @@ function fitV(){
   applyT();
 }
 
-// ── fitVPlay — v-fit with tight horizontal label fitting ─────────
-// Used when play zone is open. Prefers v-fit sc (full string visible)
-// but falls back to h-fit sc if the available width is too narrow to
-// show the label span [SDEG_X, NOTE_X+55] at v-fit zoom (e.g. ruler open).
+// ── fitVPlay — v-fit with tight horizontal label centering ────────
+// Used when play zone is open: v-fit sc keeps full string visible,
+// tx is chosen to center the label span [SDEG_X, NOTE_X+55] in the
+// available viewport so note names don't clip behind the drawer or right edge.
 function fitVPlay(){
+  sc=canvas.clientHeight/1440;
+  ty=0;
   const cw=canvas.clientWidth;
   const leftOffset=(_playPanelOpen&&cofVisible)?PLAY_DRAWER_W:0;
   const availW=cw-leftOffset;
-  const span=(NOTE_X+55)-SDEG_X; // ~235 SVG units
-  const pad=4;
-  const scV=canvas.clientHeight/1440;
-  const scH=Math.max(scMn,(availW-pad*2)/span);
-  sc=Math.min(scMx,Math.min(scV,scH)); // use whichever fits both axes
-  ty=0;
   const labelMid=(SDEG_X+(NOTE_X+55))/2;
   tx=leftOffset+availW/2-labelMid*sc;
-  // Ensure left labels clear the drawer
   const lEdge=tx+SDEG_X*sc;
-  if(lEdge<leftOffset+pad) tx+=leftOffset+pad-lEdge;
-  // Ensure right of note column fits in canvas
+  if(lEdge<leftOffset+4) tx+=leftOffset+4-lEdge;
   const rEdge=tx+(NOTE_X+55)*sc;
-  if(rEdge>cw-pad) tx-=rEdge-(cw-pad);
+  if(rEdge>cw-4) tx-=rEdge-(cw-4);
   clamp();
   applyT();
 }
@@ -1976,7 +1990,7 @@ function renderBRCtx(){
 // ── Node view context rows ────────────────────────────────────────
 function renderNodeViewCtx(view){
   if(view==='full'){
-    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.8.3</span></div>
+    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.9.4</span></div>
             <div class="br-ctx-row" style="gap:5px;justify-content:center;">
               <div class="br-readme-btn" onclick="openReadme('instrument')">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2582,9 +2596,84 @@ const PLAY_DRAWER_W = 130;
 
 // State
 let playSeq       = 'chord';  // 'chord' | 'scale-1oct' | 'scale-full'
-let playVoices    = 'triad';  // 'triad'|'7th'|'9th'|'11th'|'13th'
+let playVoices    = 'triad';  // legacy — kept for compat
 let playInversion = 0;        // 0=root 1=1st 2=2nd 3=3rd
 let playChordStyle = 'arpeg'; // 'arpeg'|'block'
+// Independent voice toggles — true = include this voice in chord
+let playVoiceSet = {1:true, 3:true, 5:true, 7:false, 9:false, 11:false, 13:false};
+// Voice label style: 'interval'|'degree'|'symbol'
+let playLabelStyle = 'degree';
+
+// Degree index for each chord voice (within 7-note scale)
+const VOICE_DEG_IDX = {1:0, 3:2, 5:4, 7:6, 9:1, 11:3, 13:5};
+// Symbol notation map keyed by interval name
+const VOICE_LABEL_SYMBOL = {
+  'P1':'1','m2':'\u266d9','M2':'9','m3':'\u22123','M3':'3',
+  'P4':'11','A4':'\u266f11','P5':'5','d5':'\u22125',
+  'm6':'\u266d13','M6':'13','m7':'\u22127','M7':'\u03947'
+};
+
+// Compute quality-aware label for a chord voice in current mode
+function _voiceLabel(voice){
+  const steps = MODE_SCALES[currentMode];
+  const semi=[0]; let acc=0;
+  for(let i=0;i<6;i++){ acc+=steps[i]; semi.push(acc); }
+  const idx = VOICE_DEG_IDX[voice];
+  if(idx===undefined) return String(voice);
+  // Compound voices (9/11/13) need an octave shift for correct compound labels
+  const octShift = [9,11,13].includes(voice) ? 12 : 0;
+  const st = semi[idx%7] + Math.floor(idx/7)*12 + octShift;
+  const intervalMap={0:'P1',1:'m2',2:'M2',3:'m3',4:'M3',5:'P4',6:'A4',
+    7:'P5',8:'m6',9:'M6',10:'m7',11:'M7'};
+  const itvl = intervalMap[st%12]||String(st);
+  if(playLabelStyle==='interval') return itvl;
+  if(playLabelStyle==='symbol') return VOICE_LABEL_SYMBOL[itvl]||itvl;
+  // degree
+  // Degree style: use compound names for extensions above octave (9/11/13)
+  // Compound voices: derive label from actual st vs expected natural position
+  if(st>=12){
+    // Expected semitone for natural (major/perfect) compound interval
+    const naturalSt={9:14,11:17,13:21}[voice];
+    if(naturalSt!==undefined){
+      const diff=st-naturalSt;
+      const prefix=diff<0?'\u266d'.repeat(-diff):diff>0?'\u266f'.repeat(diff):'';
+      return prefix+voice;
+    }
+    return String(voice);
+  }
+  const degMap={0:'1',1:'\u266d2',2:'2',3:'\u266d3',4:'3',5:'4',6:'\u266f4',
+    7:'5',8:'\u266d6',9:'6',10:'\u266d7',11:'7'};
+  return degMap[st%12]||String(st);
+}
+
+function _styleExample(){
+  return _voiceLabel(3)+' \xb7 '+_voiceLabel(5);
+}
+
+function cycleVoiceLabelStyle(){
+  const order=['interval','degree','symbol'];
+  playLabelStyle=order[(order.indexOf(playLabelStyle)+1)%3];
+  _syncVoiceBtnLabels();
+  updatePlayBtn();
+}
+
+function togglePlayVoice(v, btn){
+  const key=parseInt(v);
+  playVoiceSet[key]=!playVoiceSet[key];
+  btn.classList.toggle('on', playVoiceSet[key]);
+  updatePlayBtn();
+}
+
+function _syncVoiceBtnLabels(){
+  // Update ALL voice buttons with current label style + mode quality
+  const btnMap={13:'pdv-13th',11:'pdv-11th',9:'pdv-9th',7:'pdv-7th',5:'pdv-5',3:'pdv-3',1:'pdv-1'};
+  Object.entries(btnMap).forEach(([v,id])=>{
+    const b=document.getElementById(id);
+    if(b) b.textContent=_voiceLabel(parseInt(v));
+  });
+  const ex=document.getElementById('pd-style-example');
+  if(ex) ex.textContent=_styleExample();
+}
 let playDir       = 'up';     // 'up'|'down'|'updown'
 let playRoot      = 'homenode';
 let _playTimers   = [];
@@ -2717,16 +2806,38 @@ function _playLabel(){
   const modeName = MODE_NAMES[currentMode];
   if(playSeq==='scale-1oct') return rootNote+' '+modeName;
   if(playSeq==='scale-full') return rootNote+' '+modeName+' (full)';
-  // chord — derive quality from mode
-  const voiceMap = {triad:'','7th':' 7','9th':' 9','11th':' 11','13th':' 13'};
+  // chord — auto-derive quality and extension from active voice set + mode
   const steps = MODE_SCALES[currentMode];
-  const third = steps[0]+steps[1];
-  const fifth  = third+steps[2]+steps[3];
-  let quality = '';
-  if(third===3 && fifth===7) quality='dim';
-  else if(third===3) quality='m';
-  else if(third===4 && fifth===8) quality='aug';
-  return rootNote+(quality||'')+voiceMap[playVoices];
+  const semi=[0]; let acc=0;
+  for(let i=0;i<6;i++){ acc+=steps[i]; semi.push(acc); }
+  const has=playVoiceSet;
+  const third=semi[2]; // 3rd degree semitones
+  const fifth=semi[4];
+  let quality='';
+  if(has[3]){
+    if(third===3 && fifth===6) quality='dim';
+    else if(third===3) quality='m';
+    else if(third===4 && fifth===8) quality='aug';
+    // else major — no suffix
+  } else if(!has[3] && has[5]){
+    quality='5'; // power chord
+  }
+  // Extension suffix — derive from voice set + mode intervals
+  const s7=semi[6]; // semitones to 7th
+  let ext='';
+  if(has[7]&&!has[9]&&!has[11]&&!has[13])
+    ext=s7===11?' maj7':' 7';
+  else if(has[7]&&has[9]&&!has[11]&&!has[13])
+    ext=s7===11?' maj9':' 9';
+  else if(has[7]&&has[9]&&has[11]&&!has[13])
+    ext=s7===11?' maj11':' 11';
+  else if(has[7]&&has[9]&&has[11]&&has[13])
+    ext=s7===11?' maj13':' 13';
+  else if(!has[7]&&has[9]) ext=' add9';
+  else if(!has[7]&&has[11]) ext=' add11';
+  else if(!has[7]&&has[13]) ext=' add13';
+  // No suffix needed for basic triad (1,3,5 only)
+  return rootNote+quality+ext;
 }
 
 function _playSubLabel(){
@@ -2769,20 +2880,18 @@ function buildPlayFreqs(){
 
   if(playSeq==='chord'){
     const steps = MODE_SCALES[currentMode];
-    // Build cumulative semitone offsets for all 7 scale degrees
     const semi=[0]; let acc=0;
     for(let i=0;i<6;i++){ acc+=steps[i]; semi.push(acc); }
-    // Chord tone indices (0-based scale degrees): 1,3,5,7,9,11,13 = 0,2,4,6,1+7,3+7,5+7
-    const degIdxs=[0,2,4,6,1,3,5];
-    const voiceCount={triad:3,'7th':4,'9th':5,'11th':6,'13th':7}[playVoices];
-    // 9th,11th,13th voiced in next higher octave (conventional)
-    let freqs=degIdxs.slice(0,voiceCount).map((idx,pos)=>{
-      const octShift = pos>=4 ? 12 : 0; // 9th and above go up an octave
-      const st = semi[idx%7] + Math.floor(idx/7)*12 + octShift;
-      return rootFreq * Math.pow(2, st/12);
+    // Voice order: 1,3,5,7,9,11,13 — include only those toggled on in playVoiceSet
+    const voiceList=[1,3,5,7,9,11,13];
+    const octShiftAt=[9,11,13]; // these go up an octave (conventional voicing)
+    let freqs=voiceList.filter(v=>playVoiceSet[v]).map(v=>{
+      const idx=VOICE_DEG_IDX[v];
+      const st=semi[idx%7]+Math.floor(idx/7)*12+(octShiftAt.includes(v)?12:0);
+      return rootFreq*Math.pow(2,st/12);
     });
     // Apply inversion: rotate lowest note(s) up an octave
-    for(let inv=0;inv<playInversion;inv++) freqs.push(freqs.shift()*2);
+    for(let inv=0;inv<playInversion;inv++) if(freqs.length>1) freqs.push(freqs.shift()*2);
     return freqs;
   }
 
@@ -2916,7 +3025,7 @@ function _startPlaySequence(){
 
 // ── Patch updateStatus ─────────────────────────────────────────────
 const _updateStatus_play=updateStatus;
-updateStatus=function(){ _updateStatus_play(); updatePlayBtn(); };
+updateStatus=function(){ _updateStatus_play(); updatePlayBtn(); _syncVoiceBtnLabels(); };
 
 // ── Init ───────────────────────────────────────────────────────────
 setTimeout(()=>{
@@ -2928,6 +3037,7 @@ setTimeout(()=>{
   ['pds-1oct','pds-full'].forEach(id=>{ const b=document.getElementById(id); if(b) b.classList.remove('on'); });
   _syncDir(playDir);
   _syncRoot(playRoot);
+  _syncVoiceBtnLabels();
   updatePlayBtn();
 },50);
 
@@ -6540,6 +6650,7 @@ document.addEventListener('touchstart',e=>{
   let _sbDrag=false, _sbStartY=0, _sbStartTy=0;
 
   sb.addEventListener('touchstart',e=>{
+    if(sidebarCollapsed) return; // collapsed — let touches pass through to canvas
     _sbDrag=true;
     _suppressHover=true;
     _sbStartY=e.touches[0].clientY;
@@ -6568,6 +6679,7 @@ document.addEventListener('touchstart',e=>{
   let _msbDrag=false, _msbStartY=0, _msbStartTy=0;
 
   sb.addEventListener('mousedown',e=>{
+    if(sidebarCollapsed) return; // collapsed — let clicks pass through to canvas
     if(e.target.closest('button,input,select')) return;
     _msbDrag=true;
     _suppressHover=true;
