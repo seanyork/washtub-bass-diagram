@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v6.9.11</title>
+<title>Washtub Bass String Map · v6.9.31</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -1336,11 +1336,25 @@ function setRowHL(nodeFrac){
   if(!g) return;
   g.innerHTML='';
   if(nodeFrac===null) return;
-  const y=nY(nodeFrac); // use nY() so nut view positions match rendered nodes
+  const y=nY(nodeFrac);
   const rect=document.createElementNS(svgNS_v4,'rect');
   Object.entries({x:0,y:y-16,width:SVG_W,height:32,fill:'rgba(200,150,20,0.14)',rx:2})
     .forEach(([k,v])=>rect.setAttribute(k,v));
   g.appendChild(rect);
+}
+
+function setMultiRowHL(fracs){
+  const g=document.getElementById('row-hl');
+  if(!g) return;
+  g.innerHTML='';
+  fracs.forEach(frac=>{
+    if(frac===null) return;
+    const y=nY(frac);
+    const rect=document.createElementNS(svgNS_v4,'rect');
+    Object.entries({x:0,y:y-16,width:SVG_W,height:32,fill:'rgba(200,150,20,0.14)',rx:2})
+      .forEach(([k,v])=>rect.setAttribute(k,v));
+    g.appendChild(rect);
+  });
 }
 
 // ── Active state ──────────────────────────────────────────────────
@@ -1992,7 +2006,7 @@ function renderBRCtx(){
 // ── Node view context rows ────────────────────────────────────────
 function renderNodeViewCtx(view){
   if(view==='full'){
-    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.9.11</span></div>
+    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.9.31</span></div>
             <div class="br-ctx-row" style="gap:5px;justify-content:center;">
               <div class="br-readme-btn" onclick="openReadme('instrument')">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2989,6 +3003,34 @@ function _vizForFreqCapo(freq, seg){
 }
 
 
+// Find the key root frequency among a list of {freq} objects (node set).
+// Searches all octaves of the key root — returns the matching freq if found
+// within 2% tolerance, otherwise falls back to fallbackFreq.
+function _findKeyRootFreq(nodeList, fallbackFreq){
+  const rootHz=REF_HZ*Math.pow(2,(homeKey+60-REF_MIDI)/12);
+  // Try all octaves from -4 to +4 (low first so fundamental found before midpoint)
+  for(let oct=-4;oct<=4;oct++){
+    const target=rootHz*Math.pow(2,oct);
+    for(const n of nodeList){
+      const f=typeof n==='object'?n.freq:n;
+      if(Math.abs(f/target-1)<0.02) return f;
+    }
+  }
+  // No matching node found (string detuned away from key).
+  // Find the lowest octave of the ET key root that falls within the string's
+  // playable range [fund, fund*4] — a root that would be on the string if tuned.
+  const fund=fundFreq();
+  const lo=fund*0.99, hi=fund*4.01;
+  for(let oct=-4;oct<=4;oct++){
+    const target=rootHz*Math.pow(2,oct);
+    if(target>=lo && target<=hi) return target; // lowest feasible root on the string
+  }
+  // Nothing in range — return nearest octave above fundamental as last resort
+  let t=rootHz;
+  while(t<fund) t*=2;
+  return t;
+}
+
 function buildPlayFreqs(){
   const fund = fundFreq();
   const hnRatio = homeNodeRatio();
@@ -2999,7 +3041,10 @@ function buildPlayFreqs(){
     const cn=CAPO_NODES[capoNodeIdx];
     const cf=1-cn.phi;
     const segFund=seg==='lower'?fund/cf:fund/(1-cf);
-    const rootFreq=playRoot==='homenode'?segFund*hnRatio:segFund;
+    // Locate key root among segment node frequencies
+    const _segNodes=NODES.map(n=>({freq:n.ratio*segFund}));
+    _segNodes.push({freq:segFund});
+    const rootFreq=_findKeyRootFreq(_segNodes, segFund*hnRatio);
 
     if(playSeq==='chord'){
       const steps=MODE_SCALES[currentMode];
@@ -3030,7 +3075,9 @@ function buildPlayFreqs(){
     return freqObjs;
   }
 
-  const rootFreq = playRoot==='homenode' ? fund*hnRatio : fund;
+  // Locate key root among current node frequencies
+  const _allNodeFreqs=getPlayableNodes();
+  const rootFreq = _findKeyRootFreq(_allNodeFreqs, fund*hnRatio);
 
   if(playSeq==='chord'){
     const steps = MODE_SCALES[currentMode];
@@ -3051,11 +3098,22 @@ function buildPlayFreqs(){
 
   const steps = MODE_SCALES[currentMode];
   if(playSeq==='scale-full'){
-    // All 14 NODES sorted by pitch, plus the fundamental
-    let all=[{freq:fund,frac:1.0,harm:1}];
-    NODES.forEach(n=>all.push({freq:fund*n.ratio,frac:n.frac,harm:n.harm}));
-    all.sort((a,b)=>a.freq-b.freq);
-    return all;
+    // Step ET scale from rootFreq upward until we've covered the full string range.
+    // Each step plays audio; highlight/viz only fire if a snapped diatonic node matches.
+    // This guarantees the scale starts on the key root regardless of string tuning.
+    const maxFreq = fund * Math.max(...NODES.map(n=>n.ratio)); // stop at highest node
+    const freqObjs = [];
+    // rootFreq is already the lowest feasible key root in [fund, fund*4] via _findKeyRootFreq
+    let f = rootFreq;
+    // Step upward through scale until we exceed the string's range
+    let stepIdx = 0;
+    while(f <= maxFreq){
+      freqObjs.push({freq:f, frac:null});
+      f *= Math.pow(2, steps[stepIdx % 7] / 12);
+      stepIdx++;
+      if(stepIdx > 100) break; // safety cap
+    }
+    return freqObjs;
   }
   // scale-1oct: 8 notes (root + 7 steps)
   const freqObjs=[{freq:rootFreq,frac:null}];
@@ -3104,12 +3162,18 @@ function getPlayableNodes(){
 }
 
 // Match a freq to a playable node — strict tolerance, no nearest-match fallback.
-// Returns null if no node matches within 2%.
+// Returns null if no node matches within 2%, or if the matched node is unsnapped
+// (between named pitches, showing —). Unsnapped nodes must never highlight.
 function _nodeForFreq(freq){
   if(nodeView==='capo') return null; // capo uses _nodeForFreqCapo
   const nodes=getPlayableNodes();
   for(const n of nodes){
-    if(Math.abs(n.freq/freq-1)<0.02) return n;
+    if(Math.abs(n.freq/freq-1)<0.02){
+      // Reject unsnapped nodes — they show — and must not highlight
+      const nni=noteInfo(n.freq);
+      if(!nni.snapped) continue;
+      return n;
+    }
   }
   return null;
 }
@@ -3141,6 +3205,9 @@ function _showNodeForPlayback(node, freq){
 }
 
 function _hlNodeForFreq(freq){
+  // Freq match only — 2% tolerance covers JI/ET divergence when string is in tune.
+  // When detuned, no match fires — correct behavior.
+  // Note+name fallback removed: caused false highlights when string was detuned.
   const node=_nodeForFreq(freq);
   if(node) _showNodeForPlayback(node, freq);
 }
@@ -3190,19 +3257,86 @@ function _startPlaySequence(){
   const step=D+G;
   let rawFreqs=buildPlayFreqs();
 
-  // Choose viz/hl functions based on view
+  // Build note-name set from playback freqs — used to gate node highlights.
+  // Using note names (not raw freqs) handles JI vs ET divergence and ensures
+  // only nodes whose actual pitch is being played light up.
   const isCapo=nodeView==='capo';
   const _seg=isCapo?_playCapoSegment():null;
+  // Use name+octave so B2 doesn't match when B3 is played
+  const _playNoteSet=new Set(
+    rawFreqs.map(f=>{
+      const fv=typeof f==='object'?f.freq:f;
+      const ni=noteInfo(fv);
+      return ni.snapped?ni.name+ni.octave:null;
+    }).filter(Boolean)
+  );
+  const _noteInStack=freq=>{
+    const ni=noteInfo(freq);
+    return ni.snapped && _playNoteSet.has(ni.name+ni.octave);
+  };
+
   const _doViz=isCapo
     ?(f=>_vizForFreqCapo(typeof f==='object'?f.freq:f, _seg))
-    :(f=>_vizForFreq(typeof f==='object'?f.freq:f));
-  const _doHl=isCapo?(f=>{}):(f=>_hlNodeForFreq(typeof f==='object'?f.freq:f));
+    :(f=>{
+      const fv=typeof f==='object'?f.freq:f;
+      const ni=noteInfo(fv);
+      if(!ni.snapped || !isInKey(ni.midi)) return; // no viz for non-diatonic notes
+      _vizForFreq(fv);
+    });
+  // Highlight: fire for any node whose note name is in the playback stack
+  // This handles JI/ET divergence and catches chord block multi-highlight
+  const _doHl=f=>{
+    const fv=typeof f==='object'?f.freq:f;
+    if(isCapo) return; // capo hl TBD in item 35 follow-up
+    const ni=noteInfo(fv);
+    if(!ni.snapped || !isInKey(ni.midi)){
+      // Non-diatonic note: clear all ruler/label state so stale state doesn't persist
+      hideLabel();
+      return;
+    }
+    _hlNodeForFreq(fv);
+  };
+  // For chord block: highlight ALL nodes whose note is in the chord
+  // For chord block: collect chord voice freqs, then find all nodes within
+  // 2% of any chord voice freq. Freq-based matching handles JI/ET divergence
+  // correctly and avoids octave/name mismatch false positives/negatives.
+  const _chordFreqs=rawFreqs.map(f=>typeof f==='object'?f.freq:f);
+  const _doHlAll=()=>{
+    if(isCapo) return;
+    const playableNodes=getPlayableNodes();
+    const matchingFracs=[];
+    playableNodes.forEach(n=>{
+      const matched=_chordFreqs.some(cf=>Math.abs(n.freq/cf-1)<0.02 && noteInfo(n.freq).snapped);
+      if(matched) matchingFracs.push(n.frac);
+    });
+    setMultiRowHL(matchingFracs);
+  };
+  // Tone strip always updates (even if no node match)
+  const _doStrip=f=>{
+    const fv=typeof f==='object'?f.freq:f;
+    const ni=noteInfo(fv);
+    const kd=ni.snapped?chromDeg(ni.midi,homeKey):'—';
+    const inKey=ni.snapped?isInKey(ni.midi):false;
+    const noteStr=ni.snapped?ni.name+ni.octave:'—';
+    const keyCol=inKey?'#0F6E56':'rgba(153,60,29,0.6)';
+    const dst=document.getElementById('nts-right');
+    if(dst) dst.innerHTML=
+      `<div style="display:flex;align-items:baseline;gap:4px;line-height:1;">
+         <span style="font-size:18px;font-weight:500;color:${keyCol};">${kd}</span>
+         <span style="font-size:10px;color:#ccc;">·</span>
+         <span style="font-size:18px;font-weight:500;color:${keyCol};">${noteStr}</span>
+         <span style="font-size:10px;color:#ccc;">·</span>
+         <span style="font-size:14px;font-weight:400;color:#aaa;">${fv.toFixed(1)} Hz</span>
+       </div>`;
+  };
 
   if(playSeq==='chord'){
     const freqs=rawFreqs.map(f=>typeof f==='object'?f.freq:f);
     if(playChordStyle==='block'){
       freqs.forEach(f=>playTone(f));
       freqs.forEach(f=>_doViz(f));
+      _doHlAll(); // highlight all nodes whose note is in the chord
+      _doStrip(freqs[0]);
       _playTimers.push(setTimeout(stopPlaySequence,D));
       return;
     }
@@ -3210,7 +3344,8 @@ function _startPlaySequence(){
     if(playDir==='down') seq=[...seq].reverse();
     if(playDir==='updown') seq=[...seq,...[...seq].reverse().slice(1)];
     seq.forEach((f,i)=>{
-      _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); _doViz(f); _doHl(f); },i*step));
+      _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); _doViz(f); _doHl(f); _doStrip(f); },i*step));
+      _playTimers.push(setTimeout(()=>{ hideLabel(); },i*step+D));
     });
     _playTimers.push(setTimeout(stopPlaySequence,seq.length*step));
     return;
@@ -3220,9 +3355,11 @@ function _startPlaySequence(){
   if(playDir==='down') seq=[...seq].reverse();
   if(playDir==='updown') seq=[...seq,...[...seq].reverse().slice(1)];
   seq.forEach((f,i)=>{
-    _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); _doViz(f); _doHl(f); },i*step));
+    _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); _doViz(f); _doHl(f); _doStrip(f); },i*step));
+    _playTimers.push(setTimeout(()=>{ hideLabel(); },i*step+D));
   });
-  _playTimers.push(setTimeout(stopPlaySequence,seq.length*step));
+  // Item 63: clear strip after last note completes
+  _playTimers.push(setTimeout(()=>{ stopPlaySequence(); clearStrip(); },seq.length*step+toneDuration*1000));
 }
 
 // ── Patch updateStatus ─────────────────────────────────────────────
@@ -5611,6 +5748,7 @@ window.addEventListener('mouseup',()=>{
       }, toneDuration*1000 + toneSpacing*1000);
     }
     nutDragging=false; nutDidDrag=false;
+    _maybeAutoTune();
     render();
   } else {
     nutDragging=false; nutDidDrag=false;
@@ -5636,6 +5774,7 @@ window.addEventListener('touchend',()=>{
       }, toneDuration*1000 + toneSpacing*1000);
     }
     nutDragging=false; nutDidDrag=false;
+    _maybeAutoTune();
     render();
   }
 });
