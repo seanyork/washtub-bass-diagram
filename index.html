@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v6.9.31</title>
+<title>Washtub Bass String Map · v6.9.33</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -2006,7 +2006,7 @@ function renderBRCtx(){
 // ── Node view context rows ────────────────────────────────────────
 function renderNodeViewCtx(view){
   if(view==='full'){
-    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.9.31</span></div>
+    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.9.33</span></div>
             <div class="br-ctx-row" style="gap:5px;justify-content:center;">
               <div class="br-readme-btn" onclick="openReadme('instrument')">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2625,6 +2625,7 @@ setNodeView = function(view, btn){
   _setNodeView_orig(view, btn);
   renderBRCtx();
   updateOverflowDesktop();
+  _warmAudioCtx(); // #49/#57: re-prime audio pipeline after mode switch
 };
 
 // ── Patch render to refresh BR readouts ───────────────────────────
@@ -7071,6 +7072,11 @@ document.addEventListener('touchstart',e=>{
 })();
 
 window.addEventListener('resize',()=>{clamp();applyT();});
+
+// #57: Re-prime AudioContext whenever the app regains focus (tab switch, home→app, etc.)
+// ctx.resume() is async — firing it on focus gives it time to complete before playback.
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') _warmAudioCtx(); });
+window.addEventListener('focus', _warmAudioCtx);
 </script>
 </body>
 </html>
