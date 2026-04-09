@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v6.9.33</title>
+<title>Washtub Bass String Map · v6.9.47</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -94,7 +94,7 @@ input[type=range]{width:110px;cursor:pointer;}
 #nts-num span{color:#533AB7;}
 #nts-let span{color:#555;}
 @media(prefers-color-scheme:dark){#nts-let span{color:#aaa;}}
-#nts-right{width:170px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;padding:4px 8px;gap:2px;}
+#nts-right{width:170px;flex-shrink:0;display:flex;flex-direction:column;justify-content:flex-start;padding:4px 8px;gap:2px;}
 .nts-idle{font-size:11px;color:#aaa;font-style:italic;}
 
 /* app body */
@@ -1176,6 +1176,7 @@ showStrip = function(freq, frac, nodeLabel, color){
 const _origClearStrip = clearStrip;
 clearStrip = function(){
   _origClearStrip();
+  if(_pinnedFrac!==null) return; // don't clear nts-right while something is pinned
   const dst=document.getElementById('nts-right');
   if(dst) dst.innerHTML='';
 };
@@ -1847,6 +1848,9 @@ showStrip = function(freq, frac, nodeLabel, color){
   _lastStripArgs={frac, nodeLabel, color};
   // Don't activate the ruler during pan/scroll — only on intentional hover/tap
   if(_suppressHover) return;
+  // In capo mode, capo callers (_showSubNode/_showCapoEndNode) handle ruler/label directly.
+  // The compound capo frac won't reliably match NODES fracs — skip to avoid spurious hideLabel.
+  if(nodeView==='capo') return;
   const node=NODES.find(n=>Math.abs(n.frac-frac)<0.001);
   if(node) showLabel(node); else hideLabel();
 };
@@ -2006,7 +2010,7 @@ function renderBRCtx(){
 // ── Node view context rows ────────────────────────────────────────
 function renderNodeViewCtx(view){
   if(view==='full'){
-    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.9.33</span></div>
+    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.9.47</span></div>
             <div class="br-ctx-row" style="gap:5px;justify-content:center;">
               <div class="br-readme-btn" onclick="openReadme('instrument')">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -3045,7 +3049,10 @@ function buildPlayFreqs(){
     // Locate key root among segment node frequencies
     const _segNodes=NODES.map(n=>({freq:n.ratio*segFund}));
     _segNodes.push({freq:segFund});
-    const rootFreq=_findKeyRootFreq(_segNodes, segFund*hnRatio);
+    let rootFreq=_findKeyRootFreq(_segNodes, segFund*hnRatio);
+    // Clamp: fallback may return a root below segFund (full-string bounds used internally).
+    // Octave-shift up until within the segment's playable range.
+    while(rootFreq < segFund*0.99) rootFreq*=2;
 
     if(playSeq==='chord'){
       const steps=MODE_SCALES[currentMode];
@@ -3131,8 +3138,42 @@ function stopPlaySequence(){
   if(_savedPinFrac!==null){
     _pinnedFrac=_savedPinFrac;
     _savedPinFrac=null;
-    const restoredNode=NODES.find(n=>Math.abs(n.frac-_pinnedFrac)<0.002);
-    if(restoredNode) showLabel(restoredNode);
+    if(nodeView==='capo'){
+      // Capo pin restore: compound fracs don't match NODES directly —
+      // match against both segment frac formulas and route to correct renderer.
+      const cn=CAPO_NODES[capoNodeIdx];
+      const cf=1-cn.phi;
+      const fund=fundFreq();
+      if(Math.abs(_pinnedFrac-cf)<0.005){
+        _showCapoEndNode('lower', cf);
+      } else if(Math.abs(_pinnedFrac-1.0)<0.005){
+        _showCapoEndNode('upper', cf);
+      } else {
+        let restored=false;
+        for(const n of NODES){
+          if(Math.abs(n.frac*cf - _pinnedFrac)<0.005){
+            _showSubNode(n,'lower',n.ratio*(fund/cf),cf,TY-_pinnedFrac*SPX);
+            restored=true; break;
+          }
+          if(Math.abs(cf+n.frac*(1-cf) - _pinnedFrac)<0.005){
+            _showSubNode(n,'upper',n.ratio*(fund/(1-cf)),cf,TY-_pinnedFrac*SPX);
+            restored=true; break;
+          }
+        }
+      }
+    } else {
+      // Full/nut mode: check nut pseudo-node (frac=1.0) first — it's not in NODES
+      if(Math.abs(_pinnedFrac-1.0)<0.002){
+        const _ni=noteInfo(fundFreq());
+        const _nutHomeLabel=remapDegree(1)||'1';
+        const _nutColor=isTonalCenter(1)?HOME_COL:(_ni.snapped?(isInKey(_ni.midi)?'#0F6E56':'rgba(153,60,29,0.6)'):GRAY);
+        const _nutPseudo={frac:1.0,ratio:1,fs:'1/1',rs:'1:1',desc:'fundamental',label:'1',primary:true,tonic:false};
+        showLabel(_nutPseudo);
+      } else {
+        const restoredNode=NODES.find(n=>Math.abs(n.frac-_pinnedFrac)<0.002);
+        if(restoredNode) showLabel(restoredNode);
+      }
+    }
   } else {
     _savedPinFrac=null;
     hideLabel();
@@ -3213,6 +3254,32 @@ function _hlNodeForFreq(freq){
   if(node) _showNodeForPlayback(node, freq);
 }
 
+// Capo-mode highlight for playback — mirrors _hlNodeForFreq but routes through
+// capo sub-node machinery: _showCapoEndNode for fundamentals, _showSubNode for sub-nodes.
+// Also populates tone-row1 via showStrip to match full/nut mode playback strip format.
+function _hlNodeForFreqCapo(freq, seg){
+  const cn=CAPO_NODES[capoNodeIdx];
+  const cf=1-cn.phi;
+  const node=_nodeForFreqCapo(freq, seg);
+  if(!node){ hideLabel(); return; }
+  const col=seg==='lower'?SUB_COL_LOWER:SUB_COL_UPPER;
+  if(node._isFund){
+    _showCapoEndNode(seg, cf);
+    const homeLabel=remapDegree(1)||'1';
+    showStrip(freq, node.frac, homeLabel, col);
+  } else {
+    const fullFrac=seg==='lower'?node.frac*cf:cf+node.frac*(1-cf);
+    const diagY=TY-fullFrac*SPX;
+    const fund=fundFreq();
+    const segFund=seg==='lower'?fund/cf:fund/(1-cf);
+    _showSubNode(node, seg, node.ratio*segFund, cf, diagY);
+    const homeLabel=capoRulerPerspective==='fullstring'
+      ?chromDeg(noteInfo(freq).midi, homeKey)
+      :(remapDegree(node.ratio)||node.label);
+    showStrip(freq, fullFrac, homeLabel, col);
+  }
+}
+
 
 
 function _vizForFreq(freq){
@@ -3234,14 +3301,14 @@ function _vizForFreq(freq){
 
 function playSequence(){
   if(_playActive){ stopPlaySequence(); return; }
-  // Ensure Web Audio context is running before starting — avoids short/disjointed first note
+  // Always resume (no-op if truly running) then wait 60ms for hardware pipeline to
+  // initialize — Chrome may report state 'running' while the OS audio session is cold
+  // after idle, causing the first note to clip. 60ms is imperceptible before a sequence.
   const ctx = getCtx();
   if(!ctx){ _startPlaySequence(); return; } // audio disabled — start immediately
-  if(ctx.state==='suspended'){
-    ctx.resume().then(()=>{ _startPlaySequence(); }).catch(()=>{ _startPlaySequence(); });
-  } else {
-    _startPlaySequence();
-  }
+  ctx.resume()
+    .then(()=>setTimeout(_startPlaySequence, 150))
+    .catch(()=>_startPlaySequence());
 }
 
 function _startPlaySequence(){
@@ -3288,7 +3355,7 @@ function _startPlaySequence(){
   // This handles JI/ET divergence and catches chord block multi-highlight
   const _doHl=f=>{
     const fv=typeof f==='object'?f.freq:f;
-    if(isCapo) return; // capo hl TBD in item 35 follow-up
+    if(isCapo){ _hlNodeForFreqCapo(fv, _seg); return; } // #67: capo-aware highlight
     const ni=noteInfo(fv);
     if(!ni.snapped || !isInKey(ni.midi)){
       // Non-diatonic note: clear all ruler/label state so stale state doesn't persist
@@ -3312,23 +3379,80 @@ function _startPlaySequence(){
     });
     setMultiRowHL(matchingFracs);
   };
-  // Tone strip always updates (even if no node match)
+  // Tone strip: update nts-right for notes showStrip didn't handle.
+  // Diatonic node-matches are handled by _showNodeForPlayback→showStrip (which patches nts-right).
+  // Uses a snap-gate-free node lookup so detuned JI nodes still show the rich format.
+  const _findNodeByFreq=fv=>{
+    const nodes=getPlayableNodes();
+    for(const n of nodes){ if(Math.abs(n.freq/fv-1)<0.02) return n; }
+    return null;
+  };
   const _doStrip=f=>{
     const fv=typeof f==='object'?f.freq:f;
     const ni=noteInfo(fv);
-    const kd=ni.snapped?chromDeg(ni.midi,homeKey):'—';
     const inKey=ni.snapped?isInKey(ni.midi):false;
+    const kd=ni.snapped?chromDeg(ni.midi,homeKey):'—';
     const noteStr=ni.snapped?ni.name+ni.octave:'—';
     const keyCol=inKey?'#0F6E56':'rgba(153,60,29,0.6)';
     const dst=document.getElementById('nts-right');
-    if(dst) dst.innerHTML=
-      `<div style="display:flex;align-items:baseline;gap:4px;line-height:1;">
-         <span style="font-size:18px;font-weight:500;color:${keyCol};">${kd}</span>
-         <span style="font-size:10px;color:#ccc;">·</span>
-         <span style="font-size:18px;font-weight:500;color:${keyCol};">${noteStr}</span>
-         <span style="font-size:10px;color:#ccc;">·</span>
-         <span style="font-size:14px;font-weight:400;color:#aaa;">${fv.toFixed(1)} Hz</span>
-       </div>`;
+    if(!dst) return;
+    if(isCapo){
+      // Capo: node-matched notes handled by _hlNodeForFreqCapo→_showSubNode.
+      // For unmatched ET scale steps, show basic kd/noteStr for consistency with full/nut mode.
+      const capoNode=_nodeForFreqCapo(fv, _seg);
+      if(capoNode) return; // _showSubNode already wrote nts-right
+      dst.innerHTML=
+        `<div style="display:flex;align-items:baseline;gap:4px;line-height:1;">
+           <span style="font-size:18px;font-weight:500;min-width:14px;text-align:center;color:#5F5E5A;">–</span>
+           <span style="font-size:10px;color:#ccc;">·</span>
+           <span style="font-size:18px;font-weight:500;min-width:14px;text-align:center;color:#aaa;">–</span>
+           <span style="font-size:10px;color:#ccc;">·</span>
+           <span style="font-size:18px;font-weight:500;color:${keyCol};">${kd}</span>
+           <span style="font-size:10px;color:#ccc;">·</span>
+           <span style="font-size:18px;font-weight:500;color:${keyCol};">${noteStr}</span>
+         </div>`;
+      return;
+    }
+    const node=_findNodeByFreq(fv);
+    // Diatonic node: showStrip patch already wrote the correct two-row format — don't overwrite
+    if(node && ni.snapped && isInKey(ni.midi)) return;
+    if(node){
+      // Non-diatonic or detuned matched node: full two-row format
+      const homeLabel=remapDegree(node.ratio)||node.label;
+      const col=isTonalCenter(node.ratio)?HOME_COL:node.primary?(inKey?'var(--inkey)':'#993C1D'):(inKey?'var(--inkey)':'#D85A30');
+      const upperFracStr=compFrac(node.fs);
+      const upperIn=fmtLen((1-node.frac)*effectiveSpeakingLength());
+      const harmStr=node.harm?harmLabel(node.harm):'';
+      dst.innerHTML=
+        `<div style="display:flex;align-items:baseline;gap:4px;line-height:1;">
+           <span style="font-size:18px;font-weight:500;color:#5F5E5A;">${node.label}</span>
+           <span style="font-size:10px;color:#ccc;">·</span>
+           <span style="font-size:18px;font-weight:500;color:${col};">${homeLabel}</span>
+           <span style="font-size:10px;color:#ccc;">·</span>
+           <span style="font-size:18px;font-weight:500;color:${keyCol};">${kd}</span>
+           <span style="font-size:10px;color:#ccc;">·</span>
+           <span style="font-size:18px;font-weight:500;color:${keyCol};">${noteStr}</span>
+         </div>`+
+        (node.frac<0.999?`<div style="display:flex;align-items:center;gap:5px;margin-top:2px;">
+           <span style="font-size:10px;color:#aaa;">↑</span>
+           <span style="font-size:11px;font-weight:600;color:${col};">${upperFracStr}</span>
+           <span style="font-size:10px;color:#ccc;">·</span>
+           <span style="font-size:11px;font-weight:500;color:#555;">${upperIn}</span>
+           ${harmStr?`<span style="font-size:10px;color:#ccc;">·</span><span style="font-size:10px;color:#aaa;font-style:italic;">${harmStr}</span>`:''}
+         </div>`:'');
+    } else {
+      // No matching node (ET step between JI harmonics): aligned placeholder + kd/noteStr
+      dst.innerHTML=
+        `<div style="display:flex;align-items:baseline;gap:4px;line-height:1;">
+           <span style="font-size:18px;font-weight:500;min-width:14px;text-align:center;color:#5F5E5A;">–</span>
+           <span style="font-size:10px;color:#ccc;">·</span>
+           <span style="font-size:18px;font-weight:500;min-width:14px;text-align:center;color:#aaa;">–</span>
+           <span style="font-size:10px;color:#ccc;">·</span>
+           <span style="font-size:18px;font-weight:500;color:${keyCol};">${kd}</span>
+           <span style="font-size:10px;color:#ccc;">·</span>
+           <span style="font-size:18px;font-weight:500;color:${keyCol};">${noteStr}</span>
+         </div>`;
+    }
   };
 
   if(playSeq==='chord'){
@@ -3346,7 +3470,7 @@ function _startPlaySequence(){
     if(playDir==='updown') seq=[...seq,...[...seq].reverse().slice(1)];
     seq.forEach((f,i)=>{
       _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); _doViz(f); _doHl(f); _doStrip(f); },i*step));
-      _playTimers.push(setTimeout(()=>{ hideLabel(); },i*step+D));
+      _playTimers.push(setTimeout(()=>{ hideLabel(); const d=document.getElementById('nts-right');if(d)d.innerHTML=''; },i*step+D));
     });
     _playTimers.push(setTimeout(stopPlaySequence,seq.length*step));
     return;
@@ -3357,7 +3481,7 @@ function _startPlaySequence(){
   if(playDir==='updown') seq=[...seq,...[...seq].reverse().slice(1)];
   seq.forEach((f,i)=>{
     _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); _doViz(f); _doHl(f); _doStrip(f); },i*step));
-    _playTimers.push(setTimeout(()=>{ hideLabel(); },i*step+D));
+    _playTimers.push(setTimeout(()=>{ hideLabel(); const d=document.getElementById('nts-right');if(d)d.innerHTML=''; },i*step+D));
   });
   // Item 63: clear strip after last note completes
   _playTimers.push(setTimeout(()=>{ stopPlaySequence(); clearStrip(); },seq.length*step+toneDuration*1000));
@@ -3982,7 +4106,21 @@ function setCapoRulerPerspective(p){
   capoRulerPerspective=p;
   document.getElementById('crp-seg').classList.toggle('on',p==='segment');
   document.getElementById('crp-str').classList.toggle('on',p==='fullstring');
-  render(); // always redraw — sub-node and nut row labels depend on perspective
+  // Snapshot active node before render — updateCapoSubNodes() rebuilds SVG hit rects
+  // which can trigger hideLabel() and clear _activeNode before the render patch runs.
+  const _snap=_activeNode;
+  render();
+  if(!_activeNode && _snap) _activeNode=_snap; // restore so render patch can refresh tone strip
+  if(_activeNode && _activeNode.segment){
+    if(_activeNode.segFrac===1.0){
+      _showCapoEndNode(_activeNode.segment, _activeNode.cf);
+    } else if(_activeNode._origNode){
+      const _cf=_activeNode.cf;
+      const _diagY=TY-_activeNode.frac*SPX;
+      _showSubNode(_activeNode._origNode, _activeNode.segment,
+        fundFreq()*window._activeRatioFund, _cf, _diagY);
+    }
+  }
 }
 
 function setCapoTuneTarget(seg){
@@ -4336,7 +4474,7 @@ function updateCapoSubNodes(){
       const lNoteStr=lNi2.snapped?lNi2.name+lNi2.octave:'—';
       const lKeyCol=lInKey?'#0F6E56':'#993C1D';
       const lRemapped=capoRulerPerspective==='fullstring'
-        ?(lNi2.snapped?lKd:node.label)
+        ?chromDeg(lNi2.midi,homeKey)  // #53: always show chromatic degree, not snap-gated
         :(remapDegree(node.ratio)||node.label);
       const yOff=lFS*0.38;
       // str°
@@ -4410,7 +4548,7 @@ function updateCapoSubNodes(){
       const uNoteStr=uNi2.snapped?uNi2.name+uNi2.octave:'—';
       const uKeyCol=uInKey?'#0F6E56':'#993C1D';
       const uRemapped=capoRulerPerspective==='fullstring'
-        ?(uNi2.snapped?uKd:node.label)
+        ?chromDeg(uNi2.midi,homeKey)  // #53: always show chromatic degree, not snap-gated
         :(remapDegree(node.ratio)||node.label);
       const yOff=uFS*0.38;
       // str°
@@ -4523,7 +4661,7 @@ function _showSubNode(node, seg, freq, cf, diagY){
   const _dst=document.getElementById('nts-right');
   const _harmStr=node.harm?harmLabel(node.harm):'';
   const _homeLabel=capoRulerPerspective==='fullstring'
-    ?(_ni.snapped?_kd:node.label)
+    ?chromDeg(_ni.midi,homeKey)  // #53: always show chromatic degree, not snap-gated
     :(remapDegree(node.ratio)||node.label);
   const _upperFracStr=compFrac(node.fs);
   if(_dst) _dst.innerHTML=
@@ -7077,6 +7215,13 @@ window.addEventListener('resize',()=>{clamp();applyT();});
 // ctx.resume() is async — firing it on focus gives it time to complete before playback.
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') _warmAudioCtx(); });
 window.addEventListener('focus', _warmAudioCtx);
+
+// #57: Periodic keepalive — browsers auto-suspend AudioContext after ~30s of inactivity.
+// ctx.resume() is async so calling it at play-time is too late; staying ahead of suspension
+// means resume is already complete when the user hits play.
+setInterval(()=>{
+  try{ const ctx=getCtx(); if(ctx&&ctx.state==='suspended') ctx.resume().catch(()=>{}); }catch(e){}
+},25000);
 </script>
 </body>
 </html>
