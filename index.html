@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v6.9.47</title>
+<title>Washtub Bass String Map · v6.9.65</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -794,6 +794,13 @@ input[type=range]{width:110px;cursor:pointer;}
       </div>
       <div class="pd-lbl">root</div>
     </div>
+    <!-- Note preview toggle: bottom of drawer (#52) -->
+    <div class="pd-sec">
+      <div class="pd-row" style="align-items:center;gap:6px;">
+        <span style="font-size:7px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:#888;flex:1;">note preview</span>
+        <button class="pd-btn" id="pd-preview-btn" onclick="toggleNotePreview(this)" style="flex:0 0 auto;width:32px;">on</button>
+      </div>
+    </div>
   </div>
 
   <!-- Play zone: play-btn-row only, sits above CoF (bottom:170px).
@@ -1332,27 +1339,29 @@ function getHomeNodeFracs(){
 }
 
 // ── Row highlight ─────────────────────────────────────────────────
-function setRowHL(nodeFrac){
+function setRowHL(nodeFrac, opacity){
   const g=document.getElementById('row-hl');
   if(!g) return;
   g.innerHTML='';
   if(nodeFrac===null) return;
+  const op=opacity!==undefined?opacity:0.14;
   const y=nY(nodeFrac);
   const rect=document.createElementNS(svgNS_v4,'rect');
-  Object.entries({x:0,y:y-16,width:SVG_W,height:32,fill:'rgba(200,150,20,0.14)',rx:2})
+  Object.entries({x:0,y:y-16,width:SVG_W,height:32,fill:`rgba(200,150,20,${op})`,rx:2})
     .forEach(([k,v])=>rect.setAttribute(k,v));
   g.appendChild(rect);
 }
 
-function setMultiRowHL(fracs){
+function setMultiRowHL(fracs, opacity){
   const g=document.getElementById('row-hl');
   if(!g) return;
   g.innerHTML='';
+  const op=opacity!==undefined?opacity:0.14;
   fracs.forEach(frac=>{
     if(frac===null) return;
     const y=nY(frac);
     const rect=document.createElementNS(svgNS_v4,'rect');
-    Object.entries({x:0,y:y-16,width:SVG_W,height:32,fill:'rgba(200,150,20,0.14)',rx:2})
+    Object.entries({x:0,y:y-16,width:SVG_W,height:32,fill:`rgba(200,150,20,${op})`,rx:2})
       .forEach(([k,v])=>rect.setAttribute(k,v));
     g.appendChild(rect);
   });
@@ -1766,7 +1775,14 @@ function showLabel(node){
   if(_pinnedFrac!==null && Math.abs(_pinnedFrac-node.frac)>0.001) return;
   _activeFrac=node.frac; _activeNode=node;
   window._activeRatioFund=node.ratio||1;
-  setRowHL(node.frac);
+  // Draw preview layer first, then active node on top (#75)
+  if(cofVisible && _playPanelOpen && _notePreviewOn){
+    refreshPreviewHL();
+    const g=document.getElementById('row-hl');
+    if(g) _drawRowHLRect(g, node.frac, _HL_GOLD+'0.25)');
+  } else {
+    setRowHL(node.frac, 0.25);
+  }
   drawRulerSVG(node);
   const fund=fundFreq(), esl=effectiveSpeakingLength();
   const lowerIn=fmtLen(node.frac*esl);
@@ -1808,6 +1824,8 @@ function hideLabel(){
   const lower=document.getElementById('sb-lower');
   if(upper){ upper.style.flex='1'; upper.innerHTML=''; }
   if(lower){ lower.style.flex='0'; lower.innerHTML=''; }
+  // Restore preview highlights if drawer is open and nothing is pinned (#52)
+  refreshPreviewHL();
 }
 
 // Compute the flex fraction for sb-upper that aligns #sb-hrule with
@@ -2010,7 +2028,7 @@ function renderBRCtx(){
 // ── Node view context rows ────────────────────────────────────────
 function renderNodeViewCtx(view){
   if(view==='full'){
-    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.9.47</span></div>
+    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.9.65</span></div>
             <div class="br-ctx-row" style="gap:5px;justify-content:center;">
               <div class="br-readme-btn" onclick="openReadme('instrument')">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2630,6 +2648,7 @@ setNodeView = function(view, btn){
   renderBRCtx();
   updateOverflowDesktop();
   _warmAudioCtx(); // #49/#57: re-prime audio pipeline after mode switch
+  _maybeAutoTune(); // #70/#71: auto-tune on any mode entry if active
 };
 
 // ── Patch render to refresh BR readouts ───────────────────────────
@@ -2647,6 +2666,8 @@ render = function(){
   if(brRightPanel==='phys'){
     renderBRCtx();
   }
+  // Refresh note preview highlights (#52)
+  refreshPreviewHL();
 };
 
 // ── Update setCapoNode to refresh BR capo play button labels ──────
@@ -2856,10 +2877,13 @@ function togglePlayPanel(){
     if(drawer) drawer.style.display = 'flex';
     if(btn){ btn.textContent='hide'; btn.classList.add('open'); }
     // v-fit on open: full string visible for scale/chord watching (#43)
-    requestAnimationFrame(()=>{ fitVPlay(); _refanAfterLayout(); });
+    requestAnimationFrame(()=>{ fitVPlay(); _refanAfterLayout(); refreshPreviewHL(); });
   } else {
     if(drawer) drawer.style.display = 'none';
     if(btn){ btn.textContent='open'; btn.classList.remove('open'); }
+    // Clear preview highlights when drawer closes
+    const g=document.getElementById('row-hl'); if(g&&!_playActive&&!_pinnedFrac) g.innerHTML='';
+    refreshPreviewHL(); // ensure capo and all modes clear correctly (#77)
     // Shift string back, restore sidebar first so pan accounts for it
     tx -= PLAY_DRAWER_W;
     if(_sidebarWasOpen && sidebarCollapsed) toggleSidebar();
@@ -2947,6 +2971,77 @@ function updatePlayBtn(){
       iconEl.style.cssText='display:flex;flex-direction:row;align-items:flex-end;gap:2px;height:14px;';
       iconEl.innerHTML=h.map(n=>`<div class="pgb" style="height:${n}px;width:3px;"></div>`).join('');
     }
+  }
+  refreshPreviewHL();
+}
+
+// ── Row highlight colors (#75) ────────────────────────────────────
+const _HL_GOLD     = 'rgba(247,206,70,';   // full/nut/capo-upper preview + active overlay
+const _HL_TEAL     = 'rgba(88,178,159,';   // capo lower segment preview + active overlay
+const _HL_PIN      = 'rgba(200,150,20,';   // pin overlay — warm gold (full/nut/upper capo)
+const _HL_PIN_TEAL = 'rgba(140,225,200,';   // pin overlay for lower capo — brighter mint teal, clearly distinct from darker preview teal at same opacity
+
+// Append a single row highlight rect without clearing — used for layering
+function _drawRowHLRect(g, frac, colorStr){
+  const y=nY(frac);
+  const rect=document.createElementNS(svgNS_v4,'rect');
+  Object.entries({x:0,y:y-16,width:SVG_W,height:32,fill:colorStr,rx:2})
+    .forEach(([k,v])=>rect.setAttribute(k,v));
+  g.appendChild(rect);
+}
+
+// ── Note preview highlights (#52) ─────────────────────────────────
+// Show row highlights for all notes that would be played, when:
+//   - play drawer is open (cofVisible && _playPanelOpen)
+//   - note preview toggle is on
+// No longer suppressed during playback — active note overlay draws on top.
+let _notePreviewOn = true;
+
+function toggleNotePreview(btn){
+  _notePreviewOn = !_notePreviewOn;
+  if(btn){ btn.textContent=_notePreviewOn?'on':'off'; btn.classList.toggle('on',_notePreviewOn); }
+  refreshPreviewHL();
+}
+
+function refreshPreviewHL(){
+  const g=document.getElementById('row-hl');
+  if(!g) return;
+  if(!cofVisible || !_playPanelOpen || !_notePreviewOn){
+    if(!_playActive) g.innerHTML='';
+    return;
+  }
+  let freqs;
+  try{ freqs=buildPlayFreqs(); }catch(e){ return; }
+  if(!freqs||!freqs.length){ g.innerHTML=''; return; }
+  const isCapo=nodeView==='capo';
+  const cn=isCapo?CAPO_NODES[capoNodeIdx]:null;
+  const cf=cn?1-cn.phi:null;
+  const goldFracs=[], tealFracs=[];
+  freqs.forEach(f=>{
+    const fv=typeof f==='object'?f.freq:f;
+    if(isCapo){
+      const seg=typeof f==='object'?f._seg:_playCapoSegment();
+      const node=_nodeForFreqCapo(fv,seg);
+      if(!node) return;
+      const fullFrac=node._isFund
+        ?(seg==='lower'?cf:1.0)
+        :(seg==='lower'?node.frac*cf:cf+node.frac*(1-cf));
+      if(seg==='lower') tealFracs.push(fullFrac);
+      else goldFracs.push(fullFrac);
+    } else {
+      const node=getPlayableNodes().find(n=>Math.abs(n.freq/fv-1)<0.02);
+      if(node) goldFracs.push(node.frac);
+    }
+  });
+  // Clear and redraw preview layer
+  g.innerHTML='';
+  tealFracs.forEach(frac=>_drawRowHLRect(g, frac, _HL_TEAL+'0.25)'));
+  goldFracs.forEach(frac=>_drawRowHLRect(g, frac, _HL_GOLD+'0.25)'));
+  // Pin overlay on top — segment-aware color; in-preview nodes get stacked opacity, out-of-preview get pin color alone
+  if(_pinnedFrac!==null){
+    const isLowerCapo=nodeView==='capo' && cf!==null && _pinnedFrac<=cf+0.001;
+    const pinColor=isLowerCapo?_HL_PIN_TEAL:_HL_PIN;
+    _drawRowHLRect(g, _pinnedFrac, pinColor+'0.35)');
   }
 }
 
@@ -3134,13 +3229,17 @@ function buildPlayFreqs(){
 function stopPlaySequence(){
   _playTimers.forEach(t=>clearTimeout(t)); _playTimers=[];
   _playActive=false;
-  // Restore pinned node state
+  const btn=document.getElementById('play-go-btn');
+  if(btn) btn.classList.remove('playing');
+  stopActive();
+  updatePlayBtn(); // refreshPreviewHL runs here — before restore, so restore draws on top
+
+  // Restore pinned node state — runs AFTER updatePlayBtn so _showSubNode/_showCapoEndNode
+  // draw their overlay last, matching the visual state from when the node was first pinned.
   if(_savedPinFrac!==null){
     _pinnedFrac=_savedPinFrac;
     _savedPinFrac=null;
     if(nodeView==='capo'){
-      // Capo pin restore: compound fracs don't match NODES directly —
-      // match against both segment frac formulas and route to correct renderer.
       const cn=CAPO_NODES[capoNodeIdx];
       const cf=1-cn.phi;
       const fund=fundFreq();
@@ -3162,7 +3261,6 @@ function stopPlaySequence(){
         }
       }
     } else {
-      // Full/nut mode: check nut pseudo-node (frac=1.0) first — it's not in NODES
       if(Math.abs(_pinnedFrac-1.0)<0.002){
         const _ni=noteInfo(fundFreq());
         const _nutHomeLabel=remapDegree(1)||'1';
@@ -3178,10 +3276,6 @@ function stopPlaySequence(){
     _savedPinFrac=null;
     hideLabel();
   }
-  const btn=document.getElementById('play-go-btn');
-  if(btn) btn.classList.remove('playing');
-  stopActive();
-  updatePlayBtn();
 }
 
 // ── Playable node registry ────────────────────────────────────────
@@ -3226,7 +3320,14 @@ function _nodeForFreq(freq){
 // getPlayableNodes() automatically inherit this behaviour.
 function _showNodeForPlayback(node, freq){
   if(!node) return;
-  setRowHL(node.frac);
+  // Draw preview layer first, then active note overlay on top (#75)
+  if(cofVisible && _playPanelOpen && _notePreviewOn){
+    refreshPreviewHL();
+    const g=document.getElementById('row-hl');
+    if(g) _drawRowHLRect(g, node.frac, _HL_GOLD+'0.25)');
+  } else {
+    setRowHL(node.frac, 0.25);
+  }
   // Derive display values
   const ni=noteInfo(freq);
   const inKey=ni.snapped?isInKey(ni.midi):false;
@@ -3263,20 +3364,32 @@ function _hlNodeForFreqCapo(freq, seg){
   const node=_nodeForFreqCapo(freq, seg);
   if(!node){ hideLabel(); return; }
   const col=seg==='lower'?SUB_COL_LOWER:SUB_COL_UPPER;
+  const hlColor=seg==='lower'?(_HL_TEAL+'0.25)'):(_HL_GOLD+'0.25)');
   if(node._isFund){
     _showCapoEndNode(seg, cf);
+    // Active overlay on top of preview layer
+    if(cofVisible && _playPanelOpen && _notePreviewOn){
+      const g=document.getElementById('row-hl');
+      const activeFrac=seg==='lower'?cf:1.0;
+      if(g) _drawRowHLRect(g, activeFrac, hlColor);
+    }
     const homeLabel=remapDegree(1)||'1';
-    showStrip(freq, node.frac, homeLabel, col);
+    _origShowStrip(freq, seg==='upper'?1.0:cf, homeLabel, col);
   } else {
     const fullFrac=seg==='lower'?node.frac*cf:cf+node.frac*(1-cf);
     const diagY=TY-fullFrac*SPX;
     const fund=fundFreq();
     const segFund=seg==='lower'?fund/cf:fund/(1-cf);
     _showSubNode(node, seg, node.ratio*segFund, cf, diagY);
+    // Active overlay on top of preview layer
+    if(cofVisible && _playPanelOpen && _notePreviewOn){
+      const g=document.getElementById('row-hl');
+      if(g) _drawRowHLRect(g, fullFrac, hlColor);
+    }
     const homeLabel=capoRulerPerspective==='fullstring'
       ?chromDeg(noteInfo(freq).midi, homeKey)
       :(remapDegree(node.ratio)||node.label);
-    showStrip(freq, fullFrac, homeLabel, col);
+    _origShowStrip(freq, fullFrac, homeLabel, col);
   }
 }
 
@@ -4095,11 +4208,14 @@ let capoSubLabelMode='both'; // 'lower' | 'upper' | 'both' — which segment's l
 
 function setCapoSubLabelMode(mode){
   capoSubLabelMode=mode;
+  // Track forced segment so switching back to 'both' keeps the last forced segment (#75)
+  if(mode==='lower'||mode==='upper') _lastCapoSegment=mode;
   ['lower','both','upper'].forEach(m=>{
     const b=document.getElementById('clt-'+m);
     if(b) b.classList.toggle('on', m===mode);
   });
   updateCapoSubNodes();
+  refreshPreviewHL(); // reroute preview highlights to the now-visible segment (#75)
 }
 
 function setCapoRulerPerspective(p){
@@ -4322,6 +4438,7 @@ function setCapoNode(idx){
   refreshCapoViz();
   const _newU=_capoSegFreq('upper'), _newL=_capoSegFreq('lower');
   playCapoTransition(_oldU, _oldL, _newU, _newL);
+  _maybeAutoTuneAfterCapo(); // #81: auto-tune after transition tones finish
 }
 
 function updateCapoReadouts(){
@@ -4367,11 +4484,16 @@ function _showCapoEndNode(seg, cf){
   window._activeRatioFund = seg==='lower' ? 1/cf : 1/(1-cf);
   const rowHl=document.getElementById('row-hl');
   if(rowHl){
-    rowHl.innerHTML='';
+    // Draw preview layer first, then active node on top (#75)
+    if(cofVisible && _playPanelOpen && _notePreviewOn){
+      refreshPreviewHL();
+    } else {
+      rowHl.innerHTML='';
+    }
     const y=TY-pseudoNode.frac*SPX;
     const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
-    Object.entries({x:0,y:y-16,width:SVG_W,height:32,
-      fill:`rgba(${seg==='lower'?'29,122,107':'122,58,29'},0.12)`,rx:2})
+    const hlColor=seg==='lower'?(_HL_TEAL+'0.25)'):(_HL_GOLD+'0.25)');
+    Object.entries({x:0,y:y-16,width:SVG_W,height:32,fill:hlColor,rx:2})
       .forEach(([k,v])=>rect.setAttribute(k,v));
     rowHl.appendChild(rect);
   }
@@ -4619,10 +4741,15 @@ function _showSubNode(node, seg, freq, cf, diagY){
   // Row highlight at diagram y
   const rowHl=document.getElementById('row-hl');
   if(rowHl){
-    rowHl.innerHTML='';
+    // Draw preview layer first, then active node on top (#75)
+    if(cofVisible && _playPanelOpen && _notePreviewOn){
+      refreshPreviewHL();
+    } else {
+      rowHl.innerHTML='';
+    }
+    const hlColor=seg==='lower'?(_HL_TEAL+'0.25)'):(_HL_GOLD+'0.25)');
     const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
-    Object.entries({x:0,y:diagY-16,width:SVG_W,height:32,
-      fill:`rgba(${seg==='lower'?'29,122,107':'122,58,29'},0.12)`,rx:2})
+    Object.entries({x:0,y:diagY-16,width:SVG_W,height:32,fill:hlColor,rx:2})
       .forEach(([k,v])=>rect.setAttribute(k,v));
     rowHl.appendChild(rect);
   }
@@ -4775,9 +4902,10 @@ function updateCapoLayer(){
   });
   capoRowHit.addEventListener('mouseleave',()=>{
     clearStrip();
-    if(!_pinnedFrac){const rh=document.getElementById('row-hl');if(rh)rh.innerHTML='';}
+    if(!_pinnedFrac) hideLabel();
   });
   capoRowHit.addEventListener('mousedown',e=>{
+    _lastCapoSegment='lower';
     const lFreq=capoLowerFreq();
     playTone(lFreq);
     if(_togglePin(cf, false)){
@@ -4787,6 +4915,7 @@ function updateCapoLayer(){
     }
   });
   capoRowHit.addEventListener('touchstart',e=>{
+    _lastCapoSegment='lower';
     const lFreq=capoLowerFreq();
     playTone(lFreq);
     if(_togglePin(cf, true)){
@@ -5109,6 +5238,15 @@ function clearArpTimers(){
   if(_tuneSeqTimer){ clearTimeout(_tuneSeqTimer); _tuneSeqTimer=null; }
 }
 
+// #81: fire auto-tune after capo transition tones complete so sequences don't overlap.
+// Delay accounts for arp mode (6D+G) vs chord mode (2D+G), plus 100ms fade buffer.
+function _maybeAutoTuneAfterCapo(){
+  if(!autoTune) return;
+  const D=toneDuration*1000, G=toneSpacing*1000;
+  const delay=capoArp?(6*D+G+100):(2*D+G+100);
+  _arpTimers.push(setTimeout(()=>{ tuneToKey(); },delay));
+}
+
 // Play capo transition: old interval → new interval.
 // Chord-only (capoArp=false): old chord simultaneously → gap → new chord simultaneously.
 // Arp (capoArp=true): old lower → old upper → old chord → gap → new lower → new upper → new chord.
@@ -5276,10 +5414,13 @@ function tuneToKey(){
   const rootPc=homeKey;
   const tc=homeNodeRatio(); // home node ratio relative to fundamental
 
-  // Capture the "before" frequency — pinned node if any, else fundamental
-  const _beforeFreq = (_activeNode && window._activeRatioFund)
-    ? fundFreq() * window._activeRatioFund
-    : fundFreq();
+  // Capture the "before" frequency — in capo mode use the tune target segment fundamental;
+  // otherwise use pinned node if any, else full-string fundamental.
+  const _capoBeforeFreq = nodeView==='capo'
+    ? (capoTuneTarget==='lower' ? capoLowerFreq() : capoUpperFreq())
+    : null;
+  const _beforeFreq = _capoBeforeFreq
+    ?? ((_activeNode && window._activeRatioFund) ? fundFreq() * window._activeRatioFund : fundFreq());
 
   // In capo mode, always tune so the LOWER segment's home node = key root.
   // Lower segment fundamental = fundFreq()/cf, so fundTarget = keyRoot * cf / homeNodeRatio.
@@ -5314,10 +5455,12 @@ function tuneToKey(){
   document.getElementById('ten-ro').value=tensionLbs.toFixed(1)+' lbs';
   render();
 
-  // Capture "after" frequency using the same ratio against the new tension
-  const _afterFreq = (_activeNode && window._activeRatioFund)
-    ? fundFreq() * window._activeRatioFund
-    : fundFreq();
+  // Capture "after" frequency — same logic as before, but now with updated tension
+  const _capoAfterFreq = nodeView==='capo'
+    ? (capoTuneTarget==='lower' ? capoLowerFreq() : capoUpperFreq())
+    : null;
+  const _afterFreq = _capoAfterFreq
+    ?? ((_activeNode && window._activeRatioFund) ? fundFreq() * window._activeRatioFund : fundFreq());
 
   // Cancel any pending sequential tone and play before→pause→after
   if(_tuneSeqTimer){ clearTimeout(_tuneSeqTimer); _tuneSeqTimer=null; }
@@ -5334,6 +5477,7 @@ function tuneToKey(){
     const _vizCol=_lastVizArgs ? _lastVizArgs.color : '#533AB7';
     triggerViz(_vizFrac, _vizHarm, _vizY, _vizCol);
     _tuneSeqTimer=null;
+    refreshPreviewHL(); // #52: restore preview highlights after tune sequence completes
   }, toneDuration*1000 + toneSpacing*1000);
 }
 
@@ -5782,14 +5926,21 @@ function updateNutMarker(){
   hitEl.addEventListener('mouseenter',()=>{
     if(_pinnedFrac!==null&&_pinnedFrac!==1.0) return;
     showStrip(fund,1.0,_nutLabel,_nutColor);
-    const rh=document.getElementById('row-hl');
-    if(rh){rh.innerHTML='';const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
-      Object.entries({x:0,y:ny-16,width:SVG_W,height:32,fill:'rgba(83,58,183,0.08)',rx:2})
-        .forEach(([k,v])=>rect.setAttribute(k,v));rh.appendChild(rect);}
+    // Draw preview layer then nut overlay on top (#75 — don't wipe row-hl directly)
+    if(cofVisible&&_playPanelOpen&&_notePreviewOn){
+      refreshPreviewHL();
+      const g=document.getElementById('row-hl');
+      if(g) _drawRowHLRect(g, 1.0, _HL_GOLD+'0.25)');
+    } else {
+      const rh=document.getElementById('row-hl');
+      if(rh){rh.innerHTML='';const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+        Object.entries({x:0,y:ny-16,width:SVG_W,height:32,fill:'rgba(83,58,183,0.08)',rx:2})
+          .forEach(([k,v])=>rect.setAttribute(k,v));rh.appendChild(rect);}
+    }
   });
   hitEl.addEventListener('mouseleave',()=>{
     clearStrip();
-    if(!_pinnedFrac){const rh=document.getElementById('row-hl');if(rh)rh.innerHTML='';}
+    if(!_pinnedFrac) hideLabel();
   });
   hitEl.addEventListener('touchstart',()=>{
     playTone(fund); triggerViz(1.0, 1, ny, nutAnnColor);
@@ -5823,11 +5974,18 @@ function updateNutMarker(){
     _nutDragStartFreq=fundFreq()*((_pinnedFrac!==null&&window._activeRatioFund)||1);
   },{passive:true});
   dragHandle.addEventListener('mouseenter',()=>{
-    // Hovering over the handle: clear strip and row highlight, but only if nothing is pinned
-    clearStrip();
-    if(!_pinnedFrac){
+    if(_pinnedFrac!==null&&_pinnedFrac!==1.0) return;
+    // Show same hover state as the nut hit row
+    showStrip(fund,1.0,_nutLabel,_nutColor);
+    if(cofVisible&&_playPanelOpen&&_notePreviewOn){
+      refreshPreviewHL();
+      const g=document.getElementById('row-hl');
+      if(g) _drawRowHLRect(g, 1.0, _HL_GOLD+'0.25)');
+    } else {
       const rh=document.getElementById('row-hl');
-      if(rh) rh.innerHTML='';
+      if(rh){rh.innerHTML='';const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+        Object.entries({x:0,y:ny-16,width:SVG_W,height:32,fill:'rgba(83,58,183,0.08)',rx:2})
+          .forEach(([k,v])=>rect.setAttribute(k,v));rh.appendChild(rect);}
     }
   });
   ann.appendChild(dragHandle); // appended after hitEl → renders on top
@@ -5870,25 +6028,32 @@ window.addEventListener('touchmove',e=>{
 window.addEventListener('mouseup',()=>{
   if(nutDragging){
     if(nutDidDrag){
-      const _nutRatio=(_pinnedFrac!==null&&window._activeRatioFund)||1;
-      const _afterFreq=fundFreq()*_nutRatio;
-      const _afterY=_pinnedFrac!==null ? nY(_pinnedFrac) : (nodeView==='nut' ? nutEffY() : NY);
-      const _afterFrac=_pinnedFrac!==null ? _pinnedFrac : 1.0;
-      const _afterHarm=_pinnedFrac!==null
-        ? (NODES.find(n=>Math.abs(n.frac-_pinnedFrac)<0.002)||{harm:1}).harm : 1;
-      const _afterColor=_lastVizArgs ? _lastVizArgs.color : '#533AB7';
-      if(_tuneSeqTimer){ clearTimeout(_tuneSeqTimer); _tuneSeqTimer=null; }
-      stopActive();
-      playTone(_nutDragStartFreq);
-      _tuneSeqTimer=setTimeout(()=>{
-        stopActive(); playTone(_afterFreq);
-        triggerViz(_afterFrac, _afterHarm, _afterY, _afterColor);
-        _tuneSeqTimer=null;
-      }, toneDuration*1000 + toneSpacing*1000);
+      // Only play before/after drag tones when auto-tune is off.
+      // When auto-tune is on, _maybeAutoTune() → tuneToKey() handles the sequence,
+      // and playing here would double-play the before tone (muddy first note).
+      if(!autoTune){
+        const _nutRatio=(_pinnedFrac!==null&&window._activeRatioFund)||1;
+        const _afterFreq=fundFreq()*_nutRatio;
+        const _afterY=_pinnedFrac!==null ? nY(_pinnedFrac) : (nodeView==='nut' ? nutEffY() : NY);
+        const _afterFrac=_pinnedFrac!==null ? _pinnedFrac : 1.0;
+        const _afterHarm=_pinnedFrac!==null
+          ? (NODES.find(n=>Math.abs(n.frac-_pinnedFrac)<0.002)||{harm:1}).harm : 1;
+        const _afterColor=_lastVizArgs ? _lastVizArgs.color : '#533AB7';
+        if(_tuneSeqTimer){ clearTimeout(_tuneSeqTimer); _tuneSeqTimer=null; }
+        stopActive();
+        playTone(_nutDragStartFreq);
+        _tuneSeqTimer=setTimeout(()=>{
+          stopActive(); playTone(_afterFreq);
+          triggerViz(_afterFrac, _afterHarm, _afterY, _afterColor);
+          _tuneSeqTimer=null;
+          refreshPreviewHL(); // #52
+        }, toneDuration*1000 + toneSpacing*1000);
+      }
     }
     nutDragging=false; nutDidDrag=false;
     _maybeAutoTune();
     render();
+    refreshPreviewHL(); // #52: restore preview highlights after nut drag release
   } else {
     nutDragging=false; nutDidDrag=false;
   }
@@ -5896,25 +6061,29 @@ window.addEventListener('mouseup',()=>{
 window.addEventListener('touchend',()=>{
   if(nutDragging){
     if(nutDidDrag){
-      const _nutRatio=(_pinnedFrac!==null&&window._activeRatioFund)||1;
-      const _afterFreq=fundFreq()*_nutRatio;
-      const _afterY=_pinnedFrac!==null ? nY(_pinnedFrac) : (nodeView==='nut' ? nutEffY() : NY);
-      const _afterFrac=_pinnedFrac!==null ? _pinnedFrac : 1.0;
-      const _afterHarm=_pinnedFrac!==null
-        ? (NODES.find(n=>Math.abs(n.frac-_pinnedFrac)<0.002)||{harm:1}).harm : 1;
-      const _afterColor=_lastVizArgs ? _lastVizArgs.color : '#533AB7';
-      if(_tuneSeqTimer){ clearTimeout(_tuneSeqTimer); _tuneSeqTimer=null; }
-      stopActive();
-      playTone(_nutDragStartFreq);
-      _tuneSeqTimer=setTimeout(()=>{
-        stopActive(); playTone(_afterFreq);
-        triggerViz(_afterFrac, _afterHarm, _afterY, _afterColor);
-        _tuneSeqTimer=null;
-      }, toneDuration*1000 + toneSpacing*1000);
+      if(!autoTune){
+        const _nutRatio=(_pinnedFrac!==null&&window._activeRatioFund)||1;
+        const _afterFreq=fundFreq()*_nutRatio;
+        const _afterY=_pinnedFrac!==null ? nY(_pinnedFrac) : (nodeView==='nut' ? nutEffY() : NY);
+        const _afterFrac=_pinnedFrac!==null ? _pinnedFrac : 1.0;
+        const _afterHarm=_pinnedFrac!==null
+          ? (NODES.find(n=>Math.abs(n.frac-_pinnedFrac)<0.002)||{harm:1}).harm : 1;
+        const _afterColor=_lastVizArgs ? _lastVizArgs.color : '#533AB7';
+        if(_tuneSeqTimer){ clearTimeout(_tuneSeqTimer); _tuneSeqTimer=null; }
+        stopActive();
+        playTone(_nutDragStartFreq);
+        _tuneSeqTimer=setTimeout(()=>{
+          stopActive(); playTone(_afterFreq);
+          triggerViz(_afterFrac, _afterHarm, _afterY, _afterColor);
+          _tuneSeqTimer=null;
+          refreshPreviewHL(); // #52
+        }, toneDuration*1000 + toneSpacing*1000);
+      }
     }
     nutDragging=false; nutDidDrag=false;
     _maybeAutoTune();
     render();
+    refreshPreviewHL(); // #52: restore preview highlights after nut drag release
   }
 });
 
@@ -5925,6 +6094,7 @@ let _capoDragMoved=false;
 document.getElementById('capo-drag-marker').addEventListener('click',e=>{
   if(nodeView!=='capo'||_capoDragMoved) return;
   e.stopPropagation();
+  _lastCapoSegment='lower';
   const cf2=1-CAPO_NODES[capoNodeIdx].phi;
   const cy_=capoYpx();
   playTone(capoLowerFreq());
@@ -5941,7 +6111,7 @@ document.getElementById('capo-drag-marker').addEventListener('mouseenter',()=>{
 });
 document.getElementById('capo-drag-marker').addEventListener('mouseleave',()=>{
   clearStrip();
-  if(!_pinnedFrac){const rh=document.getElementById('row-hl');if(rh)rh.innerHTML='';}
+  if(!_pinnedFrac) hideLabel();
 });
 document.getElementById('capo-drag-marker').addEventListener('mousedown',e=>{
   if(nodeView!=='capo') return;
@@ -5971,6 +6141,7 @@ function capoSnapFromRawPhi(rawPhi){
     refreshCapoViz();
     const _newU=_capoSegFreq('upper'), _newL=_capoSegFreq('lower');
     playCapoTransition(_oldU, _oldL, _newU, _newL);
+    _maybeAutoTuneAfterCapo(); // #81: auto-tune after transition tones finish
   }
 }
 
@@ -6151,6 +6322,7 @@ function render(){
     const nutHitC=mk('rect',{x:0,y:nutYc-nutFS2*0.65,width:SVG_W,height:nutRowH2,
       fill:'transparent',class:'row-hit'});
     nutHitC.addEventListener('mousedown',()=>{
+      _lastCapoSegment='upper';
       if(_togglePin(1.0, false)){ playTone(uFreq); _showCapoEndNode('upper',_cf); }
       else playTone(uFreq);
     });
@@ -6160,9 +6332,10 @@ function render(){
     });
     nutHitC.addEventListener('mouseleave',()=>{
       clearStrip();
-      if(!_pinnedFrac){const rh=document.getElementById('row-hl');if(rh)rh.innerHTML='';}
+      if(!_pinnedFrac) hideLabel();
     });
     nutHitC.addEventListener('touchstart',()=>{
+      _lastCapoSegment='upper';
       if(_togglePin(1.0, true)){ playTone(uFreq); _showCapoEndNode('upper',_cf); }
       else playTone(uFreq);
     },{passive:true});
@@ -6216,6 +6389,7 @@ function render(){
     const _nutNode={frac:1.0,ratio:1,fs:'1/1',rs:'1:1',desc:'fundamental',label:'1',primary:true,tonic:false};
     nutHit.addEventListener('mousedown',()=>{
       if(nodeView==='capo'){
+        _lastCapoSegment='upper';
         const uFreq=capoUpperFreq();
         const cn=CAPO_NODES[capoNodeIdx];
         playTone(uFreq);
@@ -6230,9 +6404,10 @@ function render(){
       if(_pinnedFrac!==null&&_pinnedFrac!==1.0) return;
       showStrip(fund,1.0,nutHomeLabel,nutColor); showLabel(_nutNode);
     });
-    nutHit.addEventListener('mouseleave',()=>{ clearStrip(); });
+    nutHit.addEventListener('mouseleave',()=>{ clearStrip(); if(!_pinnedFrac) hideLabel(); });
     nutHit.addEventListener('touchstart',()=>{
       if(nodeView==='capo'){
+        _lastCapoSegment='upper';
         const uFreq=capoUpperFreq();
         const cn=CAPO_NODES[capoNodeIdx];
         playTone(uFreq);
@@ -6531,6 +6706,9 @@ setTimeout(()=>{ try{
   initBR();
   initCoF();
   updateAutoTuneUI();
+  // Initialize note preview button state (#52)
+  const _pvBtn=document.getElementById('pd-preview-btn');
+  if(_pvBtn){ _pvBtn.classList.toggle('on',_notePreviewOn); }
 
   // Probe AudioContext availability — if creation hangs in a sandboxed iframe
   // this Promise races against a 500ms timeout and disables audio if it loses.
