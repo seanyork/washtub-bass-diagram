@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v6.9.65</title>
+<title>Washtub Bass String Map · v6.9.69</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -2028,7 +2028,7 @@ function renderBRCtx(){
 // ── Node view context rows ────────────────────────────────────────
 function renderNodeViewCtx(view){
   if(view==='full'){
-    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.9.65</span></div>
+    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.9.69</span></div>
             <div class="br-ctx-row" style="gap:5px;justify-content:center;">
               <div class="br-readme-btn" onclick="openReadme('instrument')">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -4996,6 +4996,7 @@ function applyNutPreset(i){
     // Nothing pinned — just trigger viz for the fundamental/nut row
     triggerViz(1.0, 1, NY, '#533AB7');
   }
+  _maybeAutoTune(); // #68: auto-tune on nut preset apply if active
 }
 function applyNutOffset(v){
   nutOffsetInches=Math.max(0, Math.min(stringInches*0.85, v));
@@ -5432,9 +5433,10 @@ function tuneToKey(){
     segScale = capoTuneTarget==='lower' ? cf : (1-cf);
   }
 
-  // Score candidates by distance to 5 lbs sweet spot (calibration point / comfortable mid-range).
-  // This prefers middle octaves over very low or very high tensions regardless of current setting.
+  // Score candidates by proximity to current tension for continuity across capo snaps.
+  // Falls back to sweet-spot (5 lbs) scoring when no current tension is set.
   const TUNE_SWEET=5.0;
+  const _curT=tensionLbs||TUNE_SWEET; // current tension as reference
   let bestT=null;
   for(let oct=0;oct<=5;oct++){
     const midi=rootPc+(oct+1)*12;
@@ -5443,8 +5445,8 @@ function tuneToKey(){
     const fundTargetFreq=tcTargetFreq*segScale/tc;
     const T=Math.pow(2*L*fundTargetFreq,2)*mu;
     const lbs=T/LBS_TO_N;
-    if(lbs>=0.5&&lbs<=15){
-      if(bestT===null||Math.abs(lbs-TUNE_SWEET)<Math.abs(bestT-TUNE_SWEET)){
+    if(lbs>=1.0&&lbs<=15){ // min 1.0 lbs excludes sub-30Hz fundamental candidates (#83)
+      if(bestT===null||Math.abs(lbs-_curT)<Math.abs(bestT-_curT)){
         bestT=lbs;
       }
     }
