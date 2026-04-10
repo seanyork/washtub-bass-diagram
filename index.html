@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v6.9.69</title>
+<title>Washtub Bass String Map · v7.1.1</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -291,6 +291,10 @@ input[type=range]{width:110px;cursor:pointer;}
 /* Voice label style cycle button */
 .pd-style-btn{width:100%;height:26px;font-size:9px;font-weight:600;border:0.5px solid rgba(83,58,183,0.35);border-radius:4px;background:#EEEDFE;color:#533AB7;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;white-space:nowrap;}
 @media(prefers-color-scheme:dark){.pd-style-btn{background:rgba(83,58,183,0.2);color:#AFA9EC;border-color:rgba(83,58,183,0.4);}}
+.pdp-item{padding:5px 12px;font-size:19px;font-weight:500;color:var(--color-text-primary,#1a1a1a);cursor:pointer;border-radius:4px;white-space:nowrap;}
+.pdp-item:hover{background:rgba(83,58,183,0.07);}
+.pdp-item.on{color:#533AB7;font-weight:600;}
+@media(prefers-color-scheme:dark){.pdp-item{color:#e0e0e0;}}
 /* play row */
 /* play-btn-row: toggle strip on top (full width, 22px), go button below (full width, 46px) */
 #play-btn-row{display:flex;flex-direction:column;border-top:0.5px solid rgba(83,58,183,0.15);flex-shrink:0;}
@@ -320,6 +324,8 @@ input[type=range]{width:110px;cursor:pointer;}
 @media(prefers-color-scheme:dark){.sp-item{color:#e0e0e0;}.sp-item-notes span{color:#666;}}
 #home-picker{position:absolute;left:44px;top:100px;z-index:50;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.12);padding:4px;display:none;flex-direction:column;gap:1px;min-width:56px;}
 @media(prefers-color-scheme:dark){#home-picker{background:#2a2a2a;}}
+#play-deg-picker{position:absolute;z-index:50;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.12);padding:4px;display:none;flex-direction:column;gap:1px;min-width:72px;overflow-y:auto;}
+@media(prefers-color-scheme:dark){#play-deg-picker{background:#2a2a2a;}}
 #home-picker.visible{display:flex;}
 .hp-item{padding:5px 12px;font-size:19px;cursor:pointer;color:#1a1a1a;border-radius:4px;text-align:center;}
 .hp-item:hover{background:rgba(83,58,183,0.07);}
@@ -550,6 +556,18 @@ input[type=range]{width:110px;cursor:pointer;}
     <div id="canvas-wrap">
       <div id="svg-inner">
 <svg id="main-svg" width="1380" height="1440" viewBox="0 0 1380 1440" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <!-- Row highlight line gradient: full opacity left/right, fades through label columns
+       (str°≈438, home°≈502, key°≈592, note≈618) to avoid visual noise over text. -->
+  <linearGradient id="row-hl-line-grad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1380" y2="0">
+    <stop offset="0"    stop-color="#C89614" stop-opacity="0.8"/>
+    <stop offset="0.29" stop-color="#C89614" stop-opacity="0.8"/>
+    <stop offset="0.33" stop-color="#C89614" stop-opacity="0.04"/>
+    <stop offset="0.50" stop-color="#C89614" stop-opacity="0.04"/>
+    <stop offset="0.55" stop-color="#C89614" stop-opacity="0.8"/>
+    <stop offset="1"    stop-color="#C89614" stop-opacity="0.8"/>
+  </linearGradient>
+</defs>
 
 <!-- Column headers -->
 <text id="col-strdeg" x="438" y="22" text-anchor="middle" font-size="16" font-weight="600" fill="currentColor">str°</text>
@@ -592,6 +610,7 @@ input[type=range]{width:110px;cursor:pointer;}
 <g id="dyn-home-shade"></g>
 <g id="dyn-home-rings"></g>
 <g id="dyn-chrom-ticks"></g>
+      <g id="tick-active-lbl"></g>
 <g id="dyn-nut"></g>
 <g id="dyn-nodes"></g>
 <g id="hold-panel" opacity="0" pointer-events="none"></g>
@@ -742,12 +761,14 @@ input[type=range]{width:110px;cursor:pointer;}
       </div>
       <!-- 1+3: left col, 1st inv right -->
       <div class="pd-row">
-        <div style="flex:1;min-width:0;display:flex;gap:3px;">
+        <div style="flex:1;min-width:0;overflow:hidden;display:flex;gap:2px;">
           <button class="pd-btn on" id="pdv-1" onclick="togglePlayVoice('1',this)" style="flex:1;min-width:0;">P1</button>
           <button class="pd-btn on" id="pdv-3" onclick="togglePlayVoice('3',this)" style="flex:1;min-width:0;">M3</button>
         </div>
         <div class="pd-vr"></div>
-        <button class="pd-btn on" id="pdi-1st" onclick="setPlayInversion(1,this)">1st</button>
+        <div style="flex:1;min-width:0;display:flex;">
+          <button class="pd-btn on" id="pdi-1st" onclick="setPlayInversion(1,this)" style="flex:1;min-width:0;">1st</button>
+        </div>
       </div>
       <!-- style button: bottom row left col, root inv right -->
       <div class="pd-row">
@@ -767,7 +788,7 @@ input[type=range]{width:110px;cursor:pointer;}
         <button class="pd-btn on" id="pda-arpeg" onclick="setPlayChordStyle('arpeg',this)">arpeg</button>
         <button class="pd-btn" id="pda-block" onclick="setPlayChordStyle('block',this)">block</button>
       </div>
-      <div class="pd-lbl">chord</div>
+      <div class="pd-lbl">play chord as</div>
     </div>
     <!-- Scale section: 1 oct / full -->
     <div class="pd-sec" id="pd-scale-section">
@@ -775,7 +796,7 @@ input[type=range]{width:110px;cursor:pointer;}
         <button class="pd-btn" id="pds-1oct" onclick="setPlayScaleStyle('1oct',this)">1 oct</button>
         <button class="pd-btn" id="pds-full" onclick="setPlayScaleStyle('full',this)">full</button>
       </div>
-      <div class="pd-lbl">scale</div>
+      <div class="pd-lbl">scale range</div>
     </div>
     <!-- Direction: dims only when chord+block active -->
     <div class="pd-sec" id="pd-dir-section">
@@ -784,16 +805,27 @@ input[type=range]{width:110px;cursor:pointer;}
         <button class="pd-btn" id="pdd-down" onclick="setPlayDir('down',this)">↓</button>
         <button class="pd-btn" id="pdd-updown" onclick="setPlayDir('updown',this)">↑↓</button>
       </div>
-      <div class="pd-lbl">direction</div>
+      <div class="pd-lbl">scale / arp dir</div>
     </div>
-    <!-- Root: home node or fundamental — applies to all modes -->
-    <div class="pd-sec">
+    <!-- Register: low/mid/high octave band — gates playback start octave -->
+    <div class="pd-sec" id="pd-reg-section">
       <div class="pd-row">
-        <button class="pd-btn on" id="pdr-home" onclick="setPlayRoot('homenode',this)">home</button>
-        <button class="pd-btn" id="pdr-fund" onclick="setPlayRoot('fundamental',this)">fund.</button>
+        <button class="pd-btn on" id="pdreg-low" onclick="setPlayRegister('low')">low</button>
+        <button class="pd-btn" id="pdreg-mid" onclick="setPlayRegister('mid')">mid</button>
+        <button class="pd-btn" id="pdreg-high" onclick="setPlayRegister('high')">high</button>
       </div>
-      <div class="pd-lbl">root</div>
+      <div class="pd-lbl">register</div>
     </div>
+    <!-- Start at note: replaces root — home node, fundamental, or specific degree -->
+    <div class="pd-sec" id="pd-start-section">
+      <div class="pd-row">
+        <button class="pd-btn on" id="pdr-home" onclick="setPlayRoot('homenode')">home</button>
+        <button class="pd-btn" id="pdr-fund" onclick="setPlayRoot('fundamental')">fund.</button>
+        <button class="pd-btn" id="pdr-deg" onclick="openPlayDegPicker()">1 · G ▾</button>
+      </div>
+      <div class="pd-lbl">start at note</div>
+    </div>
+    <!-- Degree picker: inline expansion, shown when pdr-deg is tapped -->
     <!-- Note preview toggle: bottom of drawer (#52) -->
     <div class="pd-sec">
       <div class="pd-row" style="align-items:center;gap:6px;">
@@ -802,6 +834,9 @@ input[type=range]{width:110px;cursor:pointer;}
       </div>
     </div>
   </div>
+
+  <!-- Degree picker popover — sibling to play-drawer, positioned dynamically -->
+  <div id="play-deg-picker"></div>
 
   <!-- Play zone: play-btn-row only, sits above CoF (bottom:170px).
        IMPORTANT: left:56px aligns to right of left rail.
@@ -1152,18 +1187,20 @@ showStrip = function(freq, frac, nodeLabel, color){
   const keyCol=inKey?'#0F6E56':'rgba(153,60,29,0.6)';
   // str° label — look up the node's physics label by frac
   const strNode=NODES.find(n=>Math.abs(n.frac-frac)<0.001);
-  const strLabel=strNode?strNode.label:(frac>=0.999?'1':'—');
+  const _missingDot='<span style="font-size:13px;color:#888;">•</span>';
+  const strLabel=strNode?strNode.label:(frac>=0.999?'1':_missingDot);
   // Upper segment fraction string — from node.fs complement
-  const upperFracStr=strNode?compFrac(strNode.fs):'—';
+  const upperFracStr=strNode?compFrac(strNode.fs):_missingDot;
   const upperIn=fmtLen((1-frac)*effectiveSpeakingLength());
   // Harmonic number
   const harmNum=strNode?strNode.harm:(frac>=0.999?1:null);
-  const harmStr=harmNum?harmLabel(harmNum):'';
+  const isTickFrac=!strNode&&frac<0.999&&CHROM_TICKS.some(tf=>Math.abs(tf-frac)<0.001);
+  const harmStr=isTickFrac?'<span style="font-size:10px;color:#aaa;letter-spacing:0.04em;">ET</span>':(harmNum?harmLabel(harmNum):'');
   const dst=document.getElementById('nts-right');
   if(!dst) return;
   dst.innerHTML=
     `<div style="display:flex;align-items:baseline;gap:4px;line-height:1;">
-       <span style="font-size:18px;font-weight:500;color:#5F5E5A;">${strLabel}</span>
+       <span style="font-size:18px;font-weight:500;color:#5F5E5A;">${strNode?(strNode.label):(frac>=0.999?'1':'')}</span>${(!strNode&&frac<0.999)?_missingDot:''}
        <span style="font-size:10px;color:#ccc;">·</span>
        <span style="font-size:18px;font-weight:500;color:${col};">${nodeLabel}</span>
        <span style="font-size:10px;color:#ccc;">·</span>
@@ -1870,7 +1907,9 @@ showStrip = function(freq, frac, nodeLabel, color){
   // The compound capo frac won't reliably match NODES fracs — skip to avoid spurious hideLabel.
   if(nodeView==='capo') return;
   const node=NODES.find(n=>Math.abs(n.frac-frac)<0.001);
-  if(node) showLabel(node); else hideLabel();
+  if(node){ showLabel(node); }
+  else if(CHROM_TICKS.some(tf=>Math.abs(tf-frac)<0.001)){ /* tick — handler calls showLabel directly */ }
+  else{ hideLabel(); }
 };
 
 const _origClearStrip_step5=clearStrip;
@@ -1932,6 +1971,9 @@ setTimeout(()=>{
 let brNodeView = 'full';   // 'full' | 'nut' | 'capo'
 let brRightPanel = null;   // null | 'audio' | 'phys' | 'lgnd'
 let showPitchBars = false; // show/hide pitch bars + secondary info columns
+let tickLabelMode = 'scale'; // 'always' | 'scale' | 'active' | 'off'
+const _TICK_LABEL_MODES = ['always','scale','active','off'];
+function cycleTickLabelMode(){ tickLabelMode=_TICK_LABEL_MODES[(_TICK_LABEL_MODES.indexOf(tickLabelMode)+1)%_TICK_LABEL_MODES.length]; render(); renderBRCtx(); }
 let overflowOpen = false;
 let autoTune = true;       // auto-tune string on key or mode change
 let toneSpacing = 0;       // seconds between sequential tones (before/after playback)
@@ -2028,7 +2070,7 @@ function renderBRCtx(){
 // ── Node view context rows ────────────────────────────────────────
 function renderNodeViewCtx(view){
   if(view==='full'){
-    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v6.9.69</span></div>
+    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v7.0.0</span></div>
             <div class="br-ctx-row" style="gap:5px;justify-content:center;">
               <div class="br-readme-btn" onclick="openReadme('instrument')">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2183,19 +2225,22 @@ function renderPhysPanel(){
   const lenVal=fmtLen(nodeView==='nut'?effectiveSpeakingLength():stringInches);
   const densVal=muKgM.toFixed(6);
   const inOn=useInches, cmOn=!useInches;
+  const tlLabel={'always':'always','scale':'in scale','active':'active','off':'off'}[tickLabelMode]||tickLabelMode;
   return `<div class="br-ctx-row" style="gap:3px;">
             <span class="br-chip-lbl">length</span>
             <span class="br-chip">${lenVal}</span>
             <div class="br-btn${inOn?' on':''}" onclick="setUnits('in',document.getElementById('unit-in'));renderBRCtx()">in</div>
             <div class="br-btn${cmOn?' on':''}" onclick="setUnits('cm',document.getElementById('unit-cm'));renderBRCtx()">cm</div>
+            <div style="width:0.5px;background:rgba(128,128,128,0.2);align-self:stretch;margin:0 2px;"></div>
+            <div class="br-btn${showPitchBars?' on':''}" onclick="togglePitchBars()" title="show/hide pitch bars and detail columns">pitch bars</div>
           </div>
           <div class="br-ctx-row" style="gap:3px;">
             <span class="br-chip-lbl">density</span>
             <span class="br-chip">${densVal}</span>
             <span class="br-chip-lbl" style="font-size:7.5px;">kg/m</span>
             <div style="width:0.5px;background:rgba(128,128,128,0.2);align-self:stretch;margin:0 2px;"></div>
-            <div class="br-btn${showPitchBars?' on':''}" onclick="togglePitchBars()" title="show/hide pitch bars and detail columns">show pitch bars</div>
-            <div class="br-btn${autoTune?' on':''}" onclick="toggleAutoTune()" title="Auto-tune string when key or mode changes">auto-tune</div>
+            <span class="br-chip-lbl">ticks</span>
+            <div class="br-btn" style="flex:1;text-align:center;" onclick="cycleTickLabelMode()">${tlLabel}</div>
           </div>
           <div class="br-ctx-row" onclick="toggleOverflow()" style="cursor:pointer;">
             <div class="br-more-bar"></div>
@@ -2774,7 +2819,9 @@ function _syncVoiceBtnLabels(){
   if(ex) ex.textContent=_styleExample();
 }
 let playDir       = 'up';     // 'up'|'down'|'updown'
-let playRoot      = 'homenode';
+let playRoot      = 'homenode'; // 'homenode'|'fundamental'|'degree'
+let playRegister  = 'low';    // 'low'|'mid'|'high' — octave band for playback start
+let playStartDeg  = 1;        // 1–7, used when playRoot==='degree'
 let _playTimers   = [];
 let _playActive   = false;
 let _playPanelOpen = false;
@@ -2793,6 +2840,10 @@ function _updatePlayDimming(){
   // Direction dims only when chord+block is selected (no arpeggiation order applies)
   const ds = document.getElementById('pd-dir-section');
   if(ds) ds.classList.toggle('pd-dim', isBlock);
+  // Start-at-note dims in chord mode (scale concept only); register stays always active
+  const ss = document.getElementById('pd-start-section');
+  if(ss) ss.classList.toggle('pd-dim', isChord);
+  // register section (#pd-reg-section) is NOT dimmed — register controls tuning independently
 }
 
 // ── Button sync helpers ────────────────────────────────────────────
@@ -2829,8 +2880,153 @@ function _syncDir(d){
 function _syncRoot(r){
   const bh=document.getElementById('pdr-home');
   const bf=document.getElementById('pdr-fund');
-  if(bh) bh.classList.toggle('on', r==='homenode');
-  if(bf) bf.classList.toggle('on', r==='fundamental');
+  const bd=document.getElementById('pdr-deg');
+  if(bh) bh.classList.toggle('on',r==='homenode');
+  if(bd) bd.classList.toggle('on',r==='degree');
+  if(bf){
+    bf.classList.toggle('on',r==='fundamental');
+    // Grey fund. when fundamental pitch is not diatonic to current key+mode
+    const fNi=noteInfo(fundFreq());
+    const fundDiatonic=fNi.snapped&&isInKey(fNi.midi);
+    bf.style.opacity=fundDiatonic?'':'0.35';
+    bf.style.pointerEvents=fundDiatonic?'':'none';
+  }
+  _syncDegBtn();
+}
+
+// ── Register helpers ───────────────────────────────────────────────
+// Returns ascending array of key-root frequencies available within
+// the string's playable range [fund*0.99, fund*4.01].
+function _getRegisterOctaves(){
+  const fund=fundFreq();
+  const rootHz=REF_HZ*Math.pow(2,homeKey/12); // homeKey 0=C, relative to C4
+  const lo=fund*0.99, hi=fund*4.01;
+  const octs=[];
+  for(let oct=-4;oct<=4;oct++){
+    const f=rootHz*Math.pow(2,oct);
+    if(f>=lo&&f<=hi) octs.push(f);
+  }
+  return octs.sort((a,b)=>a-b); // low → high
+}
+
+// Returns achievable register candidates filtered by tension limits (1–15 lbs).
+// segScale: 1.0 for full-string/nut, cf or (1-cf) for capo segment.
+// Each entry: {freq: key-root-freq, lbs: tension-required}, sorted ascending.
+// Used for register button availability and tuneToKey() octave selection.
+function _getRegisterCandidates(segScale){
+  if(segScale===undefined) segScale=1;
+  const L=effectiveSpeakingLength()*IN_TO_M, mu=muKgM;
+  const rootPc=homeKey, tc=homeNodeRatio();
+  const candidates=[];
+  for(let oct=0;oct<=5;oct++){
+    const midi=rootPc+(oct+1)*12;
+    const tcFreq=REF_HZ*Math.pow(2,(midi-REF_MIDI)/12);
+    const fundTarget=tcFreq*segScale/tc;
+    const T=Math.pow(2*L*fundTarget,2)*mu;
+    const lbs=T/LBS_TO_N;
+    if(lbs>=1.0&&lbs<=15) candidates.push({freq:tcFreq, lbs:lbs});
+  }
+  return candidates.sort((a,b)=>a.freq-b.freq);
+}
+
+// Returns the key-root frequency for the current register selection.
+// Falls back to highest available if selection is out of range.
+function _resolvedRegisterFreq(){
+  const octs=_getRegisterOctaves();
+  if(!octs.length) return fundFreq();
+  const idx=playRegister==='low'?0:playRegister==='mid'?1:2;
+  return octs[Math.min(idx,octs.length-1)];
+}
+
+// Sync register button on/off and availability.
+// Availability uses tension-based candidates so buttons match what tuneToKey can achieve.
+function _syncRegisterBtns(){
+  const cands=_getRegisterCandidates(1);
+  const n=cands.length;
+  // Auto-fallback: if selected register unavailable, drop to highest available
+  const selIdx=playRegister==='low'?0:playRegister==='mid'?1:2;
+  if(n>0&&selIdx>=n) playRegister=['low','mid','high'][n-1];
+  ['low','mid','high'].forEach((r,i)=>{
+    const btn=document.getElementById('pdreg-'+r);
+    if(!btn) return;
+    const avail=i<n;
+    btn.classList.toggle('on',r===playRegister&&avail);
+    btn.style.opacity=avail?'':'0.3';
+    btn.style.pointerEvents=avail?'':'none';
+  });
+}
+
+function setPlayRegister(r){
+  playRegister=r;
+  _syncRegisterBtns();
+  _syncDegBtn();
+  updatePlayBtn(); // refresh preview highlights at new register — no auto-tune
+}
+
+// Set playRegister to match the current tension — call after tuneToKey or on init.
+function _syncRegisterFromTension(){
+  const cands=_getRegisterCandidates(1);
+  if(!cands.length) return;
+  let best=0, bestDist=Infinity;
+  cands.forEach((c,i)=>{ const d=Math.abs(c.lbs-tensionLbs); if(d<bestDist){bestDist=d;best=i;} });
+  playRegister=['low','mid','high'][Math.min(best,2)];
+}
+
+// ── Degree picker helpers ──────────────────────────────────────────
+// Updates pdr-deg button label: "d · NoteName ▾"
+function _syncDegBtn(){
+  const bd=document.getElementById('pdr-deg');
+  if(!bd) return;
+  if(playRoot!=='degree'){ bd.textContent='deg \u25be'; return; }
+  const regFreq=_resolvedRegisterFreq();
+  const steps=MODE_SCALES[currentMode];
+  const semi=[0]; let acc=0;
+  for(let i=0;i<6;i++){acc+=steps[i];semi.push(acc);}
+  const degFreq=regFreq*Math.pow(2,semi[playStartDeg-1]/12);
+  const ni=noteInfo(degFreq);
+  const noteName=ni.snapped?ni.name:'?';
+  bd.textContent=playStartDeg+' \xb7 '+noteName+' \u25be';
+}
+
+// Toggle degree picker popover — positioned to the right of the play drawer.
+function openPlayDegPicker(){
+  const pk=document.getElementById('play-deg-picker');
+  if(!pk) return;
+  if(pk.style.display==='flex'){pk.style.display='none';return;}
+  const regFreq=_resolvedRegisterFreq();
+  const steps=MODE_SCALES[currentMode];
+  const semi=[0]; let acc=0;
+  for(let i=0;i<6;i++){acc+=steps[i];semi.push(acc);}
+  pk.innerHTML=[1,2,3,4,5,6,7].map(d=>{
+    const f=regFreq*Math.pow(2,semi[d-1]/12);
+    const ni=noteInfo(f);
+    const note=ni.snapped?ni.name:'?';
+    const on=playRoot==='degree'&&playStartDeg===d;
+    return '<div class="pdp-item'+(on?' on':'')+'" onclick="setPlayStartDeg('+d+')">'+d+' \xb7 '+note+'</div>';
+  }).join('');
+  // Position: right of play drawer (drawer right edge ~186px), aligned to button row
+  const btn=document.getElementById('pdr-deg');
+  const shell=document.getElementById('app-shell');
+  if(btn&&shell){
+    const br=btn.getBoundingClientRect();
+    const sr=shell.getBoundingClientRect();
+    pk.style.left=(br.right-sr.left+6)+'px';
+    pk.style.right='auto';
+    pk.style.bottom=(sr.bottom-br.bottom-4)+'px';
+    pk.style.top='auto';
+    pk.style.maxHeight=Math.max(80,sr.height-120)+'px';
+  }
+  pk.style.display='flex';
+}
+
+function setPlayStartDeg(d){
+  playStartDeg=d;
+  closePlayDegPicker();
+  setPlayRoot('degree');
+}
+function closePlayDegPicker(){
+  const pk=document.getElementById('play-deg-picker');
+  if(pk) pk.style.display='none';
 }
 
 // ── Setters ────────────────────────────────────────────────────────
@@ -2840,6 +3036,8 @@ function setPlayInversion(n){ playInversion=n; _syncInversion(n); updatePlayBtn(
 function setPlayChordStyle(s){
   playSeq='chord'; playChordStyle=s;
   _syncChordStyle(s);
+  // Revert start-at-note to homenode — start note is a scale concept
+  if(playRoot!=='homenode'){ playRoot='homenode'; _syncRoot('homenode'); }
   // Deselect scale buttons visually when chord is active
   ['pds-1oct','pds-full'].forEach(id=>{ const b=document.getElementById(id); if(b) b.classList.remove('on'); });
   _updatePlayDimming(); updatePlayBtn();
@@ -2974,6 +3172,25 @@ function updatePlayBtn(){
   }
   refreshPreviewHL();
 }
+// Patch: keep register + degree UI in sync on every play state change
+const _updatePlayBtn_orig=updatePlayBtn;
+let _regInitialized=false;
+updatePlayBtn=function(){
+  _updatePlayBtn_orig();
+  if(!_regInitialized){ _syncRegisterFromTension(); _regInitialized=true; } // startup only
+  _syncRegisterBtns();
+  _syncDegBtn();
+  // Refresh fund. button greying (diatonic status can change with key/mode)
+  const bf=document.getElementById('pdr-fund');
+  if(bf){
+    const fNi=noteInfo(fundFreq());
+    const fundDiatonic=fNi.snapped&&isInKey(fNi.midi);
+    // Auto-revert: if fund is no longer diatonic and was selected, revert to homenode
+    if(!fundDiatonic&&playRoot==='fundamental'){ playRoot='homenode'; _syncRoot('homenode'); }
+    bf.style.opacity=fundDiatonic?'':'0.35';
+    bf.style.pointerEvents=fundDiatonic?'':'none';
+  }
+};
 
 // ── Row highlight colors (#75) ────────────────────────────────────
 const _HL_GOLD     = 'rgba(247,206,70,';   // full/nut/capo-upper preview + active overlay
@@ -2990,6 +3207,20 @@ function _drawRowHLRect(g, frac, colorStr){
   g.appendChild(rect);
 }
 
+// Draws the 2px horizontal indicator line at frac's y position.
+// Uses gradient that fades through the label column zone (x≈400–760)
+// so the line reads cleanly on both sides without cutting through text.
+function _drawRowHLLine(g, frac){
+  const y=nY(frac);
+  const line=document.createElementNS(svgNS_v4,'line');
+  line.setAttribute('x1','0'); line.setAttribute('x2',String(SVG_W));
+  line.setAttribute('y1',String(y)); line.setAttribute('y2',String(y));
+  line.setAttribute('stroke','url(#row-hl-line-grad)');
+  line.setAttribute('stroke-width','2');
+  line.setAttribute('pointer-events','none');
+  g.appendChild(line);
+}
+
 // ── Note preview highlights (#52) ─────────────────────────────────
 // Show row highlights for all notes that would be played, when:
 //   - play drawer is open (cofVisible && _playPanelOpen)
@@ -3003,6 +3234,30 @@ function toggleNotePreview(btn){
   refreshPreviewHL();
 }
 
+// Build frequencies for note preview highlights — always from degree 1 at current
+// register, regardless of playRoot/playStartDeg setting. Capo and chord pass through.
+function _buildPreviewFreqs(){
+  if(nodeView==='capo'||playSeq==='chord') return buildPlayFreqs();
+  const fund=fundFreq();
+  const steps=MODE_SCALES[currentMode];
+  const regFreq=_resolvedRegisterFreq(); // always degree 1 at register
+  if(playSeq==='scale-full'){
+    const maxFreq=fund*Math.max(...NODES.map(n=>n.ratio));
+    const freqObjs=[]; let f=regFreq; let stepIdx=0;
+    while(f<=maxFreq){
+      freqObjs.push({freq:f,frac:null});
+      f*=Math.pow(2,steps[stepIdx%7]/12);
+      stepIdx++;
+      if(stepIdx>100) break;
+    }
+    return freqObjs;
+  }
+  // scale-1oct preview: always full 8 notes from degree 1
+  const freqObjs=[{freq:regFreq,frac:null}]; let f=regFreq;
+  steps.forEach(st=>{ f*=Math.pow(2,st/12); freqObjs.push({freq:f,frac:null}); });
+  return freqObjs;
+}
+
 function refreshPreviewHL(){
   const g=document.getElementById('row-hl');
   if(!g) return;
@@ -3011,7 +3266,7 @@ function refreshPreviewHL(){
     return;
   }
   let freqs;
-  try{ freqs=buildPlayFreqs(); }catch(e){ return; }
+  try{ freqs=_buildPreviewFreqs(); }catch(e){ return; }
   if(!freqs||!freqs.length){ g.innerHTML=''; return; }
   const isCapo=nodeView==='capo';
   const cn=isCapo?CAPO_NODES[capoNodeIdx]:null;
@@ -3035,8 +3290,8 @@ function refreshPreviewHL(){
   });
   // Clear and redraw preview layer
   g.innerHTML='';
-  tealFracs.forEach(frac=>_drawRowHLRect(g, frac, _HL_TEAL+'0.25)'));
-  goldFracs.forEach(frac=>_drawRowHLRect(g, frac, _HL_GOLD+'0.25)'));
+  tealFracs.forEach(frac=>{ _drawRowHLRect(g, frac, _HL_TEAL+'0.25)'); _drawRowHLLine(g, frac); });
+  goldFracs.forEach(frac=>{ _drawRowHLRect(g, frac, _HL_GOLD+'0.25)'); _drawRowHLLine(g, frac); });
   // Pin overlay on top — segment-aware color; in-preview nodes get stacked opacity, out-of-preview get pin color alone
   if(_pinnedFrac!==null){
     const isLowerCapo=nodeView==='capo' && cf!==null && _pinnedFrac<=cf+0.001;
@@ -3131,6 +3386,58 @@ function _findKeyRootFreq(nodeList, fallbackFreq){
   return t;
 }
 
+// Returns which scale degree (1–7) we're starting playback from.
+// For 'homenode': detects the musical degree of fund*homeNodeRatio() relative to
+// the key root — handles detuned strings where str° ≠ scale degree.
+// For 'fundamental': tries to identify fund's diatonic degree; falls back to 1.
+function _playStartDeg(){
+  const steps=MODE_SCALES[currentMode];
+  const semi=[0]; let acc=0;
+  for(let i=0;i<6;i++){acc+=steps[i];semi.push(acc);}
+  if(playRoot==='homenode'){
+    // Detect the musical scale degree of the home node pitch
+    const hnFreq=fundFreq()*homeNodeRatio();
+    const regFreq=_resolvedRegisterFreq(); // key root (deg 1) at register octave
+    let ratio=hnFreq/regFreq;
+    while(ratio>=2) ratio/=2;
+    while(ratio<1) ratio*=2;
+    const idx=semi.findIndex(s=>Math.abs(Math.pow(2,s/12)-ratio)<0.02);
+    return idx>=0?idx+1:homeNode; // fallback to homeNode if not diatonic
+  }
+  if(playRoot==='degree') return playStartDeg;
+  if(playRoot==='fundamental'){
+    const regFreq=_resolvedRegisterFreq();
+    let ratio=fundFreq()/regFreq;
+    while(ratio>=2) ratio/=2;
+    while(ratio<1) ratio*=2;
+    const idx=semi.findIndex(s=>Math.abs(Math.pow(2,s/12)-ratio)<0.02);
+    return idx>=0?idx+1:1; // fallback 1 = full octave
+  }
+  return 1;
+}
+
+// Compute the playback start frequency from playRoot + playRegister + playStartDeg.
+// Full-string and nut views only — capo mode uses its own segment-relative logic.
+// 'fundamental': open string (fundFreq). 'homenode': homeNode degree at register octave.
+// 'degree': playStartDeg degree at register octave.
+function _playStartFreq(){
+  const fund=fundFreq();
+  if(playRoot==='fundamental') return fund;
+  if(playRoot==='homenode'){
+    // Use JI home node pitch (fund × homeNodeRatio) — diagram-consistent.
+    // Register shifts octave: low=on-string, mid=×2, high=×4.
+    const hnFreq=fund*homeNodeRatio();
+    const idx=playRegister==='low'?0:playRegister==='mid'?1:2;
+    return hnFreq*Math.pow(2,idx);
+  }
+  // 'degree': ET scale degree at register octave
+  const regFreq=_resolvedRegisterFreq();
+  const steps=MODE_SCALES[currentMode];
+  const semi=[0]; let acc=0;
+  for(let i=0;i<6;i++){acc+=steps[i];semi.push(acc);}
+  return regFreq*Math.pow(2,semi[playStartDeg-1]/12);
+}
+
 function buildPlayFreqs(){
   const fund = fundFreq();
   const hnRatio = homeNodeRatio();
@@ -3178,9 +3485,9 @@ function buildPlayFreqs(){
     return freqObjs;
   }
 
-  // Locate key root among current node frequencies
+  // Compute start frequency from playRoot, playRegister, playStartDeg
   const _allNodeFreqs=getPlayableNodes();
-  const rootFreq = _findKeyRootFreq(_allNodeFreqs, fund*hnRatio);
+  const rootFreq = _playStartFreq();
 
   if(playSeq==='chord'){
     const steps = MODE_SCALES[currentMode];
@@ -3203,25 +3510,31 @@ function buildPlayFreqs(){
   if(playSeq==='scale-full'){
     // Step ET scale from rootFreq upward until we've covered the full string range.
     // Each step plays audio; highlight/viz only fire if a snapped diatonic node matches.
-    // This guarantees the scale starts on the key root regardless of string tuning.
     const maxFreq = fund * Math.max(...NODES.map(n=>n.ratio)); // stop at highest node
     const freqObjs = [];
-    // rootFreq is already the lowest feasible key root in [fund, fund*4] via _findKeyRootFreq
     let f = rootFreq;
-    // Step upward through scale until we exceed the string's range
-    let stepIdx = 0;
+    // stepIdx starts at (startDeg-1) so we use the correct mode intervals from that degree
+    const _sfStartDeg=_playStartDeg();
+    let stepIdx = _sfStartDeg-1;
     while(f <= maxFreq){
       freqObjs.push({freq:f, frac:null});
       f *= Math.pow(2, steps[stepIdx % 7] / 12);
       stepIdx++;
-      if(stepIdx > 100) break; // safety cap
+      if(stepIdx > _sfStartDeg-1+100) break; // safety cap
     }
     return freqObjs;
   }
-  // scale-1oct: 8 notes (root + 7 steps)
+  // scale-1oct: steps from start degree to next tonic (deg 8)
+  // e.g. deg 1 → 7 steps (full octave), deg 5 → 3 steps (5,6,7,1)
+  // Step offset starts at (startDeg-1) to use the correct mode intervals.
+  const startDeg=_playStartDeg();
+  const stepsToPlay=8-startDeg;
   const freqObjs=[{freq:rootFreq,frac:null}];
   let f=rootFreq;
-  steps.forEach(st=>{ f*=Math.pow(2,st/12); freqObjs.push({freq:f,frac:null}); });
+  for(let i=0;i<stepsToPlay;i++){
+    f*=Math.pow(2,steps[(startDeg-1+i)%7]/12);
+    freqObjs.push({freq:f,frac:null});
+  }
   return freqObjs;
 }
 
@@ -3320,31 +3633,29 @@ function _nodeForFreq(freq){
 // getPlayableNodes() automatically inherit this behaviour.
 function _showNodeForPlayback(node, freq){
   if(!node) return;
-  // Draw preview layer first, then active note overlay on top (#75)
-  if(cofVisible && _playPanelOpen && _notePreviewOn){
-    refreshPreviewHL();
-    const g=document.getElementById('row-hl');
-    if(g) _drawRowHLRect(g, node.frac, _HL_GOLD+'0.25)');
-  } else {
-    setRowHL(node.frac, 0.25);
-  }
   // Derive display values
   const ni=noteInfo(freq);
   const inKey=ni.snapped?isInKey(ni.midi):false;
   const displayLabel=remapDegree(node.ratio)||node.label;
   const col=isTonalCenter(node.ratio)?HOME_COL:
     node.primary?(inKey?'var(--inkey)':'#993C1D'):(inKey?'var(--inkey)':'#D85A30');
-  // Update tone strip (nts-right) via showStrip
+  // Update tone strip and ruler FIRST — showLabel calls setRowHL which clears highlights.
+  // Highlight drawing happens AFTER to avoid being wiped.
   showStrip(freq, node.frac, displayLabel, col);
   if(node._isNut){
-    // Nut row: build pseudo-node matching the format showLabel expects,
-    // then call showLabel to update sidebar ruler split + dot position
     const nutPseudo={frac:1.0, ratio:1, fs:'1/1', rs:'1:1',
       label:displayLabel, primary:true, desc:'fundamental'};
     showLabel(nutPseudo);
   } else {
     showLabel(node);
   }
+  // Draw highlights last — after showLabel/setRowHL so they aren't cleared (#75)
+  if(cofVisible && _playPanelOpen && _notePreviewOn){
+    refreshPreviewHL();
+    const g=document.getElementById('row-hl');
+    if(g){ _drawRowHLRect(g, node.frac, _HL_GOLD+'0.25)'); _drawRowHLLine(g, node.frac); }
+  }
+  // Non-preview case: setRowHL already called inside showLabel above — no extra work needed
 }
 
 function _hlNodeForFreq(freq){
@@ -3721,8 +4032,8 @@ function snapCoF(){
     else{
       cofAngle=targetAngle;
       const newKey=COF_ORDER[pos];
-      _clearPin();
-      homeKey=newKey;
+      _clearPin(); homeKey=newKey;
+      closePlayDegPicker();
       drawCoF(); // redraw with updated homeKey so highlight reflects new selection
       document.querySelectorAll('.kbtn').forEach((b,bi)=>{
         b.classList.toggle('on', COF_ORDER[bi]===newKey);
@@ -3759,6 +4070,7 @@ function spinToPos(pos){
       cofAngle=targetAngle;
       const newKey=COF_ORDER[pos];
       _clearPin(); homeKey=newKey;
+      closePlayDegPicker();
       drawCoF();
       document.querySelectorAll('.kbtn').forEach((b,bi)=>{
         b.classList.toggle('on', COF_ORDER[bi]===newKey);
@@ -3802,12 +4114,14 @@ function spinToPos(pos){
     dragging=true; _moved=false; cv.style.cursor='grabbing';
     startA=ptrAngle(e); startCof=cofAngle;
     _tapStartX=e.clientX; _tapStartY=e.clientY;
+    closePlayDegPicker();
     e.stopPropagation();
   });
   cv.addEventListener('touchstart',e=>{
     e.preventDefault(); dragging=true; _moved=false;
     startA=ptrAngle(e); startCof=cofAngle;
     _tapStartX=e.touches[0].clientX; _tapStartY=e.touches[0].clientY;
+    closePlayDegPicker();
     e.stopPropagation();
   },{passive:false});
 
@@ -4167,8 +4481,10 @@ function _checkPickerDismiss(target){
     if(!target) return;
     const sp=document.getElementById('scale-picker');
     const hp=document.getElementById('home-picker');
+    const pk=document.getElementById('play-deg-picker');
     if(sp&&sp.classList.contains('visible')&&!sp.contains(target)&&target.id!=='chip-scale') closeScalePicker();
     if(hp&&hp.classList.contains('visible')&&!hp.contains(target)&&target.id!=='chip-home') closeHomePicker();
+    if(pk&&pk.style.display==='flex'&&!pk.contains(target)&&target.id!=='pdr-deg') pk.style.display='none';
   }catch(e){}
 }
 document.addEventListener('mousedown',e=>_checkPickerDismiss(e.target));
@@ -5385,6 +5701,28 @@ function triggerViz(frac, harm, svgY, color){
   clearViz();
   if(nodeViz) _drawNodeViz(svgY, color);
   if(waveViz) _drawWaveViz(frac, harm, color);
+  if(waveViz && harm===0) _drawTickSineGlyph(svgY, color);
+}
+
+// Sine wave glyph at SDEG_X for ET tick nodes.
+// One full cycle, 22px wide (±11), ±5px amplitude, coral/green per tick color.
+// Drawn in viz-layer with same fade lifetime as wave viz. No arches on string.
+function _drawTickSineGlyph(svgY, color){
+  const vl=document.getElementById('viz-layer');
+  if(!vl) return;
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  if(_pinnedFrac===null){
+    g.style.animation='vizFadeOut '+vizWaveDur+'s ease-out forwards';
+  }
+  const cx=SDEG_X, W=11, A=5;
+  const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+  p.setAttribute('d','M '+(cx-W)+' '+svgY+' Q '+(cx-W/2)+' '+(svgY-A)+' '+cx+' '+svgY+' Q '+(cx+W/2)+' '+(svgY+A)+' '+(cx+W)+' '+svgY);
+  p.setAttribute('fill','none');
+  p.setAttribute('stroke',color);
+  p.setAttribute('stroke-width','1.8');
+  p.setAttribute('stroke-linecap','round');
+  g.appendChild(p);
+  vl.appendChild(g);
 }
 
 // Capo entry point.
@@ -5433,28 +5771,16 @@ function tuneToKey(){
     segScale = capoTuneTarget==='lower' ? cf : (1-cf);
   }
 
-  // Score candidates by proximity to current tension for continuity across capo snaps.
-  // Falls back to sweet-spot (5 lbs) scoring when no current tension is set.
-  const TUNE_SWEET=5.0;
-  const _curT=tensionLbs||TUNE_SWEET; // current tension as reference
-  let bestT=null;
-  for(let oct=0;oct<=5;oct++){
-    const midi=rootPc+(oct+1)*12;
-    const tcTargetFreq=REF_HZ*Math.pow(2,(midi-REF_MIDI)/12);
-    // Fundamental target = segment-scaled key root / home node ratio
-    const fundTargetFreq=tcTargetFreq*segScale/tc;
-    const T=Math.pow(2*L*fundTargetFreq,2)*mu;
-    const lbs=T/LBS_TO_N;
-    if(lbs>=1.0&&lbs<=15){ // min 1.0 lbs excludes sub-30Hz fundamental candidates (#83)
-      if(bestT===null||Math.abs(lbs-_curT)<Math.abs(bestT-_curT)){
-        bestT=lbs;
-      }
-    }
-  }
-  if(bestT===null) return;
+  // Select tuning target using register-aware candidate list (tension-filtered, ascending).
+  // segScale accounts for capo mode segment offset.
+  const _regCands=_getRegisterCandidates(segScale);
+  if(!_regCands.length) return;
+  const _regIdx=playRegister==='low'?0:playRegister==='mid'?1:2;
+  const bestT=_regCands[Math.min(_regIdx,_regCands.length-1)].lbs;
   tensionLbs=Math.max(0.5,Math.min(15,bestT));
   document.getElementById('ten-sl').value=tenValToSl(tensionLbs);
   document.getElementById('ten-ro').value=tensionLbs.toFixed(1)+' lbs';
+  _syncRegisterFromTension(); // keep register buttons in sync with tuned tension
   render();
 
   // Capture "after" frequency — same logic as before, but now with updated tension
@@ -5689,32 +6015,115 @@ render=function(){
     // Tick line — extended to pill edge when labeled, standard width otherwise
     const freq=fund/frac;
     const ni=noteInfo(freq);
-    const tickLabeled=ni.snapped&&isInKey(ni.midi);
+    const tickSnapped=ni.snapped;
+    const tickInKey=tickSnapped&&isInKey(ni.midi);
+    // Static label visibility driven by tickLabelMode:
+    // 'always' — label all snapped ticks; 'scale' — only in-key; 'active'/'off' — no static label
+    const tickLabeled=tickSnapped&&(tickLabelMode==='always'||(tickLabelMode==='scale'&&tickInKey));
+    const tickLabelCol=tickInKey?'#0F6E56':'#D85A30';
+    // Invisible hit target — wider/taller than tick line for easy touch
+    // x: SX-20 to 590 covers tick line + label area. Height 28px (±14) slightly
+    // larger than the grey pill (lFS+4=19) for comfortable tapping.
+    const hitRect=mk('rect',{
+      x:0,y:y-14,width:SVG_W,height:28,
+      fill:'transparent',style:'cursor:pointer',
+      'data-tick-frac':String(frac)
+    });
+    // Interaction — synthetic node for showLabel (ticks not in NODES array).
+    // ratio=1/frac mirrors freq=fund/frac. harm=0 → triggerViz skips wave arches.
+    const _tSynNode={frac:frac, ratio:1/frac, harm:0, label:''};
+    const _tCol=ni.snapped?(tickInKey?'#1D9E75':'#D85A30'):'#B4B2A9';
+    const _tLabel=ni.snapped?chromDeg(ni.midi,homeKey):'—';
+    hitRect.addEventListener('mousedown',function(e){
+      try{
+        e.stopPropagation();
+        if(_togglePin(frac,false)){
+          playTone(freq); triggerViz(frac,0,y,_tCol);
+          showStrip(freq,frac,_tLabel,_tCol); showLabel(_tSynNode);
+          if(tickSnapped&&(tickLabelMode==='scale'||tickLabelMode==='active')) _setActiveTickLabel(frac,ni,tickInKey);
+        } else { playTone(freq); triggerViz(frac,0,y,_tCol); }
+      }catch(_e){}
+    });
+    hitRect.addEventListener('touchstart',function(e){
+      try{
+        e.stopPropagation();
+        if(_togglePin(frac,true)){
+          playTone(freq); triggerViz(frac,0,y,_tCol);
+          showStrip(freq,frac,_tLabel,_tCol); showLabel(_tSynNode);
+          if(tickSnapped&&(tickLabelMode==='scale'||tickLabelMode==='active')) _setActiveTickLabel(frac,ni,tickInKey);
+        } else { playTone(freq); triggerViz(frac,0,y,_tCol); }
+      }catch(_e){}
+    },{passive:true});
+    hitRect.addEventListener('mouseenter',function(){
+      try{
+        if(_pinnedFrac!==null&&Math.abs(_pinnedFrac-frac)>0.001) return;
+        showStrip(freq,frac,_tLabel,_tCol); showLabel(_tSynNode);
+        if(tickSnapped&&(tickLabelMode==='scale'||tickLabelMode==='active')) _setActiveTickLabel(frac,ni,tickInKey);
+      }catch(_e){}
+    });
+    hitRect.addEventListener('mouseleave',function(){
+      try{ if(!_pinnedFrac){ clearStrip(); _clearActiveTickLabel(); } }catch(_e){}
+    });
+    ctG.appendChild(hitRect);
+    // Small dot on string — 65% of secondary node radius (r=5→3.25).
+    // Black fill, rendered before tick line so line draws on top.
+    ctG.appendChild(mk('circle',{cx:SX,cy:y,r:3.25,fill:'#1a1a1a','pointer-events':'none'}));
     ctG.appendChild(mk('line',{
       x1:SX-7,x2:tickLabeled?556:SX+7,y1:y,y2:y,
       stroke:'currentColor','stroke-width':'1.5',opacity:'0.65'
     }));
-    // Label only if diatonic to current key — no str°, no home°, no interaction
-    // NOTE: frequency is ET-based (2^(-1/12) offset) — an approximation, not JI
+    // Label block — visibility and color driven by tickLabelMode and tickInKey
     if(tickLabeled){
       const kd=chromDeg(ni.midi,homeKey);
       const noteStr=ni.name+ni.octave;
       const yOff=lFS*0.38;
-      // Grey background pill behind key° + note columns
       ctG.appendChild(mk('rect',{x:554,y:y-lFS*0.72,width:104,height:lFS+4,rx:3,
-        fill:'rgba(128,128,128,0.12)'}));
-      // key° right-aligned with 4px right padding — green, same as diatonic in-key nodes
+        fill:'rgba(128,128,128,0.12)','pointer-events':'none'}));
       ctG.appendChild(mk('text',{x:KD_RX-4,y:y+yOff,'font-size':lFS,'font-weight':'700',
-        'text-anchor':'end',fill:'#0F6E56'},kd));
-      // note name at NOTE_X
+        'text-anchor':'end',fill:tickLabelCol,'pointer-events':'none'},kd));
       ctG.appendChild(mk('text',{x:NOTE_X,y:y+yOff,'font-size':lFS,'font-weight':'700',
-        fill:'#0F6E56'},noteStr));
+        fill:tickLabelCol,'pointer-events':'none'},noteStr));
     }
   });
+  // Refresh or clear active-tick-label after render.
+  // Condition covers both 'scale' (out-of-key ticks need active label) and 'active' modes.
+  // _pinnedFrac may be null here if _clearPin() ran before render() (e.g. key change) —
+  // the else branch ensures the stale label is cleared in that case.
+  if((tickLabelMode==='scale'||tickLabelMode==='active')&&_pinnedFrac!==null){
+    const _pf=CHROM_TICKS.find(tf=>Math.abs(tf-_pinnedFrac)<0.001);
+    if(_pf){ const _pFreq=fundFreq()/_pf; const _pNi=noteInfo(_pFreq); _setActiveTickLabel(_pf,_pNi,_pNi.snapped&&isInKey(_pNi.midi)); }
+    else { _clearActiveTickLabel(); }
+  } else { _clearActiveTickLabel(); }
 };
 const SDEG_X=438;                        // string degree — fixed, left of string, dark grey bold
 const HOME_X=502, KD_RX=592, NOTE_X=618, INFO_X=680, SEG_X=1060;
 const HP_RX=450, HP_W=230;
+
+// ── Active tick label helpers ─────────────────────────────────────
+// Writes key°+note label into tick-active-lbl group (outside render cycle).
+// Called by tick handlers in 'active' mode; cleared by hideLabel patch below.
+function _setActiveTickLabel(frac, ni, inKey){
+  const g=document.getElementById('tick-active-lbl');
+  if(!g||!ni.snapped) return;
+  g.innerHTML='';
+  const lFS=15, y=nY(frac), yOff=lFS*0.38;
+  const col=inKey?'#0F6E56':'#D85A30';
+  const kd=chromDeg(ni.midi,homeKey);
+  const noteStr=ni.name+ni.octave;
+  g.appendChild(mk('rect',{x:554,y:y-lFS*0.72,width:104,height:lFS+4,rx:3,
+    fill:'rgba(128,128,128,0.12)','pointer-events':'none'}));
+  g.appendChild(mk('text',{x:KD_RX-4,y:y+yOff,'font-size':lFS,'font-weight':'700',
+    'text-anchor':'end',fill:col,'pointer-events':'none'},kd));
+  g.appendChild(mk('text',{x:NOTE_X,y:y+yOff,'font-size':lFS,'font-weight':'700',
+    fill:col,'pointer-events':'none'},noteStr));
+}
+function _clearActiveTickLabel(){
+  const g=document.getElementById('tick-active-lbl');
+  if(g) g.innerHTML='';
+}
+// Patch hideLabel to also clear active tick label
+const _hideLabel_tickLbl=hideLabel;
+hideLabel=function(){ _hideLabel_tickLbl(); _clearActiveTickLabel(); };
 
 // ── Home node ─────────────────────────────────────────────────────
 // homeNode: 1-7 (scale degree). 1 = fundamental, 5 = fifth node, etc.
@@ -6518,7 +6927,7 @@ COF_ORDER.forEach(i=>{
   const b=document.createElement('button');
   b.className='kbtn'+(i===7?' on':'');
   b.textContent=NOTES[i];
-  b.onclick=()=>{_clearPin();homeKey=i;document.querySelectorAll('.kbtn').forEach(x=>x.classList.remove('on'));b.classList.add('on');updateTuneBtn();updateScaleSpelling();render();};
+  b.onclick=()=>{_clearPin();homeKey=i;closePlayDegPicker();document.querySelectorAll('.kbtn').forEach(x=>x.classList.remove('on'));b.classList.add('on');updateTuneBtn();updateScaleSpelling();render();};
   kg.appendChild(b);
 });
 
