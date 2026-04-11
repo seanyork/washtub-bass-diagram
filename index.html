@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.1.1</title>
+<title>Washtub Bass String Map · v7.1.3</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -560,12 +560,16 @@ input[type=range]{width:110px;cursor:pointer;}
   <!-- Row highlight line gradient: full opacity left/right, fades through label columns
        (str°≈438, home°≈502, key°≈592, note≈618) to avoid visual noise over text. -->
   <linearGradient id="row-hl-line-grad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1380" y2="0">
-    <stop offset="0"    stop-color="#C89614" stop-opacity="0.8"/>
-    <stop offset="0.29" stop-color="#C89614" stop-opacity="0.8"/>
-    <stop offset="0.33" stop-color="#C89614" stop-opacity="0.04"/>
-    <stop offset="0.50" stop-color="#C89614" stop-opacity="0.04"/>
-    <stop offset="0.55" stop-color="#C89614" stop-opacity="0.8"/>
-    <stop offset="1"    stop-color="#C89614" stop-opacity="0.8"/>
+    <stop offset="0"     stop-color="#C89614" stop-opacity="0.85"/>
+    <stop offset="0.29"  stop-color="#C89614" stop-opacity="0.85"/>
+    <stop offset="0.32"  stop-color="#C89614" stop-opacity="0.1"/>
+    <stop offset="0.367" stop-color="#C89614" stop-opacity="0.1"/>
+    <stop offset="0.390" stop-color="#C89614" stop-opacity="0.85"/>
+    <stop offset="0.394" stop-color="#C89614" stop-opacity="0.85"/>
+    <stop offset="0.41"  stop-color="#C89614" stop-opacity="0.1"/>
+    <stop offset="0.46"  stop-color="#C89614" stop-opacity="0.1"/>
+    <stop offset="0.51"  stop-color="#C89614" stop-opacity="0.85"/>
+    <stop offset="1"     stop-color="#C89614" stop-opacity="0.85"/>
   </linearGradient>
 </defs>
 
@@ -1387,6 +1391,7 @@ function setRowHL(nodeFrac, opacity){
   Object.entries({x:0,y:y-16,width:SVG_W,height:32,fill:`rgba(200,150,20,${op})`,rx:2})
     .forEach(([k,v])=>rect.setAttribute(k,v));
   g.appendChild(rect);
+  _drawRowHLLine(g, nodeFrac);
 }
 
 function setMultiRowHL(fracs, opacity){
@@ -1816,9 +1821,9 @@ function showLabel(node){
   if(cofVisible && _playPanelOpen && _notePreviewOn){
     refreshPreviewHL();
     const g=document.getElementById('row-hl');
-    if(g) _drawRowHLRect(g, node.frac, _HL_GOLD+'0.25)');
+    if(g){ _drawRowHLRect(g, node.frac, _HL_GOLD+'0.32)'); _drawRowHLLine(g, node.frac); }
   } else {
-    setRowHL(node.frac, 0.25);
+    setRowHL(node.frac, 0.32);
   }
   drawRulerSVG(node);
   const fund=fundFreq(), esl=effectiveSpeakingLength();
@@ -3002,8 +3007,19 @@ function openPlayDegPicker(){
     const ni=noteInfo(f);
     const note=ni.snapped?ni.name:'?';
     const on=playRoot==='degree'&&playStartDeg===d;
-    return '<div class="pdp-item'+(on?' on':'')+'" onclick="setPlayStartDeg('+d+')">'+d+' \xb7 '+note+'</div>';
+    return '<div class="pdp-item'+(on?' on':'')+'" data-deg="'+d+'" onclick="setPlayStartDeg('+d+')">'+d+' \xb7 '+note+'</div>';
   }).join('');
+  // Block touch propagation to SVG canvas underneath — picker items sit over the canvas
+  // and raw touchstart on SVG hit rects would fire after onclick, re-setting _activeNode.
+  pk.ontouchstart=function(e){ e.stopPropagation(); };
+  // Wire touchstart directly on items for reliable iOS response
+  pk.querySelectorAll('.pdp-item').forEach(el=>{
+    el.addEventListener('touchstart',function(ev){
+      ev.stopPropagation(); ev.preventDefault();
+      const d=parseInt(el.getAttribute('data-deg'));
+      if(d) setPlayStartDeg(d);
+    },{passive:false});
+  });
   // Position: right of play drawer (drawer right edge ~186px), aligned to button row
   const btn=document.getElementById('pdr-deg');
   const shell=document.getElementById('app-shell');
@@ -3021,6 +3037,7 @@ function openPlayDegPicker(){
 
 function setPlayStartDeg(d){
   playStartDeg=d;
+  _activeNode=null; _activeFrac=null; // clear stale hover so render() doesn't re-show it
   closePlayDegPicker();
   setPlayRoot('degree');
 }
@@ -3216,7 +3233,7 @@ function _drawRowHLLine(g, frac){
   line.setAttribute('x1','0'); line.setAttribute('x2',String(SVG_W));
   line.setAttribute('y1',String(y)); line.setAttribute('y2',String(y));
   line.setAttribute('stroke','url(#row-hl-line-grad)');
-  line.setAttribute('stroke-width','2');
+  line.setAttribute('stroke-width','4');
   line.setAttribute('pointer-events','none');
   g.appendChild(line);
 }
@@ -3241,21 +3258,50 @@ function _buildPreviewFreqs(){
   const fund=fundFreq();
   const steps=MODE_SCALES[currentMode];
   const regFreq=_resolvedRegisterFreq(); // always degree 1 at register
+  // Helper: add ET tick freqs to a freq list if tickLabelMode is not 'off'
+  function _addTickFreqs(arr){
+    if(tickLabelMode==='off') return arr;
+    CHROM_TICKS.forEach(frac=>{
+      const f=fund/frac;
+      const ni=noteInfo(f);
+      if(ni.snapped&&isInKey(ni.midi)) arr.push({freq:f,frac:frac,_isTick:true,_played:true});
+    });
+    return arr;
+  }
   if(playSeq==='scale-full'){
     const maxFreq=fund*Math.max(...NODES.map(n=>n.ratio));
-    const freqObjs=[]; let f=regFreq; let stepIdx=0;
-    while(f<=maxFreq){
-      freqObjs.push({freq:f,frac:null});
-      f*=Math.pow(2,steps[stepIdx%7]/12);
-      stepIdx++;
-      if(stepIdx>100) break;
+    const freqObjs=[]; let f=regFreq;
+    const startDeg=_playStartDeg();
+    let stepIdx=startDeg-1;
+    // All notes are played in scale-full — no unplayed distinction needed
+    let preStepIdx=0;
+    // First pass: notes before start (played=false, from deg 1 to startDeg-1)
+    let fPre=regFreq;
+    for(let i=0;i<startDeg-1;i++){
+      if(fPre<=maxFreq) freqObjs.push({freq:fPre,frac:null,_played:false});
+      fPre*=Math.pow(2,steps[i]/12);
     }
-    return freqObjs;
+    // Main pass: from start note upward (played=true)
+    let fPlay=regFreq;
+    for(let i=0;i<startDeg-1;i++) fPlay*=Math.pow(2,steps[i]/12);
+    let si=startDeg-1;
+    while(fPlay<=maxFreq){
+      freqObjs.push({freq:fPlay,frac:null,_played:true});
+      fPlay*=Math.pow(2,steps[si%7]/12);
+      si++;
+      if(si>startDeg-1+100) break;
+    }
+    return _addTickFreqs(freqObjs);
   }
-  // scale-1oct preview: always full 8 notes from degree 1
-  const freqObjs=[{freq:regFreq,frac:null}]; let f=regFreq;
-  steps.forEach(st=>{ f*=Math.pow(2,st/12); freqObjs.push({freq:f,frac:null}); });
-  return freqObjs;
+  // scale-1oct: full 8 notes from deg 1; played = those at/after start degree
+  const startDeg=_playStartDeg();
+  const freqObjs=[]; let f=regFreq;
+  for(let i=0;i<7;i++){
+    freqObjs.push({freq:f,frac:null,_played:i>=startDeg-1});
+    f*=Math.pow(2,steps[i]/12);
+  }
+  freqObjs.push({freq:f,frac:null,_played:true}); // tonic at top
+  return _addTickFreqs(freqObjs);
 }
 
 function refreshPreviewHL(){
@@ -3271,25 +3317,39 @@ function refreshPreviewHL(){
   const isCapo=nodeView==='capo';
   const cn=isCapo?CAPO_NODES[capoNodeIdx]:null;
   const cf=cn?1-cn.phi:null;
-  const goldFracs=[], tealFracs=[];
+  const goldFracs=[], tealFracs=[];        // will be played — get rect + line
+  const goldSkipFracs=[], tealSkipFracs=[]; // skipped — get rect only
   freqs.forEach(f=>{
     const fv=typeof f==='object'?f.freq:f;
+    const played=typeof f==='object'?(f._played!==false):true; // default true
+    const isTick=typeof f==='object'&&f._isTick;
     if(isCapo){
       const seg=typeof f==='object'?f._seg:_playCapoSegment();
-      const node=_nodeForFreqCapo(fv,seg);
+      const node=isTick?null:_nodeForFreqCapo(fv,seg);
       if(!node) return;
       const fullFrac=node._isFund
         ?(seg==='lower'?cf:1.0)
         :(seg==='lower'?node.frac*cf:cf+node.frac*(1-cf));
-      if(seg==='lower') tealFracs.push(fullFrac);
-      else goldFracs.push(fullFrac);
+      if(seg==='lower'){ if(played) tealFracs.push(fullFrac); else tealSkipFracs.push(fullFrac); }
+      else { if(played) goldFracs.push(fullFrac); else goldSkipFracs.push(fullFrac); }
     } else {
+      // Check tick nodes first
+      if(isTick){
+        const tickFrac=typeof f==='object'?f.frac:null;
+        if(tickFrac&&played) goldFracs.push(tickFrac);
+        else if(tickFrac) goldSkipFracs.push(tickFrac);
+        return;
+      }
       const node=getPlayableNodes().find(n=>Math.abs(n.freq/fv-1)<0.02);
-      if(node) goldFracs.push(node.frac);
+      if(node){ if(played) goldFracs.push(node.frac); else goldSkipFracs.push(node.frac); }
     }
   });
   // Clear and redraw preview layer
   g.innerHTML='';
+  // Unplayed: rect only (no line) — half opacity to signal they won't be played
+  tealSkipFracs.forEach(frac=>_drawRowHLRect(g, frac, _HL_TEAL+'0.13)'));
+  goldSkipFracs.forEach(frac=>_drawRowHLRect(g, frac, _HL_GOLD+'0.13)'));
+  // Played: rect + line
   tealFracs.forEach(frac=>{ _drawRowHLRect(g, frac, _HL_TEAL+'0.25)'); _drawRowHLLine(g, frac); });
   goldFracs.forEach(frac=>{ _drawRowHLRect(g, frac, _HL_GOLD+'0.25)'); _drawRowHLLine(g, frac); });
   // Pin overlay on top — segment-aware color; in-preview nodes get stacked opacity, out-of-preview get pin color alone
@@ -3297,6 +3357,7 @@ function refreshPreviewHL(){
     const isLowerCapo=nodeView==='capo' && cf!==null && _pinnedFrac<=cf+0.001;
     const pinColor=isLowerCapo?_HL_PIN_TEAL:_HL_PIN;
     _drawRowHLRect(g, _pinnedFrac, pinColor+'0.35)');
+    _drawRowHLLine(g, _pinnedFrac);
   }
 }
 
@@ -3653,7 +3714,7 @@ function _showNodeForPlayback(node, freq){
   if(cofVisible && _playPanelOpen && _notePreviewOn){
     refreshPreviewHL();
     const g=document.getElementById('row-hl');
-    if(g){ _drawRowHLRect(g, node.frac, _HL_GOLD+'0.25)'); _drawRowHLLine(g, node.frac); }
+    if(g){ _drawRowHLRect(g, node.frac, _HL_GOLD+'0.32)'); _drawRowHLLine(g, node.frac); }
   }
   // Non-preview case: setRowHL already called inside showLabel above — no extra work needed
 }
@@ -3661,9 +3722,40 @@ function _showNodeForPlayback(node, freq){
 function _hlNodeForFreq(freq){
   // Freq match only — 2% tolerance covers JI/ET divergence when string is in tune.
   // When detuned, no match fires — correct behavior.
-  // Note+name fallback removed: caused false highlights when string was detuned.
   const node=_nodeForFreq(freq);
-  if(node) _showNodeForPlayback(node, freq);
+  if(node){ _showNodeForPlayback(node, freq); return; }
+  // #74: check ET tick positions when no JI node matches
+  if(tickLabelMode!=='off'){
+    const fund=fundFreq();
+    for(const tf of CHROM_TICKS){
+      const tickFreq=fund/tf;
+      if(Math.abs(tickFreq/freq-1)<0.02){
+        _showTickForPlayback(tf, tickFreq); return;
+      }
+    }
+  }
+}
+
+// Playback highlight for ET tick nodes — mirrors _showNodeForPlayback but tick-shaped.
+// Draws row highlight + line, fires strip with ET marker in harmonic slot.
+function _showTickForPlayback(frac, freq){
+  const ni=noteInfo(freq);
+  if(!ni.snapped) return;
+  const inKey=isInKey(ni.midi);
+  const col=inKey?'#1D9E75':'#D85A30';
+  const label=chromDeg(ni.midi,homeKey);
+  // Strip — reuses showStrip which handles nts-right via patch
+  showStrip(freq, frac, label, col);
+  // Row highlight + line
+  if(cofVisible&&_playPanelOpen&&_notePreviewOn){
+    refreshPreviewHL();
+    const g=document.getElementById('row-hl');
+    if(g){ _drawRowHLRect(g, frac, _HL_GOLD+'0.32)'); _drawRowHLLine(g, frac); }
+  } else {
+    setRowHL(frac, 0.32);
+  }
+  // Node viz (concentric circles, no wave arches for ticks)
+  triggerViz(frac, 0, nY(frac), col);
 }
 
 // Capo-mode highlight for playback — mirrors _hlNodeForFreq but routes through
@@ -3675,7 +3767,7 @@ function _hlNodeForFreqCapo(freq, seg){
   const node=_nodeForFreqCapo(freq, seg);
   if(!node){ hideLabel(); return; }
   const col=seg==='lower'?SUB_COL_LOWER:SUB_COL_UPPER;
-  const hlColor=seg==='lower'?(_HL_TEAL+'0.25)'):(_HL_GOLD+'0.25)');
+  const hlColor=seg==='lower'?(_HL_TEAL+'0.32)'):(_HL_GOLD+'0.32)');
   if(node._isFund){
     _showCapoEndNode(seg, cf);
     // Active overlay on top of preview layer
@@ -4808,7 +4900,7 @@ function _showCapoEndNode(seg, cf){
     }
     const y=TY-pseudoNode.frac*SPX;
     const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
-    const hlColor=seg==='lower'?(_HL_TEAL+'0.25)'):(_HL_GOLD+'0.25)');
+    const hlColor=seg==='lower'?(_HL_TEAL+'0.32)'):(_HL_GOLD+'0.32)');
     Object.entries({x:0,y:y-16,width:SVG_W,height:32,fill:hlColor,rx:2})
       .forEach(([k,v])=>rect.setAttribute(k,v));
     rowHl.appendChild(rect);
@@ -5063,7 +5155,7 @@ function _showSubNode(node, seg, freq, cf, diagY){
     } else {
       rowHl.innerHTML='';
     }
-    const hlColor=seg==='lower'?(_HL_TEAL+'0.25)'):(_HL_GOLD+'0.25)');
+    const hlColor=seg==='lower'?(_HL_TEAL+'0.32)'):(_HL_GOLD+'0.32)');
     const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
     Object.entries({x:0,y:diagY-16,width:SVG_W,height:32,fill:hlColor,rx:2})
       .forEach(([k,v])=>rect.setAttribute(k,v));
@@ -6341,7 +6433,7 @@ function updateNutMarker(){
     if(cofVisible&&_playPanelOpen&&_notePreviewOn){
       refreshPreviewHL();
       const g=document.getElementById('row-hl');
-      if(g) _drawRowHLRect(g, 1.0, _HL_GOLD+'0.25)');
+      if(g) _drawRowHLRect(g, 1.0, _HL_GOLD+'0.32)');
     } else {
       const rh=document.getElementById('row-hl');
       if(rh){rh.innerHTML='';const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
@@ -6391,7 +6483,7 @@ function updateNutMarker(){
     if(cofVisible&&_playPanelOpen&&_notePreviewOn){
       refreshPreviewHL();
       const g=document.getElementById('row-hl');
-      if(g) _drawRowHLRect(g, 1.0, _HL_GOLD+'0.25)');
+      if(g) _drawRowHLRect(g, 1.0, _HL_GOLD+'0.32)');
     } else {
       const rh=document.getElementById('row-hl');
       if(rh){rh.innerHTML='';const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
