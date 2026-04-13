@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.1.16</title>
+<title>Washtub Bass String Map · v7.1.19</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -1429,6 +1429,7 @@ function setMultiRowHL(fracs, opacity){
 let _activeFrac=null, _activeNode=null;
 let _pinnedFrac=null;
 let _lastPinTouch=0; // debounce synthetic mousedown after touchstart
+let _tpFrac=null, _tpStartX=0, _tpStartY=0, _tpMoved=false, _tpOnPin=null; // tap-to-pin state: set on mousedown/touchstart, resolved on mouseup/touchend
 let _suppressHover=false; // true during canvas pan/scroll — prevents hover triggering ruler
 
 function _setPin(frac, fromTouch){
@@ -2101,7 +2102,7 @@ function renderBRCtx(){
 // ── Node view context rows ────────────────────────────────────────
 function renderNodeViewCtx(view){
   if(view==='full'){
-    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v7.1.16</span></div>
+    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v7.1.19</span></div>
             <div class="br-ctx-row" style="gap:5px;justify-content:center;">
               <div class="br-readme-btn" onclick="openReadme('instrument')">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -6360,27 +6361,28 @@ render=function(){
     const _tLabel=ni.snapped?chromDeg(ni.midi,homeKey):'—';
     hitRect.addEventListener('mousedown',function(e){
       try{
-        e.stopPropagation();
-        if(_togglePin(frac,false)){
-          playTone(freq); triggerViz(frac,0,y,_tCol);
-          showStrip(freq,frac,_tLabel,_tCol); showLabel(_tSynNode);
-          if(tickSnapped&&(tickLabelMode==='scale'||tickLabelMode==='active')) _setActiveTickLabel(frac,ni,tickInKey);
-        } else { playTone(freq); triggerViz(frac,0,y,_tCol); }
+        _tpFrac=frac; _tpStartX=e.clientX; _tpStartY=e.clientY; _tpMoved=false;
+        _tpOnPin=()=>{ triggerViz(frac,0,y,_tCol); showStrip(freq,frac,_tLabel,_tCol); showLabel(_tSynNode); if(tickSnapped&&(tickLabelMode==='scale'||tickLabelMode==='active')) _setActiveTickLabel(frac,ni,tickInKey); };
+        playTone(freq);
       }catch(_e){}
     });
     hitRect.addEventListener('touchstart',function(e){
       try{
-        e.stopPropagation();
-        if(_togglePin(frac,true)){
-          playTone(freq); triggerViz(frac,0,y,_tCol);
-          showStrip(freq,frac,_tLabel,_tCol); showLabel(_tSynNode);
-          if(tickSnapped&&(tickLabelMode==='scale'||tickLabelMode==='active')) _setActiveTickLabel(frac,ni,tickInKey);
-        } else { playTone(freq); triggerViz(frac,0,y,_tCol); }
+        _tpFrac=frac; _tpStartX=e.touches[0].clientX; _tpStartY=e.touches[0].clientY; _tpMoved=false;
+        _tpOnPin=()=>{ triggerViz(frac,0,y,_tCol); showStrip(freq,frac,_tLabel,_tCol); showLabel(_tSynNode); if(tickSnapped&&(tickLabelMode==='scale'||tickLabelMode==='active')) _setActiveTickLabel(frac,ni,tickInKey); };
+        playTone(freq);
+      }catch(_e){}
+    },{passive:true});
+    hitRect.addEventListener('touchend',function(){
+      try{
+        if(_tpFrac!==null&&!_tpMoved){ if(_togglePin(frac,true)&&_tpOnPin) _tpOnPin(); }
+        else if(_pinnedFrac===null){ clearStrip(); }
+        _tpFrac=null; _tpMoved=false; _tpOnPin=null;
       }catch(_e){}
     },{passive:true});
     hitRect.addEventListener('mouseenter',function(){
       try{
-        if(_pinnedFrac!==null&&Math.abs(_pinnedFrac-frac)>0.001) return;
+        if(dragging||(_pinnedFrac!==null&&Math.abs(_pinnedFrac-frac)>0.001)) return;
         showStrip(freq,frac,_tLabel,_tCol); showLabel(_tSynNode);
         if(tickSnapped&&(tickLabelMode==='scale'||tickLabelMode==='active')) _setActiveTickLabel(frac,ni,tickInKey);
       }catch(_e){}
@@ -7122,8 +7124,9 @@ function render(){
     }
     const nutHit=mk('rect',{x:0,y:nutY-nutFS*0.65,width:SVG_W,height:nutRowH,fill:'transparent',class:'row-hit'});
     const _nutNode={frac:1.0,ratio:1,fs:'1/1',rs:'1:1',desc:'fundamental',label:'1',primary:true,tonic:false};
-    nutHit.addEventListener('mousedown',()=>{
+    nutHit.addEventListener('mousedown',e=>{
       if(nodeView==='capo'){
+        _tpFrac=null; _tpOnPin=null;
         _lastCapoSegment='upper';
         const uFreq=capoUpperFreq();
         const cn=CAPO_NODES[capoNodeIdx];
@@ -7131,17 +7134,19 @@ function render(){
         triggerCapoViz(null, SUB_COL_UPPER, [{topY:nutEffY(), botY:capoYpx(), frac:1.0, harm:1, color:SUB_COL_UPPER}]);
         document.getElementById('tone-row1').innerHTML=stripVoiceHTML(uFreq, cn.phi, '↑ '+cn.abbr, CAPO_COL);
       } else {
-        if(_togglePin(1.0, false)){ playTone(fund); triggerViz(1.0, 1, NY, nutColor); showStrip(fund,1.0,nutHomeLabel,nutColor); showLabel(_nutNode); }
-        else { playTone(fund); triggerViz(1.0, 1, NY, nutColor); }
+        _tpFrac=1.0; _tpStartX=e.clientX; _tpStartY=e.clientY; _tpMoved=false;
+        _tpOnPin=()=>{ triggerViz(1.0,1,NY,nutColor); showStrip(fund,1.0,nutHomeLabel,nutColor); showLabel(_nutNode); };
+        playTone(fund);
       }
     });
     nutHit.addEventListener('mouseenter',()=>{
-      if(_pinnedFrac!==null&&_pinnedFrac!==1.0) return;
+      if(dragging||(_pinnedFrac!==null&&_pinnedFrac!==1.0)) return;
       showStrip(fund,1.0,nutHomeLabel,nutColor); showLabel(_nutNode);
     });
     nutHit.addEventListener('mouseleave',()=>{ clearStrip(); if(!_pinnedFrac) hideLabel(); });
-    nutHit.addEventListener('touchstart',()=>{
+    nutHit.addEventListener('touchstart',e=>{
       if(nodeView==='capo'){
+        _tpFrac=null; _tpOnPin=null;
         _lastCapoSegment='upper';
         const uFreq=capoUpperFreq();
         const cn=CAPO_NODES[capoNodeIdx];
@@ -7149,11 +7154,16 @@ function render(){
         triggerCapoViz(null, SUB_COL_UPPER, [{topY:nutEffY(), botY:capoYpx(), frac:1.0, harm:1, color:SUB_COL_UPPER}]);
         document.getElementById('tone-row1').innerHTML=stripVoiceHTML(uFreq, cn.phi, '↑ '+cn.abbr, CAPO_COL);
       } else {
-        if(_togglePin(1.0, true)){ playTone(fund); triggerViz(1.0, 1, NY, nutColor); showStrip(fund,1.0,nutHomeLabel,nutColor); showLabel(_nutNode); }
-        else { playTone(fund); triggerViz(1.0, 1, NY, nutColor); }
+        _tpFrac=1.0; _tpStartX=e.touches[0].clientX; _tpStartY=e.touches[0].clientY; _tpMoved=false;
+        _tpOnPin=()=>{ triggerViz(1.0,1,NY,nutColor); showStrip(fund,1.0,nutHomeLabel,nutColor); showLabel(_nutNode); };
+        playTone(fund);
       }
     },{passive:true});
-    nutHit.addEventListener('touchend',()=>{ clearStrip(); },{passive:true});
+    nutHit.addEventListener('touchend',()=>{
+      if(nodeView!=='capo'&&_tpFrac!==null&&!_tpMoved){ if(_togglePin(1.0,true)&&_tpOnPin) _tpOnPin(); }
+      else if(_pinnedFrac===null){ clearStrip(); }
+      _tpFrac=null; _tpMoved=false; _tpOnPin=null;
+    },{passive:true});
     nutG.appendChild(nutHit);
   }
 
@@ -7226,20 +7236,26 @@ function render(){
     }
 
     const hitRect=mk('rect',{x:0,y:y-rowH/2,width:SVG_W,height:rowH,fill:'transparent',class:'row-hit'});
-    hitRect.addEventListener('mousedown',()=>{ try{
-      if(_togglePin(node.frac, false)){ playTone(freq); triggerViz(node.frac, node.harm, y, c.text); showStrip(freq,node.frac,displayLabel,c.text); }
-      else { playTone(freq); triggerViz(node.frac, node.harm, y, c.text); }
+    hitRect.addEventListener('mousedown',e=>{ try{
+      _tpFrac=node.frac; _tpStartX=e.clientX; _tpStartY=e.clientY; _tpMoved=false;
+      _tpOnPin=()=>{ triggerViz(node.frac,node.harm,y,c.text); showStrip(freq,node.frac,displayLabel,c.text); };
+      playTone(freq);
     }catch(e){} });
     hitRect.addEventListener('mouseenter',()=>{ try{
-      if(_pinnedFrac!==null&&_pinnedFrac!==node.frac) return;
+      if(dragging||(_pinnedFrac!==null&&_pinnedFrac!==node.frac)) return;
       showStrip(freq,node.frac,displayLabel,c.text);
     }catch(e){} });
     hitRect.addEventListener('mouseleave',()=>{ try{ clearStrip(); }catch(e){} });
-    hitRect.addEventListener('touchstart',()=>{ try{
-      if(_togglePin(node.frac, true)){ playTone(freq); triggerViz(node.frac, node.harm, y, c.text); showStrip(freq,node.frac,displayLabel,c.text); }
-      else { playTone(freq); triggerViz(node.frac, node.harm, y, c.text); }
+    hitRect.addEventListener('touchstart',e=>{ try{
+      _tpFrac=node.frac; _tpStartX=e.touches[0].clientX; _tpStartY=e.touches[0].clientY; _tpMoved=false;
+      _tpOnPin=()=>{ triggerViz(node.frac,node.harm,y,c.text); showStrip(freq,node.frac,displayLabel,c.text); };
+      playTone(freq);
     }catch(e){} },{passive:true});
-    hitRect.addEventListener('touchend',()=>{ try{ clearStrip(); }catch(e){} },{passive:true});
+    hitRect.addEventListener('touchend',()=>{ try{
+      if(_tpFrac!==null&&!_tpMoved){ if(_togglePin(node.frac,true)&&_tpOnPin) _tpOnPin(); }
+      else if(_pinnedFrac===null){ clearStrip(); }
+      _tpFrac=null; _tpMoved=false; _tpOnPin=null;
+    }catch(e){} },{passive:true});
     g.appendChild(hitRect);
   });
 }
@@ -7337,16 +7353,22 @@ function zoomFit(){
 }
 
 canvas.addEventListener('mousedown',e=>{
-  if(e.target.classList.contains('row-hit'))return;
   dragging=true;canvas.classList.add('dragging');
   dsx=e.clientX;dsy=e.clientY;dtx=tx;dty=ty;
 });
 window.addEventListener('mousemove',e=>{
   if(!dragging)return;
   _suppressHover=true;
-  tx=dtx+(e.clientX-dsx);ty=dty+(e.clientY-dsy);clamp();applyT();
+  const _mdx=e.clientX-dsx, _mdy=e.clientY-dsy;
+  if(_tpFrac!==null&&Math.hypot(_mdx,_mdy)>10) _tpMoved=true;
+  tx=dtx+_mdx;ty=dty+_mdy;clamp();applyT();
 });
-window.addEventListener('mouseup',()=>{dragging=false;canvas.classList.remove('dragging');_suppressHover=false;});
+window.addEventListener('mouseup',()=>{
+  if(_tpFrac!==null&&!_tpMoved){ if(_togglePin(_tpFrac,false)&&_tpOnPin) _tpOnPin(); }
+  else if(_tpFrac!==null&&_pinnedFrac===null){ clearStrip(); }
+  dragging=false;canvas.classList.remove('dragging');_suppressHover=false;
+  _tpFrac=null; _tpMoved=false; _tpOnPin=null;
+});
 window.addEventListener('touchend',()=>{_suppressHover=false;},{passive:true});
 let _wheelTimer=null;
 canvas.addEventListener('wheel',e=>{
@@ -7382,7 +7404,7 @@ canvas.addEventListener('touchstart',e=>{
     _t2StartDist=m.dist; _t2StartSc=sc;
     _t2StartTx=tx; _t2StartTy=ty;
     _t2MidX=m.x; _t2MidY=m.y;
-  } else if(e.touches.length===1&&!e.target.classList.contains('row-hit')){
+  } else if(e.touches.length===1){
     dragging=true;
     dsx=e.touches[0].clientX; dsy=e.touches[0].clientY;
     dtx=tx; dty=ty;
@@ -7397,14 +7419,16 @@ canvas.addEventListener('touchmove',e=>{
     smartPan();
     clamp(); applyT();
   } else if(dragging&&e.touches.length===1){
-    tx=dtx+(e.touches[0].clientX-dsx);
-    ty=dty+(e.touches[0].clientY-dsy);
+    const _tdx=e.touches[0].clientX-dsx, _tdy=e.touches[0].clientY-dsy;
+    if(_tpFrac!==null&&Math.hypot(_tdx,_tdy)>10) _tpMoved=true;
+    tx=dtx+_tdx; ty=dty+_tdy;
     clamp(); applyT();
   }
 },{passive:false});
 
 canvas.addEventListener('touchend',e=>{
   if(e.touches.length<2){ dragging=false; }
+  _tpFrac=null; _tpMoved=false; _tpOnPin=null;
 });
 
 // ── Overflow drag gesture ─────────────────────────────────────────
