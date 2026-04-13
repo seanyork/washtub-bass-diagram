@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.1.13</title>
+<title>Washtub Bass String Map · v7.1.15</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -120,7 +120,7 @@ input[type=range]{width:110px;cursor:pointer;}
 .lr-chip-sub{font-size:7px;color:#533AB7;line-height:1;}
 .lr-sep{width:44px;height:0.5px;background:rgba(128,128,128,0.2);flex-shrink:0;}
 #lr-zoom-cluster{display:grid;grid-template-columns:1fr 1fr;gap:2px;width:44px;flex-shrink:0;}
-.lr-zb{min-width:0;width:100%;height:24px;border:0.5px solid rgba(128,128,128,0.25);border-radius:4px;font-size:13px;color:#555;display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;overflow:hidden;}
+.lr-zb{min-width:0;width:100%;height:24px;border:0.5px solid rgba(128,128,128,0.25);border-radius:4px;font-size:13px;color:#555;display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;overflow:hidden;-webkit-appearance:none;appearance:none;}
 .lr-zb:hover{border-color:rgba(128,128,128,0.5);}
 @media(prefers-color-scheme:dark){.lr-zb{background:#333;color:#ddd;}}
 .lr-zb-pct{font-size:7.5px;font-weight:600;}
@@ -546,7 +546,7 @@ input[type=range]{width:110px;cursor:pointer;}
       <div id="lr-zoom-cluster">
         <button class="lr-zb" onclick="zoom(1.3)" title="zoom in">+</button>
         <button class="lr-zb" onclick="zoom(1/1.3)" title="zoom out">−</button>
-        <button class="lr-zb" onclick="fitV()" title="fit vertical" style="font-size:11px;">↕</button>
+        <button class="lr-zb" onclick="fitV()" title="fit vertical" style="font-size:11px;-webkit-appearance:none;appearance:none;">↕</button>
         <button class="lr-zb lr-zb-pct" onclick="zoomTo1()" title="fit columns" style="font-size:8px;font-weight:600;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><polyline points="4,4 1,7 4,10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="10,4 13,7 10,10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
 
@@ -841,7 +841,7 @@ input[type=range]{width:110px;cursor:pointer;}
       <div class="pd-row">
         <button class="pd-btn on" id="pdr-home" onclick="setPlayRoot('homenode')" style="display:flex;align-items:center;justify-content:center;padding:0;"><svg width="15" height="15" viewBox="-1 -1 16 16"><circle cx="7" cy="7" r="7.5" fill="white"/><circle cx="7" cy="7" r="6.5" fill="none" stroke="#C92CD5" stroke-width="1.2" opacity="0.4"/><circle cx="7" cy="7" r="4" fill="#F7E0F9" stroke="#C92CD5" stroke-width="1.2"/><circle cx="7" cy="7" r="1.8" fill="#C92CD5"/></svg></button>
         <button class="pd-btn" id="pdr-fund" onclick="setPlayRoot('fundamental')"><em style="font-style:italic;font-size:10px;">1f</em></button>
-        <button class="pd-btn" id="pdr-deg" onclick="openPlayDegPicker()">1 · G ▾</button>
+        <button class="pd-btn" id="pdr-deg" onclick="openPlayDegPicker()" style="flex:1.6;min-width:0;">1 · G ▾</button>
       </div>
       <div class="pd-lbl" id="pdlbl-start">start at note</div>
     </div>
@@ -2101,7 +2101,7 @@ function renderBRCtx(){
 // ── Node view context rows ────────────────────────────────────────
 function renderNodeViewCtx(view){
   if(view==='full'){
-    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v7.0.0</span></div>
+    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v7.1.15</span></div>
             <div class="br-ctx-row" style="gap:5px;justify-content:center;">
               <div class="br-readme-btn" onclick="openReadme('instrument')">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2998,9 +2998,8 @@ function setPlayRegister(r){
 function _syncRegisterFromTension(){
   const cands=_getRegisterCandidates(1);
   if(!cands.length) return;
-  let best=0, bestDist=Infinity;
-  cands.forEach((c,i)=>{ const d=Math.abs(c.lbs-tensionLbs); if(d<bestDist){bestDist=d;best=i;} });
-  playRegister=['low','mid','high'][Math.min(best,2)];
+  // Default to lowest available register (#106)
+  playRegister=['low','mid','high'][0];
 }
 
 // ── Degree picker helpers ──────────────────────────────────────────
@@ -3025,7 +3024,7 @@ function _syncDegBtn(){
   const ni=noteInfo(degFreq);
   const noteName=ni.snapped?ni.name:'?';
   if(thin){
-    bd.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;line-height:1;gap:0px;"><span style="font-size:9px;font-weight:700;">'+playStartDeg+'/'+noteName+'</span><span style="font-size:8px;">▾</span></div>';
+    bd.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;line-height:1;gap:0px;"><span style="font-size:9px;font-weight:700;">'+playStartDeg+' '+noteName+'</span><span style="font-size:8px;">▾</span></div>';
   } else {
     bd.textContent=playStartDeg+' \xb7 '+noteName+' \u25be';
   }
