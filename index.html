@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.1.19</title>
+<title>Washtub Bass String Map · v7.1.61</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -358,10 +358,18 @@ input[type=range]{width:110px;cursor:pointer;}
 #readme-panel-body hr{border:none;border-top:0.5px solid rgba(128,128,128,0.2);margin:12px 0;}
 #readme-panel-body strong{font-weight:600;}
 #readme-panel-body em{font-style:italic;color:#888;}
-.br-readme-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:48px;height:48px;border:0.5px solid rgba(128,128,128,0.25);border-radius:6px;background:#fff;cursor:pointer;flex-shrink:0;}
-@media(prefers-color-scheme:dark){.br-readme-btn{background:#333;}}
-.br-readme-btn:active{background:rgba(83,58,183,0.08);border-color:#533AB7;}
-.br-readme-btn-lbl{font-size:7px;color:#888;text-transform:uppercase;letter-spacing:0.04em;}
+.br-action-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:52px;aspect-ratio:1;border:0.5px solid rgba(128,128,128,0.25);border-radius:7px;background:#fff;cursor:pointer;flex-shrink:0;}
+@media(prefers-color-scheme:dark){.br-action-btn{background:#333;}}
+.br-action-btn:active{background:rgba(83,58,183,0.08);border-color:#533AB7;}
+.br-action-btn.muted{background:rgba(180,40,40,0.07);border-color:rgba(180,40,40,0.4);}
+.br-action-btn-lbl{font-size:7px;color:#888;text-transform:uppercase;letter-spacing:0.04em;}
+#readme-section-popover{display:none;position:absolute;bottom:calc(100% + 4px);left:56px;z-index:30;background:#fff;border:0.5px solid rgba(128,128,128,0.22);border-radius:8px;box-shadow:0 -4px 16px rgba(0,0,0,0.1);padding:4px;min-width:180px;}
+@media(prefers-color-scheme:dark){#readme-section-popover{background:#2a2a2a;}}
+#readme-section-popover.visible{display:block;}
+.rsp-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:5px;cursor:pointer;font-size:11px;color:#333;}
+@media(prefers-color-scheme:dark){.rsp-item{color:#ddd;}}
+.rsp-item:active{background:rgba(83,58,183,0.1);}
+.rsp-item svg{flex-shrink:0;opacity:0.75;}
 /* ── Node / Wave Visualization ──────────────────────────────────── */
 @keyframes vizFadeOut {
   0%   { opacity: 1; }
@@ -741,6 +749,8 @@ input[type=range]{width:110px;cursor:pointer;}
   <!-- scale + home pickers — direct children of app-shell so they overflow bottom rail -->
   <div id="scale-picker"></div>
   <div id="home-picker"></div>
+  <!-- readme section popover — anchored to bottom-rail -->
+  <div id="readme-section-popover"></div>
 
   <!-- Play drawer: slides up above play row when open.
        Capped by top:0 so it never enters the tone strip.
@@ -792,7 +802,7 @@ input[type=range]{width:110px;cursor:pointer;}
       </div>
       <!-- style button: bottom row left col, root inv right -->
       <div class="pd-row">
-        <button class="pd-style-btn" id="pd-style-btn" onclick="cycleVoiceLabelStyle()" style="flex:1;min-width:0;">↻ <span id="pd-style-example">m3 · P5</span></button>
+        <button class="pd-style-btn" id="pd-style-btn" onclick="cycleVoiceLabelStyle()" style="flex:1;min-width:0;">↻ <span id="pd-style-example">DEG</span></button>
         <div class="pd-vr"></div>
         <button class="pd-btn on" id="pdi-root" onclick="setPlayInversion(0,this)">rt</button>
       </div>
@@ -830,10 +840,16 @@ input[type=range]{width:110px;cursor:pointer;}
     <!-- Register: low/mid/high octave band — gates playback start octave -->
     <div class="pd-sec" id="pd-reg-section">
       <div class="pd-row">
-        <button class="pd-btn on" id="pdreg-low" onclick="setPlayRegister('low')">Lo</button>
-        <button class="pd-btn" id="pdreg-mid" onclick="setPlayRegister('mid')">Md</button>
-        <button class="pd-btn" id="pdreg-high" onclick="setPlayRegister('high')">Hi</button>
+        <button class="pd-btn" id="pdreg-0" onclick="setPlayRegister(0)">0</button>
+        <button class="pd-btn" id="pdreg-1" onclick="setPlayRegister(1)">1</button>
+        <button class="pd-btn" id="pdreg-2" onclick="setPlayRegister(2)">2</button>
+        <button class="pd-btn" id="pdreg-3" onclick="setPlayRegister(3)">3</button>
+        <button class="pd-btn" id="pdreg-4" onclick="setPlayRegister(4)">4</button>
       </div>
+      <div class="pd-row" style="margin-top:2px;">
+        <button class="pd-btn" id="pd-offstr-btn" onclick="togglePlayOffString()" style="font-size:9px;letter-spacing:0.04em;">off-str</button>
+      </div>
+      <div id="pd-reg-readout" style="text-align:left;font-size:15px;font-weight:600;color:#1a1a1a;letter-spacing:0.02em;margin-top:3px;line-height:1.4;">—</div>
       <div class="pd-lbl">register</div>
     </div>
     <!-- Start at note: replaces root — home node, fundamental, or specific degree -->
@@ -1026,7 +1042,7 @@ function updateFundDisplay(){
   const noteEl=document.getElementById('lr-fund-note');
   const numEl=document.getElementById('lr-fund-num');
   const tenEl=document.getElementById('lr-ten-val');
-  if(noteEl) noteEl.textContent=fi.name+(fi.octave!==undefined?fi.octave:'');
+  if(noteEl) noteEl.textContent=fi.spelledName+(fi.octave!==undefined?fi.octave:'');
   if(numEl)  numEl.textContent=Math.round(fund);
   if(tenEl)  tenEl.innerHTML=tensionLbs.toFixed(1)+'<br><span style="font-size:6.5px;color:#aaa;font-weight:400;line-height:1.2;">lbs</span>';
 }
@@ -1036,7 +1052,7 @@ function updateLeftRailChips(){
   const kv=document.getElementById('chip-key-val');
   const sv=document.getElementById('chip-scale-val');
   const hv=document.getElementById('chip-home-val');
-  if(kv) kv.textContent=NOTES[homeKey];
+  if(kv) kv.textContent=spelledNoteName(homeKey);
   if(sv) sv.textContent=MODE_ABBREV[currentMode]||currentMode.slice(0,3).toUpperCase();
   if(hv) hv.textContent=homeNode;
   // Update combined chip open/closed state
@@ -1181,7 +1197,7 @@ function updateScaleStrip(){
   // Key name: render as inline spans so it aligns with the degree columns below
   // Key name sits left of the degree row; mode name follows after a gap
   if(scaleEl) scaleEl.innerHTML=
-    `<span style="display:inline-block;min-width:22px;text-align:center;">${NOTES[homeKey]}</span>`+
+    `<span style="display:inline-block;min-width:22px;text-align:center;">${spelledNoteName(homeKey)}</span>`+
     `<span style="font-size:11px;font-weight:500;color:#888;margin-left:4px;">${MODE_NAMES[currentMode]}</span>`;
   if(numEl)   numEl.innerHTML=si.degrees.map(d=>`<span>${d}</span>`).join('');
   if(letEl)   letEl.innerHTML=si.noteNames.map(n=>`<span>${n}</span>`).join('');
@@ -1202,11 +1218,11 @@ showStrip = function(freq, frac, nodeLabel, color){
   const ni=noteInfo(freq);
   const kd=ni.snapped?chromDeg(ni.midi,homeKey):'—';
   const inKey=ni.snapped?isInKey(ni.midi):false;
-  const noteStr=ni.snapped?ni.name+ni.octave:'—';
+  const noteStr=ni.snapped?ni.spelledName+ni.octave:'—';
   const col=color||'#533AB7';
   const keyCol=inKey?'#0F6E56':'rgba(153,60,29,0.6)';
   // str° label — look up the node's physics label by frac
-  const strNode=NODES.find(n=>Math.abs(n.frac-frac)<0.001);
+  const strNode=getVisibleNodes().find(n=>Math.abs(n.frac-frac)<0.001);
   const _missingDot='<span style="font-size:13px;color:#888;">•</span>';
   const strLabel=strNode?strNode.label:(frac>=0.999?'1':_missingDot);
   // Upper segment fraction string — from node.fs complement
@@ -1251,8 +1267,8 @@ showStripBoth = function(){
   const cn=CAPO_NODES[capoNodeIdx];
   const uFreq=capoUpperFreq(), lFreq=capoLowerFreq();
   const uNi=noteInfo(uFreq), lNi=noteInfo(lFreq);
-  const uNote=uNi.snapped?uNi.name+uNi.octave:'—';
-  const lNote=lNi.snapped?lNi.name+lNi.octave:'—';
+  const uNote=uNi.snapped?uNi.spelledName+uNi.octave:'—';
+  const lNote=lNi.snapped?lNi.spelledName+lNi.octave:'—';
   const dst=document.getElementById('nts-right');
   if(!dst) return;
   dst.innerHTML=
@@ -1860,8 +1876,8 @@ function showLabel(node){
   const upperHz=node.frac<0.999 ? Math.round(fund/(1-node.frac)) : 0;
   const lNi=noteInfo(fund*node.ratio);
   const uNi=node.frac<0.999 ? noteInfo(fund/(1-node.frac)) : null;
-  const lNote=lNi.snapped?lNi.name+lNi.octave:'—';
-  const uNote=uNi&&uNi.snapped?uNi.name+uNi.octave:'—';
+  const lNote=lNi.snapped?lNi.spelledName+lNi.octave:'—';
+  const uNote=uNi&&uNi.snapped?uNi.spelledName+uNi.octave:'—';
   const lCol=lNi.snapped&&isInKey(lNi.midi)?'#0F6E56':'#993C1D';
   const uCol=uNi&&uNi.snapped&&isInKey(uNi.midi)?'#0F6E56':'#993C1D';
   const upper=document.getElementById('sb-upper');
@@ -1938,7 +1954,7 @@ showStrip = function(freq, frac, nodeLabel, color){
   // In capo mode, capo callers (_showSubNode/_showCapoEndNode) handle ruler/label directly.
   // The compound capo frac won't reliably match NODES fracs — skip to avoid spurious hideLabel.
   if(nodeView==='capo') return;
-  const node=NODES.find(n=>Math.abs(n.frac-frac)<0.001);
+  const node=getVisibleNodes().find(n=>Math.abs(n.frac-frac)<0.001);
   if(node){ showLabel(node); }
   else if(CHROM_TICKS.some(tf=>Math.abs(tf-frac)<0.001)){ /* tick — handler calls showLabel directly */ }
   else{ hideLabel(); }
@@ -2092,62 +2108,41 @@ function renderBRCtx(){
   if(brRightPanel){
     ctx.innerHTML=renderRightPanel(brRightPanel);
     setTimeout(wireAllBRSliders,0);
+    setTimeout(_syncViewBtn,0);
     return;
   }
   // Otherwise show node-view context
   ctx.innerHTML=renderNodeViewCtx(brNodeView);
   setTimeout(wireAllBRSliders,0);
+  setTimeout(_syncViewBtn,0);
 }
 
 // ── Node view context rows ────────────────────────────────────────
 function renderNodeViewCtx(view){
   if(view==='full'){
-    return `<div class="br-ctx-row"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">README · Washtub v7.1.19</span></div>
-            <div class="br-ctx-row" style="gap:5px;justify-content:center;">
-              <div class="br-readme-btn" onclick="openReadme('instrument')">
-                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M7 17 L15 17 L17 21 L5 21 Z" stroke="#533AB7" stroke-width="1.3" stroke-linejoin="round"/>
-                  <line x1="4.5" y1="21" x2="17.5" y2="21" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/>
-                  <line x1="7" y1="17" x2="7" y2="2" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/>
-                  <line x1="7" y1="2" x2="11" y2="17" stroke="#533AB7" stroke-width="1" stroke-linecap="round"/>
-                </svg>
-                <div class="br-readme-btn-lbl">instrument</div>
+    const muteActive=_muted?' muted':'';
+    const muteSvg=_muted
+      ?`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h3l4-4v14l-4-4H3z" stroke="#b42828" stroke-width="1.3" stroke-linejoin="round"/><line x1="14" y1="7" x2="18" y2="13" stroke="#b42828" stroke-width="1.5" stroke-linecap="round"/><line x1="18" y1="7" x2="14" y2="13" stroke="#b42828" stroke-width="1.5" stroke-linecap="round"/></svg>`
+      :`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h3l4-4v14l-4-4H3z" stroke="#533AB7" stroke-width="1.3" stroke-linejoin="round"/><path d="M14 6.5c1.5 1 2.5 2.2 2.5 3.5s-1 2.5-2.5 3.5" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/><path d="M15.5 4c2.5 1.5 4 3.5 4 6s-1.5 4.5-4 6" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/></svg>`;
+    return `<div class="br-ctx-row" style="flex:0 0 auto;padding:2px 6px;"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">Washtub v7.1.61</span></div>
+            <div class="br-ctx-row" style="gap:5px;align-items:center;padding:4px 6px;">
+              <div class="br-action-btn${muteActive}" onclick="toggleMute()" title="${_muted?'Unmute':'Mute'}">
+                ${muteSvg}
+                <div class="br-action-btn-lbl">${_muted?'muted':'mute'}</div>
               </div>
-              <div class="br-readme-btn" onclick="openReadme('app')">
-                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="5" y="2" width="12" height="18" rx="2" stroke="#533AB7" stroke-width="1.4"/>
-                  <line x1="8" y1="7" x2="14" y2="7" stroke="#533AB7" stroke-width="1.2" stroke-linecap="round"/>
-                  <line x1="8" y1="10" x2="14" y2="10" stroke="#533AB7" stroke-width="1.2" stroke-linecap="round"/>
-                  <line x1="8" y1="13" x2="11" y2="13" stroke="#533AB7" stroke-width="1.2" stroke-linecap="round"/>
-                </svg>
-                <div class="br-readme-btn-lbl">app</div>
+              <div class="br-action-btn" onclick="openTour()" title="Tour">
+                <svg width="20" height="20" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="26" cy="26" r="21" stroke="#533AB7" stroke-width="1.8"/><circle cx="26" cy="14" r="3" fill="#533AB7"/><rect x="22.5" y="20" width="7" height="18" rx="0.5" fill="#533AB7"/><rect x="19" y="20" width="7" height="2.5" rx="0.5" fill="#533AB7"/><rect x="19" y="35.5" width="14" height="2.5" rx="0.5" fill="#533AB7"/></svg>
+                <div class="br-action-btn-lbl">tour</div>
               </div>
-              <div class="br-readme-btn" onclick="openReadme('physics')">
-                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M2 11 C4 11 5 5 7 5 C9 5 10 17 12 17 C14 17 15 11 17 11 C18.5 11 19.5 8 20 8" stroke="#533AB7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <div class="br-readme-btn-lbl">physics</div>
+              <div class="br-action-btn" id="br-view" onclick="toggleOverflow()" title="Display settings">
+                <svg width="20" height="20" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="26" cy="26" r="10" stroke="#533AB7" stroke-width="1.6"/><circle cx="26" cy="26" r="3.5" fill="#533AB7"/><path d="M26 8 L26 14 M26 38 L26 44 M8 26 L14 26 M38 26 L44 26 M13.5 13.5 L17.7 17.7 M34.3 34.3 L38.5 38.5 M38.5 13.5 L34.3 17.7 M17.7 34.3 L13.5 38.5" stroke="#533AB7" stroke-width="1.6" stroke-linecap="round"/></svg>
+                <div class="br-action-btn-lbl">view</div>
               </div>
-              <div class="br-readme-btn" onclick="openReadme('theory')">
-                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <line x1="8" y1="5" x2="8" y2="14" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round"/>
-                  <line x1="14" y1="3" x2="14" y2="12" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round"/>
-                  <line x1="8" y1="5" x2="14" y2="3" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round"/>
-                  <ellipse cx="7" cy="14.5" rx="2.5" ry="1.8" transform="rotate(-15 7 14.5)" fill="#533AB7"/>
-                  <ellipse cx="13" cy="12.5" rx="2.5" ry="1.8" transform="rotate(-15 13 12.5)" fill="#533AB7"/>
-                </svg>
-                <div class="br-readme-btn-lbl">theory</div>
+              <div class="br-action-btn" id="br-readme-btn" onclick="openReadmePicker()" title="README">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="2" width="12" height="16" rx="2" stroke="#533AB7" stroke-width="1.3"/><line x1="7" y1="6.5" x2="13" y2="6.5" stroke="#533AB7" stroke-width="1.1" stroke-linecap="round"/><line x1="7" y1="9.5" x2="13" y2="9.5" stroke="#533AB7" stroke-width="1.1" stroke-linecap="round"/><line x1="7" y1="12.5" x2="10.5" y2="12.5" stroke="#533AB7" stroke-width="1.1" stroke-linecap="round"/></svg>
+                <div class="br-action-btn-lbl">readme</div>
               </div>
-              <div class="br-readme-btn" onclick="openReadme('thanks')">
-                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M11 3 C11 3 5 6 5 11 C5 14.3 7.7 17 11 17 C14.3 17 17 14.3 17 11 C17 6 11 3 11 3 Z" stroke="#533AB7" stroke-width="1.3" stroke-linejoin="round"/>
-                  <line x1="11" y1="17" x2="11" y2="20" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/>
-                  <line x1="8" y1="19" x2="14" y2="19" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/>
-                </svg>
-                <div class="br-readme-btn-lbl">thanks</div>
-              </div>
-            </div>
-            <div class="br-ctx-row"></div>`;
+            </div>`;
   }
   if(view==='nut'){
     const offset=fmtLen(nutOffsetInches);
@@ -2333,7 +2328,17 @@ function syncOvNutSlider(i){
 function renderOverflowPanel(){
   const op=document.getElementById('overflow-panel');
   if(!op) return;
-  if(brNodeView==='nut' && !brRightPanel){
+  if(brNodeView==='full' && !brRightPanel){
+    op.innerHTML=`
+      <div class="ov-title">display</div>
+      <div class="ov-row">
+        <span class="ov-lbl">node octaves</span>
+        <div style="display:flex;gap:3px;">
+          <div class="ov-btn${nodeOctaves===2?' on':''}" onclick="setNodeOctaves(2)">2</div>
+          <div class="ov-btn${nodeOctaves===3?' on':''}" onclick="setNodeOctaves(3)">3</div>
+        </div>
+      </div>`;
+  } else if(brNodeView==='nut' && !brRightPanel){
     op.innerHTML=`
       <div class="ov-title">nut presets</div>
       ${[0,1,2].map(i=>`
@@ -2425,6 +2430,13 @@ function renderOverflowPanel(){
   }
 }
 
+function _syncViewBtn(){
+  const b=document.getElementById('br-view');
+  if(!b) return;
+  if(overflowOpen){ b.style.borderColor='#533AB7'; b.style.background='rgba(83,58,183,0.08)'; }
+  else { b.style.borderColor=''; b.style.background=''; }
+}
+
 function toggleOverflow(){
   overflowOpen=!overflowOpen;
   const op=document.getElementById('overflow-panel');
@@ -2437,6 +2449,7 @@ function toggleOverflow(){
     op.classList.remove('visible');
     op.innerHTML='';
   }
+  _syncViewBtn();
 }
 
 // On desktop, auto-close overflow when overflowOpen is false — never auto-open.
@@ -2456,6 +2469,7 @@ function closeOverflowPanel(){
   overflowOpen=false;
   const op=document.getElementById('overflow-panel');
   if(op){ op.classList.remove('visible'); op.innerHTML=''; }
+  _syncViewBtn();
 }
 
 // ── Wire duration/volume mini sliders after render ─────────────────
@@ -2777,7 +2791,7 @@ let playInversion = 0;        // 0=root 1=1st 2=2nd 3=3rd
 let playChordStyle = 'arpeg'; // 'arpeg'|'block'
 // Independent voice toggles — true = include this voice in chord
 let playVoiceSet = {1:true, 3:true, 5:true, 7:false, 9:false, 11:false, 13:false};
-// Voice label style: 'interval'|'degree'|'symbol'
+// Voice label style: 'interval'|'degree'|'symbol'|'roman'|'note'
 let playLabelStyle = 'degree';
 
 // Degree index for each chord voice (within 7-note scale)
@@ -2788,6 +2802,31 @@ const VOICE_LABEL_SYMBOL = {
   'P4':'11','A4':'\u266f11','P5':'5','d5':'\u22125',
   'm6':'\u266d13','M6':'13','m7':'\u22127','M7':'\u03947'
 };
+// Roman numeral map keyed by interval name
+const VOICE_LABEL_ROMAN = {
+  'P1':'I','m2':'\u266dII','M2':'II','m3':'iii','M3':'III',
+  'P4':'IV','A4':'\u266fIV','P5':'V','d5':'v\u00b0',
+  'm6':'\u266dVI','M6':'VI','m7':'\u266dVII','M7':'VII'
+};
+
+// Derive root pitch class (0–11) from current playback root state.
+// Returns -1 if the string is not snapped to a recognisable pitch.
+function _rootPitchClass(){
+  const fund=fundFreq();
+  let rootFreq;
+  if(playRoot==='fundamental'){
+    rootFreq=fund;
+  } else if(playRoot==='degree'){
+    const steps=MODE_SCALES[currentMode];
+    const semi=[0]; let acc=0;
+    for(let i=0;i<6;i++){acc+=steps[i];semi.push(acc);}
+    rootFreq=fund*homeNodeRatio()*Math.pow(2,semi[(playStartDeg-1)%7]/12);
+  } else {
+    rootFreq=fund*homeNodeRatio();
+  }
+  const ni=noteInfo(rootFreq);
+  return ni.snapped ? ni.midi%12 : -1;
+}
 
 // Compute quality-aware label for a chord voice in current mode
 function _voiceLabel(voice){
@@ -2804,6 +2843,24 @@ function _voiceLabel(voice){
   const itvl = intervalMap[st%12]||String(st);
   if(playLabelStyle==='interval') return itvl;
   if(playLabelStyle==='symbol') return VOICE_LABEL_SYMBOL[itvl]||itvl;
+  if(playLabelStyle==='roman'){
+    if(st>=12){
+      const naturalSt={9:14,11:17,13:21}[voice];
+      if(naturalSt!==undefined){
+        const diff=st-naturalSt;
+        const prefix=diff<0?'\u266d'.repeat(-diff):diff>0?'\u266f'.repeat(diff):'';
+        const romMap={9:'IX',11:'XI',13:'XIII'};
+        return prefix+(romMap[voice]||String(voice));
+      }
+      return String(voice);
+    }
+    return VOICE_LABEL_ROMAN[itvl]||itvl;
+  }
+  if(playLabelStyle==='note'){
+    const rootPC=_rootPitchClass();
+    if(rootPC<0) return '?';
+    return spelledNoteName((rootPC+st%12+12)%12);
+  }
   // degree
   // Degree style: use compound names for extensions above octave (9/11/13)
   // Compound voices: derive label from actual st vs expected natural position
@@ -2822,13 +2879,14 @@ function _voiceLabel(voice){
   return degMap[st%12]||String(st);
 }
 
-function _styleExample(){
-  return _voiceLabel(3)+' \xb7 '+_voiceLabel(5);
+function _styleLabel(){
+  const map={interval:'INT',degree:'DEG',symbol:'SYM',roman:'ROM',note:'NOTE'};
+  return map[playLabelStyle]||playLabelStyle.toUpperCase();
 }
 
 function cycleVoiceLabelStyle(){
-  const order=['interval','degree','symbol'];
-  playLabelStyle=order[(order.indexOf(playLabelStyle)+1)%3];
+  const order=['interval','degree','symbol','roman','note'];
+  playLabelStyle=order[(order.indexOf(playLabelStyle)+1)%5];
   _syncVoiceBtnLabels();
   updatePlayBtn();
 }
@@ -2848,11 +2906,12 @@ function _syncVoiceBtnLabels(){
     if(b) b.textContent=_voiceLabel(parseInt(v));
   });
   const ex=document.getElementById('pd-style-example');
-  if(ex) ex.textContent=_styleExample();
+  if(ex) ex.textContent=_styleLabel();
 }
 let playDir       = 'up';     // 'up'|'down'|'updown'
 let playRoot      = 'homenode'; // 'homenode'|'fundamental'|'degree'
-let playRegister  = 'low';    // 'low'|'mid'|'high' — octave band for playback start
+let playRegister  = 1;        // octave index 0–4 of tonal center root pitch
+let playOffString = false;    // false=clip to visible string range, true=allow off-string notes
 let playStartDeg  = 1;        // 1–7, used when playRoot==='degree'
 let _playTimers   = [];
 let _playActive   = false;
@@ -2927,18 +2986,12 @@ function _syncRoot(r){
 }
 
 // ── Register helpers ───────────────────────────────────────────────
-// Returns ascending array of key-root frequencies available within
-// the string's playable range [fund*0.99, fund*4.01].
+// Returns array of exactly 5 TC-root frequencies for octave buttons 0–4.
+// Index N = rootHz * 2^(N-4). For key of G: [G0, G1, G2, G3, G4].
+// playRegister (integer 0–4) indexes directly into this array.
 function _getRegisterOctaves(){
-  const fund=fundFreq();
-  const rootHz=REF_HZ*Math.pow(2,homeKey/12); // homeKey 0=C, relative to C4
-  const lo=fund*0.99, hi=fund*4.01;
-  const octs=[];
-  for(let oct=-4;oct<=4;oct++){
-    const f=rootHz*Math.pow(2,oct);
-    if(f>=lo&&f<=hi) octs.push(f);
-  }
-  return octs.sort((a,b)=>a-b); // low → high
+  const rootHz=REF_HZ*Math.pow(2,homeKey/12);
+  return [0,1,2,3,4].map(n=>rootHz*Math.pow(2,n-4));
 }
 
 // Returns achievable register candidates filtered by tension limits (1–15 lbs).
@@ -2950,7 +3003,8 @@ function _getRegisterCandidates(segScale){
   const L=effectiveSpeakingLength()*IN_TO_M, mu=muKgM;
   const rootPc=homeKey, tc=homeNodeRatio();
   const candidates=[];
-  for(let oct=0;oct<=5;oct++){
+  const octStart=playOffString ? -3 : 0; // off-str: search sub-fundamental octaves too
+  for(let oct=octStart;oct<=5;oct++){
     const midi=rootPc+(oct+1)*12;
     const tcFreq=REF_HZ*Math.pow(2,(midi-REF_MIDI)/12);
     const fundTarget=tcFreq*segScale/tc;
@@ -2965,42 +3019,97 @@ function _getRegisterCandidates(segScale){
 // Falls back to highest available if selection is out of range.
 function _resolvedRegisterFreq(){
   const octs=_getRegisterOctaves();
-  if(!octs.length) return fundFreq();
-  const idx=playRegister==='low'?0:playRegister==='mid'?1:2;
-  return octs[Math.min(idx,octs.length-1)];
+  return octs[Math.max(0,Math.min(4,playRegister))];
 }
 
-// Sync register button on/off and availability.
-// Availability uses tension-based candidates so buttons match what tuneToKey can achieve.
+// Sync register buttons 0–4: availability, on/off state, readout.
 function _syncRegisterBtns(){
-  const cands=_getRegisterCandidates(1);
-  const n=cands.length;
-  // Auto-fallback: if selected register unavailable, drop to highest available
-  const selIdx=playRegister==='low'?0:playRegister==='mid'?1:2;
-  if(n>0&&selIdx>=n) playRegister=['low','mid','high'][n-1];
-  ['low','mid','high'].forEach((r,i)=>{
-    const btn=document.getElementById('pdreg-'+r);
+  const octs=_getRegisterOctaves(); // exactly 5 entries: octaves 0–4
+  const {lo:sLo, hi:sHi}=_stringFreqBounds();
+
+  // Availability rule (asymmetric):
+  // Off-str OFF: both tonics must be on-string → start >= sLo AND start*2 <= sHi
+  // Off-str ON:  scale from start must have at least one non-tonic note on-string
+  //   Low end: if start < sLo, then start*2 must be > sLo (scale crosses into string)
+  //   High end: if start*2 > sHi, start must be < sHi (scale starts on string, extends above)
+  function _regAvail(i){
+    const f=octs[i];
+    if(playOffString){
+      // Must have meaningful on-string content (not just a bare tonic at boundary)
+      const crossesIntoStr = f*2 > sLo*1.01; // top of octave is above string floor
+      const startsBeforeCeiling = f < sHi*0.99; // start is below ceiling (room on string above)
+      // Sub-fund: ok if scale crosses up into string with non-tonic notes
+      // Above ceiling: never ok — only tonic would be at start
+      if(f < sLo*0.99) return crossesIntoStr; // sub-fund: scale must pass into string
+      return startsBeforeCeiling || f*2 <= sHi*1.01; // on-str start, or full octave visible
+    } else {
+      // Both tonics on string
+      return f >= sLo*0.99 && f*2 <= sHi*1.01;
+    }
+  }
+
+  // Auto-fallback: if current selection unavailable, find lowest available
+  if(!_regAvail(playRegister)){
+    for(let i=0;i<=4;i++){
+      if(_regAvail(i)){ playRegister=i; break; }
+    }
+  }
+
+  for(let i=0;i<=4;i++){
+    const btn=document.getElementById('pdreg-'+i);
     if(!btn) return;
-    const avail=i<n;
-    btn.classList.toggle('on',r===playRegister&&avail);
+    const avail=_regAvail(i);
+    btn.classList.toggle('on', i===playRegister && avail);
     btn.style.opacity=avail?'':'0.3';
     btn.style.pointerEvents=avail?'':'none';
-  });
+  }
+  _syncRegisterReadout();
+}
+
+function _syncRegisterReadout(){
+  const el=document.getElementById('pd-reg-readout');
+  if(!el) return;
+  const freq=_resolvedRegisterFreq();
+  const topFreq=freq*2;
+  const ni=noteInfo(freq);
+  const niTop=noteInfo(topFreq);
+  const noteStr=ni.snapped?ni.spelledName+ni.octave:'—';
+  const noteTop=niTop.snapped?niTop.name+niTop.octave:'—';
+  el.innerHTML=
+    `<div style="display:flex;justify-content:space-between;gap:4px;"><span>${noteStr}</span><span style="font-size:11px;font-weight:400;color:#888;">${Math.round(freq)} Hz</span></div>`+
+    `<div style="display:flex;justify-content:space-between;gap:4px;"><span>${noteTop}</span><span style="font-size:11px;font-weight:400;color:#888;">${Math.round(topFreq)} Hz</span></div>`;
+}
+// lo = fundamental, hi = fundFreq × maxVisibleNodeRatio.
+function _stringFreqBounds(){
+  const fund=fundFreq();
+  const maxR=Math.max(...getVisibleNodes().map(n=>n.ratio));
+  return {lo:fund, hi:fund*maxR};
+}
+
+function togglePlayOffString(){
+  playOffString=!playOffString;
+  const btn=document.getElementById('pd-offstr-btn');
+  if(btn) btn.classList.toggle('on', playOffString);
+  _syncRegisterBtns();
+  updatePlayBtn();
 }
 
 function setPlayRegister(r){
-  playRegister=r;
+  playRegister=parseInt(r);
   _syncRegisterBtns();
   _syncDegBtn();
   updatePlayBtn(); // refresh preview highlights at new register — no auto-tune
 }
 
-// Set playRegister to match the current tension — call after tuneToKey or on init.
+// Set playRegister to lowest available after tuneToKey or on init.
 function _syncRegisterFromTension(){
-  const cands=_getRegisterCandidates(1);
-  if(!cands.length) return;
-  // Default to lowest available register (#106)
-  playRegister=['low','mid','high'][0];
+  // Find lowest available register index
+  const octs=_getRegisterOctaves();
+  const {lo:sLo,hi:sHi}=_stringFreqBounds();
+  for(let i=0;i<=4;i++){
+    const f=octs[i];
+    if(f>=sLo*0.99 && f*2<=sHi*1.01){ playRegister=i; return; }
+  }
 }
 
 // ── Degree picker helpers ──────────────────────────────────────────
@@ -3023,7 +3132,7 @@ function _syncDegBtn(){
   for(let i=0;i<6;i++){acc+=steps[i];semi.push(acc);}
   const degFreq=regFreq*Math.pow(2,semi[playStartDeg-1]/12);
   const ni=noteInfo(degFreq);
-  const noteName=ni.snapped?ni.name:'?';
+  const noteName=ni.snapped?ni.spelledName:'?';
   if(thin){
     bd.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;line-height:1;gap:0px;"><span style="font-size:9px;font-weight:700;">'+playStartDeg+' '+noteName+'</span><span style="font-size:8px;">▾</span></div>';
   } else {
@@ -3043,7 +3152,7 @@ function openPlayDegPicker(){
   pk.innerHTML=[1,2,3,4,5,6,7].map(d=>{
     const f=regFreq*Math.pow(2,semi[d-1]/12);
     const ni=noteInfo(f);
-    const note=ni.snapped?ni.name:'?';
+    const note=ni.snapped?ni.spelledName:'?';
     const on=playRoot==='degree'&&playStartDeg===d;
     return '<div class="pdp-item'+(on?' on':'')+'" data-deg="'+d+'" onclick="setPlayStartDeg('+d+')">'+d+' \xb7 '+note+'</div>';
   }).join('');
@@ -3105,7 +3214,7 @@ function setPlayScaleStyle(s){
   _updatePlayDimming(); updatePlayBtn();
 }
 function setPlayDir(d){ playDir=d; _syncDir(d); updatePlayBtn(); }
-function setPlayRoot(r){ playRoot=r; _syncRoot(r); updatePlayBtn(); }
+function setPlayRoot(r){ playRoot=r; _syncRoot(r); _syncRegisterBtns(); updatePlayBtn(); }
 
 // ── Panel open / close ─────────────────────────────────────────────
 function _refanAfterLayout(){
@@ -3219,7 +3328,7 @@ function togglePlayDrawer(){
   _playPanelOpen=!_playPanelOpen;
   if(_playPanelOpen){
     drawer.style.display='flex';
-    requestAnimationFrame(()=>{ drawer.scrollTop=drawer.scrollHeight; refreshPreviewHL(); });
+    requestAnimationFrame(()=>{ drawer.scrollTop=drawer.scrollHeight; fitVPlay(); clamp(); applyT(); _refanAfterLayout(); refreshPreviewHL(); });
   } else {
     drawer.style.display='none';
     if(!_playPersist){
@@ -3227,6 +3336,7 @@ function togglePlayDrawer(){
       if(g&&!_playActive&&!_pinnedFrac) g.innerHTML='';
       refreshPreviewHL();
     }
+    requestAnimationFrame(()=>{ fitV(); clamp(); applyT(); _refanAfterLayout(); });
   }
   updatePlayBtn();
 }
@@ -3246,7 +3356,7 @@ toggleSidebar = function(){
 const _MODE_ABBREV=['ION','DOR','PHR','LYD','MIX','AEO','LOC'];
 
 function _playLabel(compact){
-  const rootNote = NOTES[homeKey];
+  const rootNote = spelledNoteName(homeKey);
   if(compact){
     if(playSeq==='scale-1oct'||playSeq==='scale-full')
       return rootNote+' '+(_MODE_ABBREV[currentMode]||MODE_NAMES[currentMode].slice(0,3).toUpperCase());
@@ -3504,16 +3614,16 @@ function _buildPreviewFreqs(){
     return arr;
   }
   if(playSeq==='scale-full'){
-    const maxFreq=fund*Math.max(...NODES.map(n=>n.ratio));
+    const maxFreq=fund*Math.max(...getVisibleNodes().map(n=>n.ratio))*Math.pow(2,playOffString?13/12:1/12);
+    const {lo:_pvLo,hi:_pvHi}=_stringFreqBounds();
     const freqObjs=[]; let f=regFreq;
     const startDeg=_playStartDeg();
     let stepIdx=startDeg-1;
-    // All notes are played in scale-full — no unplayed distinction needed
-    let preStepIdx=0;
     // First pass: notes before start (played=false, from deg 1 to startDeg-1)
     let fPre=regFreq;
     for(let i=0;i<startDeg-1;i++){
-      if(fPre<=maxFreq) freqObjs.push({freq:fPre,frac:null,_played:false});
+      if(fPre<=maxFreq&&(playOffString||(fPre>=_pvLo*0.99&&fPre<=_pvHi*1.01)))
+        freqObjs.push({freq:fPre,frac:null,_played:false});
       fPre*=Math.pow(2,steps[i]/12);
     }
     // Main pass: from start note upward (played=true)
@@ -3521,7 +3631,8 @@ function _buildPreviewFreqs(){
     for(let i=0;i<startDeg-1;i++) fPlay*=Math.pow(2,steps[i]/12);
     let si=startDeg-1;
     while(fPlay<=maxFreq){
-      freqObjs.push({freq:fPlay,frac:null,_played:true});
+      if(playOffString||(fPlay>=_pvLo*0.99&&fPlay<=_pvHi*1.01))
+        freqObjs.push({freq:fPlay,frac:null,_played:true});
       fPlay*=Math.pow(2,steps[si%7]/12);
       si++;
       if(si>startDeg-1+100) break;
@@ -3530,12 +3641,15 @@ function _buildPreviewFreqs(){
   }
   // scale-1oct: full 8 notes from deg 1; played = those at/after start degree
   const startDeg=_playStartDeg();
+  const {lo:_1pvLo,hi:_1pvHi}=_stringFreqBounds();
   const freqObjs=[]; let f=regFreq;
   for(let i=0;i<7;i++){
-    freqObjs.push({freq:f,frac:null,_played:i>=startDeg-1});
+    if(playOffString||(f>=_1pvLo*0.99&&f<=_1pvHi*1.01))
+      freqObjs.push({freq:f,frac:null,_played:i>=startDeg-1});
     f*=Math.pow(2,steps[i]/12);
   }
-  freqObjs.push({freq:f,frac:null,_played:true}); // tonic at top
+  if(playOffString||(f>=_1pvLo*0.99&&f<=_1pvHi*1.01))
+    freqObjs.push({freq:f,frac:null,_played:true}); // tonic at top
   return _addTickFreqs(freqObjs);
 }
 
@@ -3691,23 +3805,26 @@ function _playStartDeg(){
   const semi=[0]; let acc=0;
   for(let i=0;i<6;i++){acc+=steps[i];semi.push(acc);}
   if(playRoot==='homenode'){
-    // Detect the musical scale degree of the home node pitch
     const hnFreq=fundFreq()*homeNodeRatio();
-    const regFreq=_resolvedRegisterFreq(); // key root (deg 1) at register octave
+    const regFreq=_resolvedRegisterFreq();
     let ratio=hnFreq/regFreq;
-    while(ratio>=2) ratio/=2;
-    while(ratio<1) ratio*=2;
+    let _guard=0;
+    while(ratio>=2&&_guard++<60) ratio/=2;
+    while(ratio<1&&_guard++<60) ratio*=2;
+    if(Math.abs(ratio-2)<0.001) ratio=1;
     const idx=semi.findIndex(s=>Math.abs(Math.pow(2,s/12)-ratio)<0.02);
-    return idx>=0?idx+1:homeNode; // fallback to homeNode if not diatonic
+    return idx>=0?idx+1:homeNode;
   }
   if(playRoot==='degree') return playStartDeg;
   if(playRoot==='fundamental'){
     const regFreq=_resolvedRegisterFreq();
     let ratio=fundFreq()/regFreq;
-    while(ratio>=2) ratio/=2;
-    while(ratio<1) ratio*=2;
+    let _gf=0;
+    while(ratio>=2&&_gf++<60) ratio/=2;
+    while(ratio<1&&_gf++<60) ratio*=2;
+    if(Math.abs(ratio-2)<0.001) ratio=1;
     const idx=semi.findIndex(s=>Math.abs(Math.pow(2,s/12)-ratio)<0.02);
-    return idx>=0?idx+1:1; // fallback 1 = full octave
+    return idx>=0?idx+1:1;
   }
   return 1;
 }
@@ -3720,11 +3837,9 @@ function _playStartFreq(){
   const fund=fundFreq();
   if(playRoot==='fundamental') return fund;
   if(playRoot==='homenode'){
-    // Use JI home node pitch (fund × homeNodeRatio) — diagram-consistent.
-    // Register shifts octave: low=on-string, mid=×2, high=×4.
-    const hnFreq=fund*homeNodeRatio();
-    const idx=playRegister==='low'?0:playRegister==='mid'?1:2;
-    return hnFreq*Math.pow(2,idx);
+    // Use _resolvedRegisterFreq — finds the correct octave of the key root
+    // at the selected register, including sub-fundamental when off-str is on.
+    return _resolvedRegisterFreq();
   }
   // 'degree': ET scale degree at register octave
   const regFreq=_resolvedRegisterFreq();
@@ -3799,21 +3914,31 @@ function buildPlayFreqs(){
     });
     // Apply inversion: rotate lowest note(s) up an octave
     for(let inv=0;inv<playInversion;inv++) if(freqs.length>1) freqs.push(freqs.shift()*2);
+    // Clip off-string voices unless allowed
+    if(!playOffString){
+      const {lo:_cLo,hi:_cHi}=_stringFreqBounds();
+      freqs=freqs.filter(f=>f>=_cLo*0.99&&f<=_cHi*1.01);
+    }
     return freqs;
   }
 
   const steps = MODE_SCALES[currentMode];
   if(playSeq==='scale-full'){
-    // Step ET scale from rootFreq upward until we've covered the full string range.
-    // Each step plays audio; highlight/viz only fire if a snapped diatonic node matches.
-    const maxFreq = fund * Math.max(...NODES.map(n=>n.ratio)); // stop at highest node
+    // Step ET scale from rootFreq upward until we've covered the playback range.
+    // Buffer: highest node is JI; ET steps never land exactly on it.
+    // Add a semitone of headroom so the last ET step below the ceiling is always included.
+    const {lo:_sfLo, hi:_sfHi}=_stringFreqBounds();
+    const maxFreq = playOffString
+      ? fund * Math.max(...getVisibleNodes().map(n=>n.ratio)) * Math.pow(2, 13/12) // ~octave above ceiling
+      : fund * Math.max(...getVisibleNodes().map(n=>n.ratio)) * Math.pow(2, 1/12);
     const freqObjs = [];
     let f = rootFreq;
     // stepIdx starts at (startDeg-1) so we use the correct mode intervals from that degree
     const _sfStartDeg=_playStartDeg();
     let stepIdx = _sfStartDeg-1;
     while(f <= maxFreq){
-      freqObjs.push({freq:f, frac:null});
+      if(playOffString || (f>=_sfLo*0.99 && f<=_sfHi*1.01))
+        freqObjs.push({freq:f, frac:null});
       f *= Math.pow(2, steps[stepIdx % 7] / 12);
       stepIdx++;
       if(stepIdx > _sfStartDeg-1+100) break; // safety cap
@@ -3825,11 +3950,13 @@ function buildPlayFreqs(){
   // Step offset starts at (startDeg-1) to use the correct mode intervals.
   const startDeg=_playStartDeg();
   const stepsToPlay=8-startDeg;
+  const {lo:_1oLo, hi:_1oHi}=_stringFreqBounds();
   const freqObjs=[{freq:rootFreq,frac:null}];
   let f=rootFreq;
   for(let i=0;i<stepsToPlay;i++){
     f*=Math.pow(2,steps[(startDeg-1+i)%7]/12);
-    freqObjs.push({freq:f,frac:null});
+    if(playOffString || (f>=_1oLo*0.99 && f<=_1oHi*1.01))
+      freqObjs.push({freq:f,frac:null});
   }
   return freqObjs;
 }
@@ -3877,7 +4004,7 @@ function stopPlaySequence(){
         const _nutPseudo={frac:1.0,ratio:1,fs:'1/1',rs:'1:1',desc:'fundamental',label:'1',primary:true,tonic:false};
         showLabel(_nutPseudo);
       } else {
-        const restoredNode=NODES.find(n=>Math.abs(n.frac-_pinnedFrac)<0.002);
+        const restoredNode=getVisibleNodes().find(n=>Math.abs(n.frac-_pinnedFrac)<0.002);
         if(restoredNode) showLabel(restoredNode);
       }
     }
@@ -3899,8 +4026,8 @@ function getPlayableNodes(){
   nodes.push({frac:1.0, ratio:1, harm:1, primary:true, tonic:false,
     label:'1', fs:'1/1', rs:'1:1', desc:'fundamental',
     freq:fund, _isNut:true});
-  // All 14 NODES
-  NODES.forEach(n=>{
+  // All visible NODES (2 or 3 octaves depending on nodeOctaves)
+  getVisibleNodes().forEach(n=>{
     nodes.push({...n, freq:fund*n.ratio});
   });
   return nodes;
@@ -3914,7 +4041,6 @@ function _nodeForFreq(freq){
   const nodes=getPlayableNodes();
   for(const n of nodes){
     if(Math.abs(n.freq/freq-1)<0.02){
-      // Reject unsnapped nodes — they show — and must not highlight
       const nni=noteInfo(n.freq);
       if(!nni.snapped) continue;
       return n;
@@ -4086,12 +4212,12 @@ function _startPlaySequence(){
     rawFreqs.map(f=>{
       const fv=typeof f==='object'?f.freq:f;
       const ni=noteInfo(fv);
-      return ni.snapped?ni.name+ni.octave:null;
+      return ni.snapped?ni.spelledName+ni.octave:null;
     }).filter(Boolean)
   );
   const _noteInStack=freq=>{
     const ni=noteInfo(freq);
-    return ni.snapped && _playNoteSet.has(ni.name+ni.octave);
+    return ni.snapped && _playNoteSet.has(ni.spelledName+ni.octave);
   };
 
   const _doViz=isCapo
@@ -4143,7 +4269,7 @@ function _startPlaySequence(){
     const ni=noteInfo(fv);
     const inKey=ni.snapped?isInKey(ni.midi):false;
     const kd=ni.snapped?chromDeg(ni.midi,homeKey):'—';
-    const noteStr=ni.snapped?ni.name+ni.octave:'—';
+    const noteStr=ni.snapped?ni.spelledName+ni.octave:'—';
     const keyCol=inKey?'#0F6E56':'rgba(153,60,29,0.6)';
     const dst=document.getElementById('nts-right');
     if(!dst) return;
@@ -4300,7 +4426,8 @@ function drawCoF(){
     const lx=cx+labelR*Math.cos(midA), ly=cy+labelR*Math.sin(midA);
     ctx.font=(atDot?'bold ':'')+(atDot?'17':'15')+'px system-ui,sans-serif';
     ctx.fillStyle=textColor; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(NOTES[chromIdx],lx,ly);
+    const _COF_NAMES=['C','D\u266D','D','E\u266D','E','F','G\u266D','G','A\u266D','A','B\u266D','B'];
+    ctx.fillText(_COF_NAMES[chromIdx],lx,ly);
   });
 
   // Selector dot — exactly at top centre of wheel
@@ -4359,7 +4486,7 @@ function snapCoF(){
     else{
       cofAngle=targetAngle;
       const newKey=COF_ORDER[pos];
-      _clearPin(); homeKey=newKey;
+      _clearPin(); homeKey=newKey; _clearSpelledCache();
       closePlayDegPicker();
       drawCoF(); // redraw with updated homeKey so highlight reflects new selection
       document.querySelectorAll('.kbtn').forEach((b,bi)=>{
@@ -4396,7 +4523,7 @@ function spinToPos(pos){
     else{
       cofAngle=targetAngle;
       const newKey=COF_ORDER[pos];
-      _clearPin(); homeKey=newKey;
+      _clearPin(); homeKey=newKey; _clearSpelledCache();
       closePlayDegPicker();
       drawCoF();
       document.querySelectorAll('.kbtn').forEach((b,bi)=>{
@@ -4807,8 +4934,8 @@ function _checkPickerDismiss(target){
     const sp=document.getElementById('scale-picker');
     const hp=document.getElementById('home-picker');
     const pk=document.getElementById('play-deg-picker');
-    if(sp&&sp.classList.contains('visible')&&!sp.contains(target)&&target.id!=='chip-scale') closeScalePicker();
-    if(hp&&hp.classList.contains('visible')&&!hp.contains(target)&&target.id!=='chip-home') closeHomePicker();
+    if(sp&&sp.classList.contains('visible')&&!sp.contains(target)&&!target.closest('#chip-scale')) closeScalePicker();
+    if(hp&&hp.classList.contains('visible')&&!hp.contains(target)&&!target.closest('#chip-home')) closeHomePicker();
     if(pk&&pk.style.display==='flex'&&!pk.contains(target)&&target.id!=='pdr-deg') pk.style.display='none';
   }catch(e){}
 }
@@ -5144,7 +5271,7 @@ function _showCapoEndNode(seg, cf){
   const segLen=seg==='lower'?cf*esl:(1-cf)*esl;
   const segFund=seg==='lower'?fundFreq()/cf:fundFreq()/(1-cf);
   const ni=noteInfo(segFund);
-  const note=ni.snapped?ni.name+ni.octave:'—';
+  const note=ni.snapped?ni.spelledName+ni.octave:'—';
   const upper=document.getElementById('sb-upper');
   const lower=document.getElementById('sb-lower');
   const _rr=document.getElementById('rrail');
@@ -5234,7 +5361,7 @@ function updateCapoSubNodes(){
       const lNi2=noteInfo(lFreq);
       const lKd=lNi2.snapped?chromDeg(lNi2.midi,homeKey):'—';
       const lInKey=lNi2.snapped?isInKey(lNi2.midi):false;
-      const lNoteStr=lNi2.snapped?lNi2.name+lNi2.octave:'—';
+      const lNoteStr=lNi2.snapped?lNi2.spelledName+lNi2.octave:'—';
       const lKeyCol=lInKey?'#0F6E56':'#993C1D';
       const lRemapped=capoRulerPerspective==='fullstring'
         ?chromDeg(lNi2.midi,homeKey)  // #53: always show chromatic degree, not snap-gated
@@ -5308,7 +5435,7 @@ function updateCapoSubNodes(){
       const uNi2=noteInfo(uFreq);
       const uKd=uNi2.snapped?chromDeg(uNi2.midi,homeKey):'—';
       const uInKey=uNi2.snapped?isInKey(uNi2.midi):false;
-      const uNoteStr=uNi2.snapped?uNi2.name+uNi2.octave:'—';
+      const uNoteStr=uNi2.snapped?uNi2.spelledName+uNi2.octave:'—';
       const uKeyCol=uInKey?'#0F6E56':'#993C1D';
       const uRemapped=capoRulerPerspective==='fullstring'
         ?chromDeg(uNi2.midi,homeKey)  // #53: always show chromatic degree, not snap-gated
@@ -5406,8 +5533,8 @@ function _showSubNode(node, seg, freq, cf, diagY){
   const uHz=node.frac<0.999?Math.round(segFund/(1-node.frac)):0;
   const lNi=noteInfo(segFund*node.ratio);
   const uNi=node.frac<0.999?noteInfo(segFund/(1-node.frac)):null;
-  const lNote=lNi.snapped?lNi.name+lNi.octave:'—';
-  const uNote=uNi&&uNi.snapped?uNi.name+uNi.octave:'—';
+  const lNote=lNi.snapped?lNi.spelledName+lNi.octave:'—';
+  const uNote=uNi&&uNi.snapped?uNi.spelledName+uNi.octave:'—';
   const upper=document.getElementById('sb-upper');
   const lower=document.getElementById('sb-lower');
   const _rr=document.getElementById('rrail');
@@ -5423,7 +5550,7 @@ function _showSubNode(node, seg, freq, cf, diagY){
   // Update top tone strip right panel
   const _ni=noteInfo(freq);
   const _kd=_ni.snapped?chromDeg(_ni.midi,homeKey):'—';
-  const _noteStr=_ni.snapped?_ni.name+_ni.octave:'—';
+  const _noteStr=_ni.snapped?_ni.spelledName+_ni.octave:'—';
   const _inKey=_ni.snapped?isInKey(_ni.midi):false;
   const _keyCol=_inKey?'#0F6E56':'rgba(153,60,29,0.6)';
   const _dst=document.getElementById('nts-right');
@@ -5629,7 +5756,7 @@ function applyNutPreset(i){
   if(_pinnedFrac!==null){
     // Refresh strip for the pinned node at the new speaking length
     if(_lastStripArgs){
-      const freq=_pinnedFrac>=0.999 ? fund : fund*((NODES.find(n=>Math.abs(n.frac-_pinnedFrac)<0.002)||{ratio:1}).ratio);
+      const freq=_pinnedFrac>=0.999 ? fund : fund*((getVisibleNodes().find(n=>Math.abs(n.frac-_pinnedFrac)<0.002)||{ratio:1}).ratio);
       showStrip(freq, _lastStripArgs.frac, _lastStripArgs.nodeLabel, _lastStripArgs.color);
     }
     refreshViz();
@@ -5710,7 +5837,86 @@ const MODE_NAMES={
 };
 let currentMode='ionian';
 
-// Compute the 7 diatonic pitch classes for the current root + mode
+// ── Enharmonic spelling ───────────────────────────────────────────
+// Letter names in chromatic order from C, with natural semitone positions
+const _LETTER_NAMES=['C','D','E','F','G','A','B'];
+const _LETTER_SEMI=[0,2,4,5,7,9,11]; // natural semitone of each letter from C
+
+// Build theoretically correct spelled note names for current key+mode.
+// Returns array of 7 strings in scale order, e.g. ['G','A','Bb','C','D','E','F'].
+// Algorithm: start from root letter, assign consecutive letters, compute accidental
+// from difference between actual semitone and natural semitone of that letter.
+function spelledScaleNames(){
+  const steps=MODE_SCALES[currentMode];
+  const rootPc=((homeKey%12)+12)%12;
+
+  // Helper: given a root letter index, compute the full scale spelling and count accidentals
+  function _tryRoot(rootLetterIdx){
+    const names=[];
+    let pc=rootPc;
+    let totalAcc=0;
+    for(let i=0;i<7;i++){
+      const letterIdx=(rootLetterIdx+i)%7;
+      const naturalSemi=_LETTER_SEMI[letterIdx];
+      let diff=((pc-naturalSemi)%12+12)%12;
+      if(diff>6) diff-=12;
+      totalAcc+=Math.abs(diff);
+      let acc='';
+      if(diff>0) acc='\u266F'.repeat(diff);
+      else if(diff<0) acc='\u266D'.repeat(-diff);
+      names.push(_LETTER_NAMES[letterIdx]+acc);
+      pc=(pc+steps[i]+12)%12;
+    }
+    return{names,totalAcc};
+  }
+
+  // Find all letter indices whose natural semitone is within 2 of rootPc
+  // (covers both enharmonic spellings, e.g. A# and Bb for pc=10)
+  const candidates=[];
+  for(let l=0;l<7;l++){
+    const d=Math.min(((rootPc-_LETTER_SEMI[l]+12)%12), ((_LETTER_SEMI[l]-rootPc+12)%12));
+    if(d<=2) candidates.push(l);
+  }
+
+  // Pick the candidate with fewest total accidentals; on tie prefer the flat spelling
+  let best=null;
+  for(const l of candidates){
+    const t=_tryRoot(l);
+    if(!best) best={l,t};
+    else if(t.totalAcc<best.t.totalAcc) best={l,t};
+    else if(t.totalAcc===best.t.totalAcc){
+      // Count flats in each — prefer more flats (conventional flat-key spelling)
+      const flatsT=t.names.filter(n=>n.includes('\u266D')).length;
+      const flatsBest=best.t.names.filter(n=>n.includes('\u266D')).length;
+      if(flatsT>flatsBest) best={l,t};
+    }
+  }
+  return best?best.t.names:_tryRoot(0).names;
+}
+
+// Cache: pitch class → spelled name for current key+mode (rebuilt on key/mode change)
+let _spelledNameCache=null;
+function _getSpelledNameCache(){
+  if(_spelledNameCache) return _spelledNameCache;
+  const names=spelledScaleNames();
+  const steps=MODE_SCALES[currentMode];
+  const cache={};
+  let pc=((homeKey%12)+12)%12;
+  for(let i=0;i<7;i++){
+    cache[pc]=names[i];
+    pc=(pc+steps[i]+12)%12;
+  }
+  _spelledNameCache=cache;
+  return cache;
+}
+function _clearSpelledCache(){ _spelledNameCache=null; }
+
+// Returns spelled note name for a pitch class if diatonic, else falls back to NOTES[].
+function spelledNoteName(pc){
+  const c=_getSpelledNameCache();
+  return c[((pc%12)+12)%12]||NOTES[((pc%12)+12)%12];
+}
+
 function diatonicPitchClasses(){
   const steps=MODE_SCALES[currentMode];
   const pcs=new Set();
@@ -5722,12 +5928,11 @@ function diatonicPitchClasses(){
 
 // Compute degree labels and note names for current scale
 function scaleInfo(){
+  const degrees=[], noteNames=spelledScaleNames();
   const steps=MODE_SCALES[currentMode];
-  const degrees=[], noteNames=[];
   let pc=homeKey;
   for(let i=0;i<7;i++){
     degrees.push(chromDeg(pc+60,homeKey));
-    noteNames.push(NOTES[((pc%12)+12)%12]);
     pc+=steps[i];
   }
   return{degrees,noteNames};
@@ -5735,7 +5940,8 @@ function scaleInfo(){
 function freqToMidi(f){return 12*Math.log2(f/REF_HZ)+REF_MIDI;}
 function noteInfo(f){
   const midi=freqToMidi(f), r=Math.round(midi), cents=Math.round((midi-r)*100);
-  return{midi:r,cents,name:NOTES[((r%12)+12)%12],octave:Math.floor(r/12)-1,snapped:Math.abs(cents)<=SNAP_CENTS};
+  const pc=((r%12)+12)%12;
+  return{midi:r,cents,name:NOTES[pc],spelledName:spelledNoteName(pc),octave:Math.floor(r/12)-1,snapped:Math.abs(cents)<=SNAP_CENTS};
 }
 function chromDeg(midi,kr){return CHROM[((midi%12+12)%12-(kr%12+12)%12+12)%12];}
 function isInKey(midi){return diatonicPitchClasses().has(((midi%12)+12)%12);}
@@ -5743,9 +5949,9 @@ function isInKey(midi){return diatonicPitchClasses().has(((midi%12)+12)%12);}
 const MODE_DEGREE={ionian:1,dorian:2,phrygian:3,lydian:4,mixolydian:5,aeolian:6,locrian:7};
 function setMode(mode, btn){
   currentMode=mode;
+  _clearSpelledCache();
   document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
-  // 59: when auto-tune is on and a diatonic mode is selected, sync home node
   if(autoTune && MODE_DEGREE[mode]!==undefined){
     setHomeNode(MODE_DEGREE[mode]);
   }
@@ -5758,6 +5964,7 @@ function setMode(mode, btn){
 // ── Audio ─────────────────────────────────────────────────────────
 let audioCtx=null, waveform='string', toneDuration=0.5, volume=0.65;
 let polyOn=true;
+let _muted=false;
 let activeOsc=null, activeGain=null;
 
 // Audio availability flag — probed at init time via a short timeout.
@@ -5802,6 +6009,7 @@ function stopActive(){
 
 function playTone(freq){
   if(!freq||freq<16||freq>20000)return;
+  if(_muted) return;
   try{
     const ctx=getCtx();
     if(!ctx) return;
@@ -5864,6 +6072,7 @@ let _tuneSeqTimer=null; // pending sequential tone timer — cancelled on new tu
 let capoArp=false;      // capo arp mode: play individual voices then chord on snap
 let nodeViz=true;       // pulsing circle animation on node press
 let waveViz=true;       // standing wave visualization on node press
+let nodeOctaves=2;      // visible harmonic octaves: 2=default, 3=extended downstring
 let vizNodeAmp=30;      // node viz circle scale (amp units, same range as wave)
 let vizNodeDur=3.0;     // node viz fade duration in seconds
 let vizWaveAmp=60;      // wave arch half-amplitude px
@@ -6100,7 +6309,7 @@ function tuneToKey(){
   // segScale accounts for capo mode segment offset.
   const _regCands=_getRegisterCandidates(segScale);
   if(!_regCands.length) return;
-  const _regIdx=playRegister==='low'?0:playRegister==='mid'?1:2;
+  const _regIdx=Math.max(0,Math.min(playRegister,_regCands.length-1));
   const bestT=_regCands[Math.min(_regIdx,_regCands.length-1)].lbs;
   tensionLbs=Math.max(0.5,Math.min(15,bestT));
   document.getElementById('ten-sl').value=tenValToSl(tensionLbs);
@@ -6125,7 +6334,7 @@ function tuneToKey(){
     // Always trigger viz for the after tone — pinned node or fundamental
     const _vizFrac=_pinnedFrac!==null ? _pinnedFrac : 1.0;
     const _vizHarm=_pinnedFrac!==null
-      ? (NODES.find(n=>Math.abs(n.frac-_vizFrac)<0.002)||{harm:1}).harm : 1;
+      ? (getVisibleNodes().find(n=>Math.abs(n.frac-_vizFrac)<0.002)||{harm:1}).harm : 1;
     const _vizY=_pinnedFrac!==null ? nY(_vizFrac) : (nodeView==='nut' ? nutEffY() : NY);
     const _vizCol=_lastVizArgs ? _lastVizArgs.color : '#533AB7';
     triggerViz(_vizFrac, _vizHarm, _vizY, _vizCol);
@@ -6135,8 +6344,8 @@ function tuneToKey(){
 }
 
 function updateTuneBtn(){
-  const label='Tune to '+NOTES[homeKey];
-  const label2='Tune String to '+NOTES[homeKey]+' '+MODE_NAMES[currentMode];
+  const label='Tune to '+spelledNoteName(homeKey);
+  const label2='Tune String to '+spelledNoteName(homeKey)+' '+MODE_NAMES[currentMode];
   document.getElementById('tune-btn').textContent=label;
   const btn2=document.getElementById('tune-btn2');
   if(btn2) btn2.textContent=label2;
@@ -6146,17 +6355,17 @@ function updateTuneBtn(){
   // semitones upper is above lower = 12*log2(cf/phi)
   const semitones=Math.round(12*Math.log2(cf/phi));
   // Option A: lower=root → upper=root+semitones
-  const upperNoteA=NOTES[((homeKey+semitones)%12+12)%12];
+  const upperNoteA=spelledNoteName(((homeKey+semitones)%12+12)%12);
   // Option B: upper=root → lower=root-semitones
-  const lowerNoteB=NOTES[((homeKey-semitones)%12+12)%12];
+  const lowerNoteB=spelledNoteName(((homeKey-semitones)%12+12)%12);
   const el_lo_lo=document.getElementById('crt-lo-lo');
   const el_lo_hi=document.getElementById('crt-lo-hi');
   const el_up_lo=document.getElementById('crt-up-lo');
   const el_up_hi=document.getElementById('crt-up-hi');
-  if(el_lo_lo) el_lo_lo.textContent='↓'+NOTES[homeKey];
+  if(el_lo_lo) el_lo_lo.textContent='↓'+spelledNoteName(homeKey);
   if(el_lo_hi) el_lo_hi.textContent='↑'+upperNoteA;
   if(el_up_lo) el_up_lo.textContent='↓'+lowerNoteB;
-  if(el_up_hi) el_up_hi.textContent='↑'+NOTES[homeKey];
+  if(el_up_hi) el_up_hi.textContent='↑'+spelledNoteName(homeKey);
 }
 
 function updateScaleSpelling(){
@@ -6306,6 +6515,33 @@ const NODES=[
   {label:'1',frac:1/4,  ratio:4,    primary:true, desc:'octave node · 2nd octave',  fs:'1/4', rs:'4:1', tonic:true, harm:4},
 ];
 
+// Octave 3 extension nodes — frac range [1/8, 1/4]. Each frac = octave2 frac/2, ratio = octave2 ratio×2.
+// Rendered and played only when nodeOctaves >= 3.
+const NODES_EXT=[
+  {label:'2',frac:2/9,  ratio:9/2,  primary:false,desc:'maj 2nd above 2nd octave node', fs:'2/9', rs:'9:2', tonic:false,harm:9},
+  {label:'3',frac:1/5,  ratio:5,    primary:false,desc:'maj 3rd above 2nd octave node', fs:'1/5', rs:'5:1', tonic:false,harm:5},
+  {label:'4',frac:3/16, ratio:16/3, primary:true, desc:'perf 4th above 2nd octave node',fs:'3/16',rs:'16:3',tonic:false,harm:16},
+  {label:'5',frac:1/6,  ratio:6,    primary:true, desc:'perf 5th above 2nd octave node',fs:'1/6', rs:'6:1', tonic:false,harm:6},
+  {label:'6',frac:3/20, ratio:20/3, primary:false,desc:'maj 6th above 2nd octave node', fs:'3/20',rs:'20:3',tonic:false,harm:20},
+  {label:'7',frac:2/15, ratio:15/2, primary:false,desc:'maj 7th above 2nd octave node', fs:'2/15',rs:'15:2',tonic:false,harm:15},
+  {label:'1',frac:1/8,  ratio:8,    primary:true, desc:'octave node · 3rd octave',      fs:'1/8', rs:'8:1', tonic:true, harm:8},
+];
+
+function getVisibleNodes(){ return nodeOctaves>=3 ? [...NODES,...NODES_EXT] : NODES; }
+function setNodeOctaves(n){
+  nodeOctaves=n;
+  // If the pinned node is no longer visible, clear all state
+  if(_pinnedFrac!==null){
+    const stillVisible=getVisibleNodes().some(nd=>Math.abs(nd.frac-_pinnedFrac)<0.002)
+      || Math.abs(_pinnedFrac-1.0)<0.002; // nut is always visible
+    if(!stillVisible){ unpinAndClear(); }
+  }
+  clearViz();
+  _syncRegisterBtns();
+  render();
+  renderOverflowPanel();
+}
+
 // ── Layout constants ──────────────────────────────────────────────
 const SX=480, TY=1310, NY=78, SPX=1232, SVG_W=1380;
 const BR=425, BMW=240, BMR=4;           // pitch bars shifted left to make room for string degree
@@ -6401,7 +6637,7 @@ render=function(){
     // Label block — visibility and color driven by tickLabelMode and tickInKey
     if(tickLabeled){
       const kd=chromDeg(ni.midi,homeKey);
-      const noteStr=ni.name+ni.octave;
+      const noteStr=ni.spelledName+ni.octave;
       const yOff=lFS*0.38;
       ctG.appendChild(mk('rect',{x:554,y:y-lFS*0.72,width:104,height:lFS+4,rx:3,
         fill:'rgba(128,128,128,0.12)','pointer-events':'none'}));
@@ -6435,7 +6671,7 @@ function _setActiveTickLabel(frac, ni, inKey){
   const lFS=15, y=nY(frac), yOff=lFS*0.38;
   const col=inKey?'#0F6E56':'#D85A30';
   const kd=chromDeg(ni.midi,homeKey);
-  const noteStr=ni.name+ni.octave;
+  const noteStr=ni.spelledName+ni.octave;
   g.appendChild(mk('rect',{x:554,y:y-lFS*0.72,width:104,height:lFS+4,rx:3,
     fill:'rgba(128,128,128,0.12)','pointer-events':'none'}));
   g.appendChild(mk('text',{x:KD_RX-4,y:y+yOff,'font-size':lFS,'font-weight':'700',
@@ -6510,6 +6746,7 @@ function setHomeNode(deg){
   document.getElementById('hn-fifth').classList.toggle('on',deg===5);
   // Sync select
   document.getElementById('hn-select').value=String(deg);
+  _syncRegisterBtns();
   render();
 }
 // Button handlers
@@ -6530,7 +6767,7 @@ function nY(frac){
 }
 function barW(ratio){return Math.min((ratio/BMR)*BMW,BMW);}
 
-function getNodeYS(){return NODES.map(n=>nY(n.frac));}
+function getNodeYS(){return getVisibleNodes().map(n=>nY(n.frac));}
 
 function fontSize(i, nodeYS){
   const y=nodeYS[i];
@@ -6619,7 +6856,7 @@ function updateNutMarker(){
     const noteEl=document.createElementNS('http://www.w3.org/2000/svg','text');
     noteEl.setAttribute('x',NOTE_X);noteEl.setAttribute('y',ny+yOff);
     noteEl.setAttribute('font-size',nutFS);noteEl.setAttribute('font-weight','500');noteEl.setAttribute('fill',col);
-    noteEl.textContent=fi.name+fi.octave;ann.appendChild(noteEl);
+    noteEl.textContent=fi.spelledName+fi.octave;ann.appendChild(noteEl);
   } else {
     const kdEl=document.createElementNS('http://www.w3.org/2000/svg','text');
     kdEl.setAttribute('x',KD_RX);kdEl.setAttribute('y',ny+yOff);
@@ -6774,7 +7011,7 @@ window.addEventListener('mouseup',()=>{
         const _afterY=_pinnedFrac!==null ? nY(_pinnedFrac) : (nodeView==='nut' ? nutEffY() : NY);
         const _afterFrac=_pinnedFrac!==null ? _pinnedFrac : 1.0;
         const _afterHarm=_pinnedFrac!==null
-          ? (NODES.find(n=>Math.abs(n.frac-_pinnedFrac)<0.002)||{harm:1}).harm : 1;
+          ? (getVisibleNodes().find(n=>Math.abs(n.frac-_pinnedFrac)<0.002)||{harm:1}).harm : 1;
         const _afterColor=_lastVizArgs ? _lastVizArgs.color : '#533AB7';
         if(_tuneSeqTimer){ clearTimeout(_tuneSeqTimer); _tuneSeqTimer=null; }
         stopActive();
@@ -6804,7 +7041,7 @@ window.addEventListener('touchend',()=>{
         const _afterY=_pinnedFrac!==null ? nY(_pinnedFrac) : (nodeView==='nut' ? nutEffY() : NY);
         const _afterFrac=_pinnedFrac!==null ? _pinnedFrac : 1.0;
         const _afterHarm=_pinnedFrac!==null
-          ? (NODES.find(n=>Math.abs(n.frac-_pinnedFrac)<0.002)||{harm:1}).harm : 1;
+          ? (getVisibleNodes().find(n=>Math.abs(n.frac-_pinnedFrac)<0.002)||{harm:1}).harm : 1;
         const _afterColor=_lastVizArgs ? _lastVizArgs.color : '#533AB7';
         if(_tuneSeqTimer){ clearTimeout(_tuneSeqTimer); _tuneSeqTimer=null; }
         stopActive();
@@ -6929,7 +7166,7 @@ function showStrip(freq, frac, nodeLabel, color){
   const ui=upperFreq>0?noteInfo(upperFreq):null;
   const kd=ni.snapped?chromDeg(ni.midi,homeKey):'—';
   const inKey=ni.snapped?isInKey(ni.midi):false;
-  const noteStr=ni.snapped?ni.name+ni.octave:'—';
+  const noteStr=ni.snapped?ni.spelledName+ni.octave:'—';
   const col=color||'#533AB7';
   const keyCol=inKey?'#0F6E56':'rgba(153,60,29,0.6)';
   const upperNoteStr=ui&&ui.snapped?ui.name+ui.octave:'—';
@@ -6963,7 +7200,7 @@ function stripVoiceHTML(freq, frac, label, color){
   const ni=noteInfo(freq);
   const kd=ni.snapped?chromDeg(ni.midi,homeKey):'—';
   const inKey=ni.snapped?isInKey(ni.midi):false;
-  const noteStr=ni.snapped?ni.name+ni.octave:'—';
+  const noteStr=ni.snapped?ni.spelledName+ni.octave:'—';
   const keyCol=inKey?'#0F6E56':'rgba(153,60,29,0.6)';
   const segIn=frac*effectiveSpeakingLength();
   return `<div class="strip-large">`+
@@ -7008,10 +7245,10 @@ function complementFrac(fs){
 function updateStatus(){
   const fund=fundFreq();
   const fi=noteInfo(fund);
-  const fl=fi.snapped?fi.name+fi.octave:'~'+fi.name+fi.octave;
+  const fl=fi.snapped?fi.spelledName+fi.octave:'~'+fi.spelledName+fi.octave;
   document.getElementById('st-fund').textContent=fl;
-  document.getElementById('st-root').textContent=NOTES[homeKey];
-  document.getElementById('st-scale').textContent=NOTES[homeKey]+' '+MODE_NAMES[currentMode];
+  document.getElementById('st-root').textContent=spelledNoteName(homeKey);
+  document.getElementById('st-scale').textContent=spelledNoteName(homeKey)+' '+MODE_NAMES[currentMode];
   const si=scaleInfo();
   document.getElementById('st-scale-degs').textContent=si.degrees.join(' ');
   document.getElementById('st-scale-notes').textContent=si.noteNames.join(' ');
@@ -7032,7 +7269,7 @@ function render(){
     const _cf=1-cn.phi;
     const uFreq=capoUpperFreq();
     const uNi=noteInfo(uFreq);
-    const uNote=uNi.snapped?uNi.name+uNi.octave:'—';
+    const uNote=uNi.snapped?uNi.spelledName+uNi.octave:'—';
     // Nut label for upper segment fundamental
     const nutG2=document.getElementById('dyn-nut');
     const nutYc=nutEffY(), nutFS2=26, nutInfoFS2=15, nutRowH2=nutFS2+10;
@@ -7113,7 +7350,7 @@ function render(){
       const kd=chromDeg(fi.midi,homeKey);
       const col=isInKey(fi.midi)?'#0F6E56':'rgba(153,60,29,0.6)';
       nutG.appendChild(mk('text',{x:KD_RX,y:nutY+9,'font-size':nutFS,'font-weight':'500','text-anchor':'end',fill:col},kd));
-      nutG.appendChild(mk('text',{x:NOTE_X,y:nutY+9,'font-size':nutFS,'font-weight':'500',fill:col},fi.name+fi.octave));
+      nutG.appendChild(mk('text',{x:NOTE_X,y:nutY+9,'font-size':nutFS,'font-weight':'500',fill:col},fi.spelledName+fi.octave));
     } else {
       nutG.appendChild(mk('text',{x:KD_RX,y:nutY+9,'font-size':nutInfoFS,'text-anchor':'end',fill:GRAY,opacity:0.4},'—'));
       nutG.appendChild(mk('text',{x:NOTE_X,y:nutY+9,'font-size':nutInfoFS,fill:GRAY,opacity:0.4},'—'));
@@ -7175,7 +7412,7 @@ function render(){
   }
 
   // ── NODE ROWS ──
-  NODES.forEach((node,i)=>{
+  getVisibleNodes().forEach((node,i)=>{
     const y=nodeYS[i];
     const freq=fund*node.ratio;
     const ni=noteInfo(freq);
@@ -7223,7 +7460,7 @@ function render(){
       const kd=chromDeg(ni.midi,homeKey);
       const keyCol=isHome?(inKey?'#0F6E56':'rgba(153,60,29,0.6)'):c.text;
       g.appendChild(mk('text',{x:KD_RX,y:y+yOff,'font-size':fs,'font-weight':'500','text-anchor':'end',fill:keyCol},kd));
-      g.appendChild(mk('text',{x:NOTE_X,y:y+yOff,'font-size':fs,'font-weight':'500',fill:keyCol},ni.name+ni.octave));
+      g.appendChild(mk('text',{x:NOTE_X,y:y+yOff,'font-size':fs,'font-weight':'500',fill:keyCol},ni.spelledName+ni.octave));
     } else {
       g.appendChild(mk('text',{x:KD_RX,y:y+yOff,'font-size':infoFS,'text-anchor':'end',fill:GRAY,opacity:0.3},'—'));
       g.appendChild(mk('text',{x:NOTE_X,y:y+yOff,'font-size':infoFS,fill:GRAY,opacity:0.3},'—'));
@@ -7267,7 +7504,7 @@ COF_ORDER.forEach(i=>{
   const b=document.createElement('button');
   b.className='kbtn'+(i===7?' on':'');
   b.textContent=NOTES[i];
-  b.onclick=()=>{_clearPin();homeKey=i;closePlayDegPicker();document.querySelectorAll('.kbtn').forEach(x=>x.classList.remove('on'));b.classList.add('on');updateTuneBtn();updateScaleSpelling();render();};
+  b.onclick=()=>{_clearPin();_clearSpelledCache();homeKey=i;closePlayDegPicker();document.querySelectorAll('.kbtn').forEach(x=>x.classList.remove('on'));b.classList.add('on');updateTuneBtn();updateScaleSpelling();render();};
   kg.appendChild(b);
 });
 
@@ -7364,9 +7601,9 @@ window.addEventListener('mousemove',e=>{
   tx=dtx+_mdx;ty=dty+_mdy;clamp();applyT();
 });
 window.addEventListener('mouseup',()=>{
+  dragging=false;canvas.classList.remove('dragging');_suppressHover=false;
   if(_tpFrac!==null&&!_tpMoved){ if(_togglePin(_tpFrac,false)&&_tpOnPin) _tpOnPin(); }
   else if(_tpFrac!==null&&_pinnedFrac===null){ clearStrip(); }
-  dragging=false;canvas.classList.remove('dragging');_suppressHover=false;
   _tpFrac=null; _tpMoved=false; _tpOnPin=null;
 });
 window.addEventListener('touchend',()=>{_suppressHover=false;},{passive:true});
@@ -8020,6 +8257,7 @@ function openReadme(section){
   }
   panel.classList.add('visible');
   _readmeOpen=true;
+  closeReadmePicker();
   // Scroll to anchor
   const anchorId=README_ANCHORS[section]||'physics';
   setTimeout(()=>{
@@ -8034,6 +8272,68 @@ function closeReadme(){
   if(panel) panel.classList.remove('visible');
   _readmeOpen=false;
 }
+
+// ── Mute ─────────────────────────────────────────────────────────
+function toggleMute(){
+  _muted=!_muted;
+  if(_muted) stopActive();
+  if(brNodeView==='full') renderBRCtx();
+}
+
+// ── README section picker ─────────────────────────────────────────
+let _readmePickerOpen=false;
+function openReadmePicker(){
+  const pop=document.getElementById('readme-section-popover');
+  if(!pop) return;
+  if(_readmePickerOpen){ closeReadmePicker(); return; }
+  // Position relative to bottom-rail
+  const br=document.getElementById('bottom-rail');
+  const shell=document.getElementById('app-shell');
+  if(br&&shell){
+    const brs=br.getBoundingClientRect(), ss=shell.getBoundingClientRect();
+    pop.style.bottom=(ss.bottom-brs.top)+'px';
+    pop.style.left='56px';
+  }
+  const sections=[
+    {key:'instrument', label:'The Washtub Bass',
+     svg:`<svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 17 L15 17 L17 21 L5 21 Z" stroke="#533AB7" stroke-width="1.3" stroke-linejoin="round"/><line x1="4.5" y1="21" x2="17.5" y2="21" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/><line x1="7" y1="17" x2="7" y2="2" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/><line x1="7" y1="2" x2="11" y2="17" stroke="#533AB7" stroke-width="1" stroke-linecap="round"/></svg>`},
+    {key:'app', label:'The String Map App',
+     svg:`<svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="12" height="18" rx="2" stroke="#533AB7" stroke-width="1.4"/><line x1="8" y1="7" x2="14" y2="7" stroke="#533AB7" stroke-width="1.2" stroke-linecap="round"/><line x1="8" y1="10" x2="14" y2="10" stroke="#533AB7" stroke-width="1.2" stroke-linecap="round"/><line x1="8" y1="13" x2="11" y2="13" stroke="#533AB7" stroke-width="1.2" stroke-linecap="round"/></svg>`},
+    {key:'physics', label:'String Physics',
+     svg:`<svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 11 C4 11 5 5 7 5 C9 5 10 17 12 17 C14 17 15 11 17 11 C18.5 11 19.5 8 20 8" stroke="#533AB7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`},
+    {key:'theory', label:'Music Theory',
+     svg:`<svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="8" y1="5" x2="8" y2="14" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round"/><line x1="14" y1="3" x2="14" y2="12" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round"/><line x1="8" y1="5" x2="14" y2="3" stroke="#533AB7" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="7" cy="14.5" rx="2.5" ry="1.8" transform="rotate(-15 7 14.5)" fill="#533AB7"/><ellipse cx="13" cy="12.5" rx="2.5" ry="1.8" transform="rotate(-15 13 12.5)" fill="#533AB7"/></svg>`},
+    {key:'thanks', label:'Thanks & References',
+     svg:`<svg width="16" height="16" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 3 C11 3 5 6 5 11 C5 14.3 7.7 17 11 17 C14.3 17 17 14.3 17 11 C17 6 11 3 11 3 Z" stroke="#533AB7" stroke-width="1.3" stroke-linejoin="round"/><line x1="11" y1="17" x2="11" y2="20" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/><line x1="8" y1="19" x2="14" y2="19" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/></svg>`}
+  ];
+  pop.innerHTML=sections.map(s=>
+    `<div class="rsp-item" onclick="closeReadmePicker();openReadme('${s.key}')">${s.svg}<span>${s.label}</span></div>`
+  ).join('');
+  pop.classList.add('visible');
+  _readmePickerOpen=true;
+}
+function closeReadmePicker(){
+  const pop=document.getElementById('readme-section-popover');
+  if(pop) pop.classList.remove('visible');
+  _readmePickerOpen=false;
+}
+
+// ── Tour (stub) ───────────────────────────────────────────────────
+function openTour(){
+  // Tour not yet implemented — placeholder
+}
+
+// Close readme picker on outside tap/click
+document.addEventListener('mousedown',e=>{
+  if(!_readmePickerOpen) return;
+  const pop=document.getElementById('readme-section-popover');
+  if(pop&&!pop.contains(e.target)&&!e.target.closest('#br-readme-btn')) closeReadmePicker();
+});
+document.addEventListener('touchstart',e=>{
+  if(!_readmePickerOpen) return;
+  const pop=document.getElementById('readme-section-popover');
+  if(pop&&!pop.contains(e.target)&&!e.target.closest('#br-readme-btn')) closeReadmePicker();
+},{passive:true});
 
 // Close readme on outside tap
 document.addEventListener('touchstart',e=>{
