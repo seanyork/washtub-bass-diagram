@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.2.0</title>
+<title>Washtub Bass String Map · v7.3.1</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -106,6 +106,10 @@ input[type=range]{width:110px;cursor:pointer;}
 #lr-tune-btn{width:46px;height:32px;background:#EEEDFE;border:0.5px solid #AFA9EC;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 .lr-icon{font-size:12px;color:#533AB7;}
 .lr-tune-lbl{font-size:6px;color:#533AB7;text-align:center;line-height:1.1;}
+#tune-cand-cluster{width:46px;display:none;flex-direction:row;flex-wrap:wrap;gap:2px;justify-content:center;}
+.tcand-btn{flex:1;min-width:18px;height:20px;font-size:9px;font-weight:600;border:0.5px solid #AFA9EC;border-radius:4px;background:#fff;color:#533AB7;cursor:pointer;display:flex;align-items:center;justify-content:center;white-space:nowrap;padding:0 2px;}
+.tcand-btn.on{background:#EEEDFE;border-color:#7F77DD;}
+@media(prefers-color-scheme:dark){.tcand-btn{background:#2a2a2a;color:#AFA9EC;}.tcand-btn.on{background:#26215C;border-color:#7F77DD;}}
 .lr-chip{width:46px;height:32px;border:0.5px solid rgba(128,128,128,0.25);border-radius:5px;display:flex;flex-direction:row;align-items:center;justify-content:center;cursor:pointer;background:#fff;flex-shrink:0;gap:5px;}
 @media(prefers-color-scheme:dark){.lr-chip{background:#333;}}
 .lr-chip-open{border-color:#533AB7;background:#EEEDFE;}
@@ -132,7 +136,7 @@ input[type=range]{width:110px;cursor:pointer;}
 #lr-ten-fill{position:absolute;bottom:0;left:0;width:100%;background:#533AB7;border-radius:2px;opacity:0.5;}
 #lr-ten-thumb{position:absolute;left:50%;transform:translate(-50%,50%);width:16px;height:16px;background:#533AB7;border-radius:50%;border:2.5px solid #fff;box-shadow:0 0 0 1.5px #533AB7;cursor:ns-resize;touch-action:none;}
 #lr-fund{display:flex;flex-direction:column;align-items:center;gap:0;flex-shrink:0;padding-top:2px;width:100%;}
-.lr-fund-note{font-size:13px;font-weight:600;color:#533AB7;line-height:1.2;text-align:center;}
+.lr-fund-note{font-size:13px;font-weight:600;color:#533AB7;line-height:1.2;text-align:center;position:relative;width:100%;}
 .lr-fund-num{font-size:20px;font-weight:600;color:#533AB7;line-height:1;width:100%;text-align:center;overflow:hidden;}
 .lr-fund-hz{font-size:8px;color:#aaa;line-height:1.4;}
 .lr-fund-lbl{font-size:6.5px;color:#aaa;text-transform:uppercase;letter-spacing:0.04em;line-height:1.6;}
@@ -546,6 +550,8 @@ input[type=range]{width:110px;cursor:pointer;}
         <span style="font-size:7px;font-weight:700;letter-spacing:0.06em;color:#888;line-height:1.3;">AUTO</span>
         <span style="font-size:7px;font-weight:700;letter-spacing:0.06em;color:#888;line-height:1.3;">TUNE</span>
       </div>
+
+      <div id="tune-cand-cluster"></div>
 
       <div class="lr-sep"></div>
 
@@ -1043,8 +1049,14 @@ function updateFundDisplay(){
   const noteEl=document.getElementById('lr-fund-note');
   const numEl=document.getElementById('lr-fund-num');
   const tenEl=document.getElementById('lr-ten-val');
-  if(noteEl) noteEl.textContent=fi.spelledName+(fi.octave!==undefined?fi.octave:'');
-  if(numEl)  numEl.textContent=Math.round(fund);
+  if(noteEl){
+    const noteName=fi.spelledName+(fi.octave!==undefined?fi.octave:'');
+    const sign=Math.abs(fi.cents)>=5
+      ? '<span style="position:absolute;right:3px;top:50%;transform:translateY(-50%);font-size:16px;font-weight:700;opacity:0.75;">'+(fi.cents>0?'+':'\u2212')+'</span>'
+      : '';
+    noteEl.innerHTML=noteName+sign;
+  }
+  if(numEl)  numEl.textContent=parseFloat(fund.toFixed(1));
   if(tenEl)  tenEl.innerHTML=tensionLbs.toFixed(1)+'<br><span style="font-size:6.5px;color:#aaa;font-weight:400;line-height:1.2;">lbs</span>';
 }
 
@@ -1159,6 +1171,7 @@ const _updateTuneBtn_orig=updateTuneBtn;
 updateTuneBtn = function(){
   _updateTuneBtn_orig();
   updateLeftRailChips();
+  _syncTuneCandidates();
 };
 
 // ── Patch setHomeNode to also update chip ─────────────────────────
@@ -2189,7 +2202,7 @@ function renderNodeViewCtx(view){
     const muteSvg=_muted
       ?`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h3l4-4v14l-4-4H3z" stroke="#b42828" stroke-width="1.3" stroke-linejoin="round"/><line x1="14" y1="7" x2="18" y2="13" stroke="#b42828" stroke-width="1.5" stroke-linecap="round"/><line x1="18" y1="7" x2="14" y2="13" stroke="#b42828" stroke-width="1.5" stroke-linecap="round"/></svg>`
       :`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h3l4-4v14l-4-4H3z" stroke="#533AB7" stroke-width="1.3" stroke-linejoin="round"/><path d="M14 6.5c1.5 1 2.5 2.2 2.5 3.5s-1 2.5-2.5 3.5" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/><path d="M15.5 4c2.5 1.5 4 3.5 4 6s-1.5 4.5-4 6" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/></svg>`;
-    return `<div class="br-ctx-row" style="flex:0 0 auto;padding:2px 6px;"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">Washtub v7.2.0</span></div>
+    return `<div class="br-ctx-row" style="flex:0 0 auto;padding:2px 6px;"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">Washtub v7.3.1</span></div>
             <div class="br-ctx-row" style="gap:5px;align-items:center;padding:4px 6px;">
               <div class="br-action-btn${muteActive}" onclick="toggleMute()" title="${_muted?'Unmute':'Mute'}">
                 ${muteSvg}
@@ -2980,6 +2993,8 @@ let playOffString = false;    // false=clip to visible string range, true=allow 
 let playStartDeg  = 1;        // 1–7, used when playRoot==='degree'
 let _playTimers   = [];
 let _playActive   = false;
+let _tuneTargetCandidate = null; // #109 — TC root freq for tuneToKey; null = auto-pick best
+let _tuneCandDeselected = false; // #109 — true after manual tension drag; suppresses auto-highlight
 let _playPanelOpen = false;
 let _sidebarWasOpen = false;  // sidebar state before drawer opened
 let _savedPinFrac = null;     // pinned node saved before playback, restored after
@@ -4835,6 +4850,7 @@ function _tenStartTone(){
     _cGain.gain.setValueAtTime(0,t);
     _cGain.gain.linearRampToValueAtTime(volume,t+0.04);
     _cOsc.start();
+    _cDragging=true;
   }catch(e){_cDragging=false;}
 }
 
@@ -4923,13 +4939,15 @@ setTimeout(()=>{
     syncSlider('ten', newSl);
     document.getElementById('ten-sl').value=newSl;
     document.getElementById('ten-sl-v').value=newSl;
+    // deselect candidate as soon as thumb moves
+    if(!_tuneCandDeselected){ _tuneCandDeselected=true; _syncTuneCandidates(); }
   }
 
   function tenStart(clientY){
     _tDrag=true; _tStartY=clientY; _tStartLbs=tensionLbs;
     _tenStartTone();
   }
-  function tenEnd(){ _tDrag=false; _tenStopTone(); }
+  function tenEnd(){ if(!_tDrag) return; _tDrag=false; _tenStopTone(); }
 
   if(tenThumb){
     tenThumb.addEventListener('pointerdown',e=>{
@@ -6087,6 +6105,7 @@ const MODE_DEGREE={ionian:1,dorian:2,phrygian:3,lydian:4,mixolydian:5,aeolian:6,
 function setMode(mode, btn){
   currentMode=mode;
   _clearSpelledCache();
+  _tuneCandDeselected=false; _tuneTargetCandidate=null;
   document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
   if(autoTune && MODE_DEGREE[mode]!==undefined){
@@ -6419,6 +6438,49 @@ function refreshViz(){
 }
 // ══ end Node / Wave Visualization ════════════════════════════════
 
+// #109 — Returns the candidate closest to 6 lbs (sweet spot for playability/resonance).
+function _getBestCandidate(cands){
+  return cands.reduce(function(best,c){
+    return Math.abs(c.lbs-6)<Math.abs(best.lbs-6)?c:best;
+  }, cands[0]);
+}
+
+// #109 — Rebuild the tune candidate cluster. Called from updateTuneBtn (on key/mode/nut change).
+function _syncTuneCandidates(){
+  const cluster=document.getElementById('tune-cand-cluster');
+  if(!cluster) return;
+  const cands=_getRegisterCandidates(1.0);
+  if(cands.length<=1){
+    cluster.style.display='none';
+    if(cands.length===1) _tuneTargetCandidate=cands[0].freq;
+    return;
+  }
+  // Validate current selection; reset to best if stale or null — but not if deselected by tension drag
+  const stillValid=!_tuneCandDeselected && _tuneTargetCandidate!==null &&
+    cands.some(function(c){ return Math.abs(c.freq/_tuneTargetCandidate-1)<0.01; });
+  if(!stillValid && !_tuneCandDeselected) _tuneTargetCandidate=_getBestCandidate(cands).freq;
+  // Rebuild buttons
+  cluster.innerHTML='';
+  cluster.style.display='flex';
+  cands.forEach(function(c){
+    const ni=noteInfo(c.freq);
+    const lbl=ni.snapped?(ni.spelledName+ni.octave):(Math.round(c.freq)+'Hz');
+    const btn=document.createElement('button');
+    const isSelected=!_tuneCandDeselected && _tuneTargetCandidate!==null &&
+      Math.abs(c.freq/_tuneTargetCandidate-1)<0.01;
+    btn.className='tcand-btn'+(isSelected?' on':'');
+    btn.textContent=lbl;
+    btn.title=c.lbs.toFixed(1)+' lbs';
+    btn.onclick=function(){
+      _tuneCandDeselected=false;
+      _tuneTargetCandidate=c.freq;
+      _syncTuneCandidates();
+      tuneToKey();
+    };
+    cluster.appendChild(btn);
+  });
+}
+
 function tuneToKey(){
   const L=effectiveSpeakingLength()*IN_TO_M, mu=muKgM;
   const rootPc=homeKey;
@@ -6442,16 +6504,24 @@ function tuneToKey(){
     segScale = capoTuneTarget==='lower' ? cf : (1-cf);
   }
 
-  // Select tuning target using register-aware candidate list (tension-filtered, ascending).
-  // segScale accounts for capo mode segment offset.
-  const _regCands=_getRegisterCandidates(segScale);
-  if(!_regCands.length) return;
-  const _regIdx=Math.max(0,Math.min(playRegister,_regCands.length-1));
-  const bestT=_regCands[Math.min(_regIdx,_regCands.length-1)].lbs;
+  // Select tuning target: use _tuneTargetCandidate if set and valid, else auto-pick best.
+  // Best = candidate whose tension is closest to 6 lbs (sweet spot for playability).
+  const _allCands=_getRegisterCandidates(segScale);
+  if(!_allCands.length) return;
+  let _chosenCand;
+  if(nodeView!=='capo' && _tuneTargetCandidate!==null){
+    const match=_allCands.find(c=>Math.abs(c.freq/_tuneTargetCandidate-1)<0.01);
+    _chosenCand=match?match:_getBestCandidate(_allCands);
+  } else {
+    _chosenCand=_getBestCandidate(_allCands);
+  }
+  const bestT=_chosenCand.lbs;
+  if(nodeView!=='capo'){ _tuneTargetCandidate=_chosenCand.freq; _tuneCandDeselected=false; }
   tensionLbs=Math.max(0.5,Math.min(15,bestT));
   document.getElementById('ten-sl').value=tenValToSl(tensionLbs);
   document.getElementById('ten-ro').value=tensionLbs.toFixed(1)+' lbs';
   _syncRegisterFromTension(); // keep register buttons in sync with tuned tension
+  _syncTuneCandidates();      // reflect chosen candidate in cluster
   render();
 
   // Capture "after" frequency — same logic as before, but now with updated tension
@@ -7641,7 +7711,7 @@ COF_ORDER.forEach(i=>{
   const b=document.createElement('button');
   b.className='kbtn'+(i===7?' on':'');
   b.textContent=NOTES[i];
-  b.onclick=()=>{_clearPin();_clearSpelledCache();homeKey=i;closePlayDegPicker();document.querySelectorAll('.kbtn').forEach(x=>x.classList.remove('on'));b.classList.add('on');updateTuneBtn();updateScaleSpelling();render();};
+  b.onclick=()=>{_clearPin();_clearSpelledCache();homeKey=i;_tuneCandDeselected=false;_tuneTargetCandidate=null;closePlayDegPicker();document.querySelectorAll('.kbtn').forEach(x=>x.classList.remove('on'));b.classList.add('on');updateTuneBtn();updateScaleSpelling();render();};
   kg.appendChild(b);
 });
 
@@ -7841,6 +7911,7 @@ setTimeout(()=>{ try{
   buildCapoSnapBtns();
   updateScaleSpelling();
   updateScaleStrip();
+  _syncTuneCandidates();
   render();
   initBR();
   initCoF();
