@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.1.61</title>
+<title>Washtub Bass String Map · v7.2.0</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -852,12 +852,13 @@ input[type=range]{width:110px;cursor:pointer;}
       <div id="pd-reg-readout" style="text-align:left;font-size:15px;font-weight:600;color:#1a1a1a;letter-spacing:0.02em;margin-top:3px;line-height:1.4;">—</div>
       <div class="pd-lbl">register</div>
     </div>
-    <!-- Start at note: replaces root — home node, fundamental, or specific degree -->
+    <!-- Start at note: replaces root — home node, fundamental, specific degree, or pinned node -->
     <div class="pd-sec" id="pd-start-section">
       <div class="pd-row">
         <button class="pd-btn on" id="pdr-home" onclick="setPlayRoot('homenode')" style="display:flex;align-items:center;justify-content:center;padding:0;"><svg width="15" height="15" viewBox="-1 -1 16 16"><circle cx="7" cy="7" r="7.5" fill="white"/><circle cx="7" cy="7" r="6.5" fill="none" stroke="#C92CD5" stroke-width="1.2" opacity="0.4"/><circle cx="7" cy="7" r="4" fill="#F7E0F9" stroke="#C92CD5" stroke-width="1.2"/><circle cx="7" cy="7" r="1.8" fill="#C92CD5"/></svg></button>
         <button class="pd-btn" id="pdr-fund" onclick="setPlayRoot('fundamental')"><em style="font-style:italic;font-size:10px;">1f</em></button>
         <button class="pd-btn" id="pdr-deg" onclick="openPlayDegPicker()" style="flex:1.6;min-width:0;">1 · G ▾</button>
+        <button class="pd-btn" id="pdr-pin" onclick="setPlayRoot('pinned')" title="Start at pinned node" style="display:flex;align-items:center;justify-content:center;padding:0;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="7" y1="14" x2="7" y2="8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M3 1 L11 1 L11 4 Q11 8 7 8 Q3 8 3 4 Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><line x1="3" y1="4" x2="11" y2="4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></button>
       </div>
       <div class="pd-lbl" id="pdlbl-start">start at note</div>
     </div>
@@ -1415,6 +1416,34 @@ function getHomeNodeFracs(){
 function setRowHL(nodeFrac, opacity){
   const g=document.getElementById('row-hl');
   if(!g) return;
+  // During playback: only remove active elements, keep preview layer intact
+  if(_playActive){
+    if(nodeFrac===null){
+      // Remove only the active-highlight elements
+      Array.from(g.querySelectorAll('[data-active]')).forEach(el=>el.remove());
+      return;
+    }
+    // Add active highlight on top of preview
+    const op=opacity!==undefined?opacity:0.14;
+    const y=nY(nodeFrac);
+    const rect=document.createElementNS(svgNS_v4,'rect');
+    rect.setAttribute('data-active','1');
+    Object.entries({x:0,y:y-16,width:SVG_W,height:32,fill:`rgba(200,150,20,${op})`,rx:2})
+      .forEach(([k,v])=>rect.setAttribute(k,v));
+    // Remove old active elements first
+    Array.from(g.querySelectorAll('[data-active]')).forEach(el=>el.remove());
+    g.appendChild(rect);
+    const line=document.createElementNS(svgNS_v4,'line');
+    line.setAttribute('data-active','1');
+    line.setAttribute('x1','0'); line.setAttribute('x2',String(SVG_W));
+    line.setAttribute('y1',String(y)); line.setAttribute('y2',String(y));
+    line.setAttribute('stroke','url(#row-hl-line-grad)');
+    line.setAttribute('stroke-width','4');
+    line.setAttribute('pointer-events','none');
+    g.appendChild(line);
+    return;
+  }
+  // Outside playback: clear everything and redraw
   g.innerHTML='';
   if(nodeFrac===null) return;
   const op=opacity!==undefined?opacity:0.14;
@@ -1429,8 +1458,23 @@ function setRowHL(nodeFrac, opacity){
 function setMultiRowHL(fracs, opacity){
   const g=document.getElementById('row-hl');
   if(!g) return;
-  g.innerHTML='';
   const op=opacity!==undefined?opacity:0.14;
+  if(_playActive){
+    // During playback: remove old active elements, add new ones on top of preview
+    Array.from(g.querySelectorAll('[data-active]')).forEach(el=>el.remove());
+    fracs.forEach(frac=>{
+      if(frac===null) return;
+      const y=nY(frac);
+      const rect=document.createElementNS(svgNS_v4,'rect');
+      rect.setAttribute('data-active','1');
+      Object.entries({x:0,y:y-16,width:SVG_W,height:32,fill:`rgba(200,150,20,${op})`,rx:2})
+        .forEach(([k,v])=>rect.setAttribute(k,v));
+      g.appendChild(rect);
+    });
+    return;
+  }
+  // Outside playback: clear everything
+  g.innerHTML='';
   fracs.forEach(frac=>{
     if(frac===null) return;
     const y=nY(frac);
@@ -1451,6 +1495,21 @@ let _suppressHover=false; // true during canvas pan/scroll — prevents hover tr
 function _setPin(frac, fromTouch){
   _pinnedFrac=frac;
   if(fromTouch) _lastPinTouch=Date.now();
+  // Auto-select register containing the pinned node when playRoot==='pinned'
+  if(playRoot==='pinned' && frac!==null){
+    const pinnedFreq=frac>=0.999 ? fundFreq() : (()=>{
+      const node=getVisibleNodes().find(n=>Math.abs(n.frac-frac)<0.002);
+      return node ? fundFreq()*node.ratio : fundFreq()/frac;
+    })();
+    const octs=_getRegisterOctaves();
+    for(let n=0;n<=4;n++){
+      if(pinnedFreq>=octs[n]*0.99 && pinnedFreq<octs[n]*2*0.99){
+        if(playRegister!==n){ playRegister=n; _syncRegisterBtns(); }
+        break;
+      }
+    }
+  }
+  _syncRoot(playRoot);
 }
 function _togglePin(frac, fromTouch){
   if(!fromTouch && Date.now()-_lastPinTouch < 400) return false;
@@ -1858,6 +1917,9 @@ function showLabel(node){
 
   // If pinned to a different node, don't update the display
   if(_pinnedFrac!==null && Math.abs(_pinnedFrac-node.frac)>0.001) return;
+  // Clear any active tick label when switching to a regular node
+  const _isSynTick=node.harm===0&&typeof _clearActiveTickLabel==='function';
+  if(!_isSynTick && typeof _clearActiveTickLabel==='function') _clearActiveTickLabel();
   _activeFrac=node.frac; _activeNode=node;
   window._activeRatioFund=node.ratio||1;
   // Draw preview layer first, then active node on top (#75)
@@ -1971,12 +2033,15 @@ clearStrip = function(){
 // Clear pin on structural changes (key/mode/homeNode/string length)
 function _clearPin(){
   if(_pinnedFrac!==null){ _pinnedFrac=null; _lastStripArgs=null; clearViz(); }
+  _syncRoot(playRoot);
 }
 
 function unpinAndClear(){
   _pinnedFrac=null; _lastStripArgs=null;
   _origClearStrip_step5(); hideLabel();
   clearViz();
+  if(playRoot==='pinned'){ playRoot='homenode'; }
+  _syncRoot(playRoot);
 }
 
 // ── Patch render ──────────────────────────────────────────────────
@@ -2124,7 +2189,7 @@ function renderNodeViewCtx(view){
     const muteSvg=_muted
       ?`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h3l4-4v14l-4-4H3z" stroke="#b42828" stroke-width="1.3" stroke-linejoin="round"/><line x1="14" y1="7" x2="18" y2="13" stroke="#b42828" stroke-width="1.5" stroke-linecap="round"/><line x1="18" y1="7" x2="14" y2="13" stroke="#b42828" stroke-width="1.5" stroke-linecap="round"/></svg>`
       :`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h3l4-4v14l-4-4H3z" stroke="#533AB7" stroke-width="1.3" stroke-linejoin="round"/><path d="M14 6.5c1.5 1 2.5 2.2 2.5 3.5s-1 2.5-2.5 3.5" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/><path d="M15.5 4c2.5 1.5 4 3.5 4 6s-1.5 4.5-4 6" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/></svg>`;
-    return `<div class="br-ctx-row" style="flex:0 0 auto;padding:2px 6px;"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">Washtub v7.1.61</span></div>
+    return `<div class="br-ctx-row" style="flex:0 0 auto;padding:2px 6px;"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">Washtub v7.2.0</span></div>
             <div class="br-ctx-row" style="gap:5px;align-items:center;padding:4px 6px;">
               <div class="br-action-btn${muteActive}" onclick="toggleMute()" title="${_muted?'Unmute':'Mute'}">
                 ${muteSvg}
@@ -2972,11 +3037,17 @@ function _syncRoot(r){
   const bh=document.getElementById('pdr-home');
   const bf=document.getElementById('pdr-fund');
   const bd=document.getElementById('pdr-deg');
+  const bp=document.getElementById('pdr-pin');
   if(bh) bh.classList.toggle('on',r==='homenode');
   if(bd) bd.classList.toggle('on',r==='degree');
+  if(bp){
+    bp.classList.toggle('on',r==='pinned');
+    const hasPин=_pinnedFrac!==null;
+    bp.style.opacity=hasPин?'':'0.35';
+    bp.style.pointerEvents=hasPин?'':'none';
+  }
   if(bf){
     bf.classList.toggle('on',r==='fundamental');
-    // Grey fund. when fundamental pitch is not diatonic to current key+mode
     const fNi=noteInfo(fundFreq());
     const fundDiatonic=fNi.snapped&&isInKey(fNi.midi);
     bf.style.opacity=fundDiatonic?'':'0.35';
@@ -3200,7 +3271,7 @@ function setPlayInversion(n){ playInversion=n; _syncInversion(n); updatePlayBtn(
 function setPlayChordStyle(s){
   playSeq='chord'; playChordStyle=s;
   _syncChordStyle(s);
-  // Revert start-at-note to homenode — start note is a scale concept
+  // Revert start-at-note to homenode — start note is a scale concept, not chord
   if(playRoot!=='homenode'){ playRoot='homenode'; _syncRoot('homenode'); }
   // Deselect scale buttons visually when chord is active
   ['pds-1oct','pds-full'].forEach(id=>{ const b=document.getElementById(id); if(b) b.classList.remove('on'); });
@@ -3214,7 +3285,21 @@ function setPlayScaleStyle(s){
   _updatePlayDimming(); updatePlayBtn();
 }
 function setPlayDir(d){ playDir=d; _syncDir(d); updatePlayBtn(); }
-function setPlayRoot(r){ playRoot=r; _syncRoot(r); _syncRegisterBtns(); updatePlayBtn(); }
+function setPlayRoot(r){
+  playRoot=r;
+  // When switching to pinned, auto-select the register containing the pinned node
+  if(r==='pinned' && _pinnedFrac!==null){
+    const pinnedFreq=_playStartFreq();
+    const octs=_getRegisterOctaves();
+    for(let n=0;n<=4;n++){
+      if(pinnedFreq>=octs[n]*0.99 && pinnedFreq<octs[n]*2*0.99){
+        if(playRegister!==n){ playRegister=n; }
+        break;
+      }
+    }
+  }
+  _syncRoot(r); _syncRegisterBtns(); updatePlayBtn();
+}
 
 // ── Panel open / close ─────────────────────────────────────────────
 function _refanAfterLayout(){
@@ -3598,11 +3683,40 @@ function _syncLrPlayBtn(){
 
 // Build frequencies for note preview highlights — always from degree 1 at current
 // register, regardless of playRoot/playStartDeg setting. Capo and chord pass through.
+// Exception: when playRoot==='pinned', use the pinned node's exact frequency as base.
 function _buildPreviewFreqs(){
   if(nodeView==='capo'||playSeq==='chord') return buildPlayFreqs();
   const fund=fundFreq();
   const steps=MODE_SCALES[currentMode];
-  const regFreq=_resolvedRegisterFreq(); // always degree 1 at register
+  const regFreq=_resolvedRegisterFreq();
+  // For pinned root: build preview manually so skipped notes show dim rect
+  if(playRoot==='pinned'){
+    const startFreq=_playStartFreq(); // exact pinned freq (uses _savedPinFrac during playback)
+    const startDeg=_playStartDeg();   // degree of pinned freq relative to register
+    const {lo:_pvLo,hi:_pvHi}=_stringFreqBounds();
+    const stepsToPlay=playSeq==='scale-1oct'?8-startDeg:999;
+    const maxFreq=playSeq==='scale-1oct'
+      ? Infinity
+      : fund*Math.max(...getVisibleNodes().map(n=>n.ratio))*Math.pow(2,playOffString?13/12:1/12);
+    const freqObjs=[];
+    // Pre-pin notes (from register root up to pin): _played:false
+    let fPre=regFreq;
+    for(let i=0;i<startDeg-1;i++){
+      if(playOffString||(fPre>=_pvLo*0.99&&fPre<=_pvHi*1.01))
+        freqObjs.push({freq:fPre,frac:null,_played:false});
+      fPre*=Math.pow(2,steps[i]/12);
+    }
+    // From pin upward: _played:true, stop after stepsToPlay notes (incl. start)
+    let fPlay=startFreq; let si=startDeg-1; let guard=0; let notesPlayed=0;
+    while(notesPlayed<=stepsToPlay&&fPlay<=maxFreq&&guard++<100){
+      if(playOffString||(fPlay>=_pvLo*0.99&&fPlay<=_pvHi*1.01))
+        freqObjs.push({freq:fPlay,frac:null,_played:true});
+      if(notesPlayed>=stepsToPlay) break;
+      fPlay*=Math.pow(2,steps[si%7]/12);
+      si++; notesPlayed++;
+    }
+    return _addTickFreqs(freqObjs);
+  }
   // Helper: add ET tick freqs to a freq list if tickLabelMode is not 'off'
   function _addTickFreqs(arr){
     if(tickLabelMode==='off') return arr;
@@ -3701,12 +3815,13 @@ function refreshPreviewHL(){
   // Played: rect + line
   tealFracs.forEach(frac=>{ _drawRowHLRect(g, frac, _HL_TEAL+'0.25)'); _drawRowHLLine(g, frac); });
   goldFracs.forEach(frac=>{ _drawRowHLRect(g, frac, _HL_GOLD+'0.25)'); _drawRowHLLine(g, frac); });
-  // Pin overlay on top — segment-aware color; in-preview nodes get stacked opacity, out-of-preview get pin color alone
-  if(_pinnedFrac!==null){
-    const isLowerCapo=nodeView==='capo' && cf!==null && _pinnedFrac<=cf+0.001;
+  // Pin overlay on top — also visible during playback via _savedPinFrac
+  const _activePinFrac=_pinnedFrac!==null?_pinnedFrac:(_playActive?_savedPinFrac:null);
+  if(_activePinFrac!==null){
+    const isLowerCapo=nodeView==='capo' && cf!==null && _activePinFrac<=cf+0.001;
     const pinColor=isLowerCapo?_HL_PIN_TEAL:_HL_PIN;
-    _drawRowHLRect(g, _pinnedFrac, pinColor+'0.35)');
-    _drawRowHLLine(g, _pinnedFrac);
+    _drawRowHLRect(g, _activePinFrac, pinColor+'0.35)');
+    _drawRowHLLine(g, _activePinFrac);
   }
 }
 
@@ -3804,15 +3919,18 @@ function _playStartDeg(){
   const steps=MODE_SCALES[currentMode];
   const semi=[0]; let acc=0;
   for(let i=0;i<6;i++){acc+=steps[i];semi.push(acc);}
-  if(playRoot==='homenode'){
-    const hnFreq=fundFreq()*homeNodeRatio();
+  if(playRoot==='homenode'||playRoot==='pinned'){
+    const startFreq = playRoot==='pinned'
+      ? _playStartFreq()
+      : fundFreq()*homeNodeRatio();
     const regFreq=_resolvedRegisterFreq();
-    let ratio=hnFreq/regFreq;
+    let ratio=startFreq/regFreq;
     let _guard=0;
     while(ratio>=2&&_guard++<60) ratio/=2;
     while(ratio<1&&_guard++<60) ratio*=2;
     if(Math.abs(ratio-2)<0.001) ratio=1;
     const idx=semi.findIndex(s=>Math.abs(Math.pow(2,s/12)-ratio)<0.02);
+    if(playRoot==='pinned') return idx>=0?idx+1:1;
     return idx>=0?idx+1:homeNode;
   }
   if(playRoot==='degree') return playStartDeg;
@@ -3836,9 +3954,16 @@ function _playStartDeg(){
 function _playStartFreq(){
   const fund=fundFreq();
   if(playRoot==='fundamental') return fund;
+  if(playRoot==='pinned'){
+    // Use _savedPinFrac during playback (pin was cleared to allow node highlights)
+    const pf=_pinnedFrac!==null?_pinnedFrac:_savedPinFrac;
+    if(pf===null) return _resolvedRegisterFreq();
+    if(pf>=0.999) return fund;
+    const node=getVisibleNodes().find(n=>Math.abs(n.frac-pf)<0.002);
+    if(node) return fund*node.ratio;
+    return fund/pf;
+  }
   if(playRoot==='homenode'){
-    // Use _resolvedRegisterFreq — finds the correct octave of the key root
-    // at the selected register, including sub-fundamental when off-str is on.
     return _resolvedRegisterFreq();
   }
   // 'degree': ET scale degree at register octave
@@ -3898,7 +4023,7 @@ function buildPlayFreqs(){
 
   // Compute start frequency from playRoot, playRegister, playStartDeg
   const _allNodeFreqs=getPlayableNodes();
-  const rootFreq = _playStartFreq();
+  const rootFreq = playSeq==='chord' ? _resolvedRegisterFreq() : _playStartFreq();
 
   if(playSeq==='chord'){
     const steps = MODE_SCALES[currentMode];
@@ -4007,6 +4132,17 @@ function stopPlaySequence(){
         const restoredNode=getVisibleNodes().find(n=>Math.abs(n.frac-_pinnedFrac)<0.002);
         if(restoredNode) showLabel(restoredNode);
       }
+      // Restore strip and preview after pin is back
+      if(_lastStripArgs){
+        const fund=fundFreq();
+        const pf=_pinnedFrac;
+        if(pf!==null){
+          const node=getVisibleNodes().find(n=>Math.abs(n.frac-pf)<0.002);
+          const freq=node?fund*node.ratio:(pf>=0.999?fund:fund/pf);
+          _origShowStrip_step5(freq,_lastStripArgs.frac,_lastStripArgs.nodeLabel,_lastStripArgs.color);
+        }
+      }
+      refreshPreviewHL();
     }
   } else {
     _savedPinFrac=null;
@@ -4192,7 +4328,6 @@ function _startPlaySequence(){
   _playActive=true;
   _warmAudioCtx();
   _savedPinFrac=_pinnedFrac;
-  _pinnedFrac=null;
   const btn=document.getElementById('play-go-btn');
   if(btn) btn.classList.add('playing');
   updatePlayBtn();
@@ -4200,7 +4335,9 @@ function _startPlaySequence(){
   const D=toneDuration*1000;
   const G=Math.max(30,toneSpacing*1000);
   const step=D+G;
+  // Build freqs BEFORE clearing pin — _playStartFreq needs _pinnedFrac for 'pinned' root
   let rawFreqs=buildPlayFreqs();
+  _pinnedFrac=null; // clear pin after freq list is built so nodes can highlight during playback
 
   // Build note-name set from playback freqs — used to gate node highlights.
   // Using note names (not raw freqs) handles JI vs ET divergence and ensures
@@ -4672,7 +4809,7 @@ let _cOsc=null, _cGain=null, _cCtx=null, _cDragging=false;
 
 function _tenStartTone(){
   if(_cDragging) return;
-  _cDragging=true;
+  if(_muted) return;
   try{
     if(_cOsc){try{_cOsc.stop();}catch(e){} _cOsc=null;}
     _cCtx=getCtx();
