@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.3.1</title>
+<title>Washtub Bass String Map · v7.3.5</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -424,6 +424,7 @@ input[type=range]{width:110px;cursor:pointer;}
   <button class="tog on" id="view-full" onclick="setNodeView('full',this)">full string</button>
   <button class="tog" id="view-nut" onclick="setNodeView('nut',this)">nut height</button>
   <button class="tog" id="view-capo" onclick="setNodeView('capo',this)">capo</button>
+  <button class="tog" id="view-pitchmap" onclick="setNodeView('pitchmap',this)">pitch map</button>
   <!-- nut clusters -->
   <div id="nut-preset-cluster">
     <input id="nut-pre-0" value='6.0"' onchange="setNutPreset(0,this.value)">
@@ -675,6 +676,7 @@ input[type=range]{width:110px;cursor:pointer;}
   <g id="capo-sub-nodes"></g>
   <g id="capo-label-hits"></g>
 </g>
+<g id="pitchmap-overlay" display="none"></g>
 <g id="viz-layer" pointer-events="none"></g>
       </div><!-- end svg-inner -->
       <!-- label panel: absolute, pointer-events:none, never shifts layout -->
@@ -732,6 +734,8 @@ input[type=range]{width:110px;cursor:pointer;}
            onclick="setNodeView('nut',document.getElementById('view-nut'))">nut</div>
       <div class="br-nvb" id="br-capo"
            onclick="setNodeView('capo',document.getElementById('view-capo'))">capo</div>
+      <div class="br-nvb" id="br-pitchmap"
+           onclick="setNodeView('pitchmap',document.getElementById('view-pitchmap'))">map</div>
     </div>
     <div id="br-ctx">
       <div class="br-ctx-row"><span class="br-ctx-idle">no view controls</span></div>
@@ -2032,6 +2036,7 @@ showStrip = function(freq, frac, nodeLabel, color){
   const node=getVisibleNodes().find(n=>Math.abs(n.frac-frac)<0.001);
   if(node){ showLabel(node); }
   else if(CHROM_TICKS.some(tf=>Math.abs(tf-frac)<0.001)){ /* tick — handler calls showLabel directly */ }
+  else if(nodeView==='pitchmap'){ /* overlay note — showLabel called separately */ }
   else{ hideLabel(); }
 };
 
@@ -2171,7 +2176,7 @@ function renderBRCtx(){
   if(!ctx) return;
 
   // Node-view button highlights
-  ['full','nut','capo'].forEach(v=>{
+  ['full','nut','capo','pitchmap'].forEach(v=>{
     const btn=document.getElementById('br-'+v);
     if(!btn) return;
     btn.className='br-nvb'+(brNodeView===v?(v==='capo'?' br-nvb-cap-on':' br-nvb-on'):'');
@@ -2202,7 +2207,7 @@ function renderNodeViewCtx(view){
     const muteSvg=_muted
       ?`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h3l4-4v14l-4-4H3z" stroke="#b42828" stroke-width="1.3" stroke-linejoin="round"/><line x1="14" y1="7" x2="18" y2="13" stroke="#b42828" stroke-width="1.5" stroke-linecap="round"/><line x1="18" y1="7" x2="14" y2="13" stroke="#b42828" stroke-width="1.5" stroke-linecap="round"/></svg>`
       :`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h3l4-4v14l-4-4H3z" stroke="#533AB7" stroke-width="1.3" stroke-linejoin="round"/><path d="M14 6.5c1.5 1 2.5 2.2 2.5 3.5s-1 2.5-2.5 3.5" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/><path d="M15.5 4c2.5 1.5 4 3.5 4 6s-1.5 4.5-4 6" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/></svg>`;
-    return `<div class="br-ctx-row" style="flex:0 0 auto;padding:2px 6px;"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">Washtub v7.3.1</span></div>
+    return `<div class="br-ctx-row" style="flex:0 0 auto;padding:2px 6px;"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">Washtub v7.3.5</span></div>
             <div class="br-ctx-row" style="gap:5px;align-items:center;padding:4px 6px;">
               <div class="br-action-btn${muteActive}" onclick="toggleMute()" title="${_muted?'Unmute':'Mute'}">
                 ${muteSvg}
@@ -2262,6 +2267,38 @@ function renderNodeViewCtx(view){
               <div class="br-poly-btn${!arpOn?' on':''}" onclick="toggleCapoArp(false);renderBRCtx()">off</div>
               <div class="br-poly-btn${arpOn?' on':''}" onclick="toggleCapoArp(true);renderBRCtx()">on</div>
             </div>`;
+  }
+  if(view==='pitchmap'){
+    const snapOn=_pmSnapOn;
+    const tuneNearest=_pmTuneMode==='nearest';
+    const smallOn=_pmShowSmallLabels;
+    const stN=_pmSnapTarget==='nearest';
+    const stNN=_pmSnapTarget==='note-nut';
+    const stTN=_pmSnapTarget==='tonic-nut';
+    var row='<div class="br-ctx-row" style="gap:3px;">'
+      +'<span class="br-chip-lbl" style="white-space:nowrap;">snap</span>'
+      +'<div class="br-poly-btn'+(snapOn?' on':'')+'" onclick="_pmSnapOn=true;renderBRCtx()">on</div>'
+      +'<div class="br-poly-btn'+(!snapOn?' on':'')+'" onclick="_pmSnapOn=false;renderBRCtx()">off</div>'
+      +'<div style="width:0.5px;background:rgba(128,128,128,0.2);align-self:stretch;margin:2px 0;"></div>'
+      +'<span class="br-chip-lbl" style="white-space:nowrap;">labels</span>'
+      +'<div class="br-poly-btn'+(smallOn?' on':'')+'" onclick="_pmShowSmallLabels=true;render();renderBRCtx()">on</div>'
+      +'<div class="br-poly-btn'+(!smallOn?' on':'')+'" onclick="_pmShowSmallLabels=false;render();renderBRCtx()">off</div>'
+      +'</div>';
+    if(snapOn){
+      row+='<div class="br-ctx-row" style="gap:3px;">'
+        +'<span class="br-chip-lbl" style="white-space:nowrap;">target</span>'
+        +'<div class="br-poly-btn'+(stN?' on':'')+'" onclick="_pmSnapTarget=\'nearest\';renderBRCtx()">nearest</div>'
+        +'<div class="br-poly-btn'+(stNN?' on':'')+'" onclick="_pmSnapTarget=\'note-nut\';renderBRCtx()">note-nut</div>'
+        +'<div class="br-poly-btn'+(stTN?' on':'')+'" onclick="_pmSnapTarget=\'tonic-nut\';renderBRCtx()">tonic-nut</div>'
+        +'</div>';
+    }
+    row+='<div class="br-ctx-row" style="gap:3px;">'
+      +'<span class="br-chip-lbl" style="white-space:nowrap;">tune</span>'
+      +'<div class="br-poly-btn'+(tuneNearest?' on':'')+'" onclick="_pmTuneMode=\'nearest\';renderBRCtx()">nearest</div>'
+      +'<div class="br-poly-btn'+(!tuneNearest?' on':'')+'" onclick="_pmTuneMode=\'canonical\';renderBRCtx()">tonic node</div>'
+      +'</div>'
+      +'<div class="br-ctx-row"><span class="br-ctx-idle">pitch map view</span></div>';
+    return row;
   }
   return '';
 }
@@ -2814,6 +2851,9 @@ setNodeView = function(view, btn){
   brRightPanel=null; // node view switch clears right panel
   closeOverflowPanel();
   _setNodeView_orig(view, btn);
+  // Show/hide pitchmap overlay group
+  const pmg=document.getElementById('pitchmap-overlay');
+  if(pmg) pmg.setAttribute('display', view==='pitchmap' ? '' : 'none');
   renderBRCtx();
   updateOverflowDesktop();
   _warmAudioCtx(); // #49/#57: re-prime audio pipeline after mode switch
@@ -2995,6 +3035,13 @@ let _playTimers   = [];
 let _playActive   = false;
 let _tuneTargetCandidate = null; // #109 — TC root freq for tuneToKey; null = auto-pick best
 let _tuneCandDeselected = false; // #109 — true after manual tension drag; suppresses auto-highlight
+
+// ── Pitch map view state (#120) ───────────────────────────────────
+let _pmSnapOn          = true;      // snap tonic to nearest node on thumb release
+let _pmSnapTarget      = 'nearest'; // 'nearest' | 'note-nut' | 'tonic-nut'
+let _pmTuneMode        = 'nearest'; // 'nearest' | 'canonical' — tune-to-key target
+let _pmShowSmallLabels = true;      // show labels when note spacing is tight
+let _pmSnapAnimId      = null;      // rAF id for in-progress snap animation
 let _playPanelOpen = false;
 let _sidebarWasOpen = false;  // sidebar state before drawer opened
 let _savedPinFrac = null;     // pinned node saved before playback, restored after
@@ -4947,7 +4994,7 @@ setTimeout(()=>{
     _tDrag=true; _tStartY=clientY; _tStartLbs=tensionLbs;
     _tenStartTone();
   }
-  function tenEnd(){ if(!_tDrag) return; _tDrag=false; _tenStopTone(); }
+  function tenEnd(){ if(!_tDrag) return; _tDrag=false; _tenStopTone(); if(nodeView==='pitchmap') _pmApplySnap(); }
 
   if(tenThumb){
     tenThumb.addEventListener('pointerdown',e=>{
@@ -5179,7 +5226,7 @@ function effectiveSpeakingLength(){
 function setNodeView(view, btn){
   unpinAndClear(); // clear any pinned nodes and highlights from the previous mode
   nodeView=view;
-  document.querySelectorAll('#view-full,#view-nut,#view-capo').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('#view-full,#view-nut,#view-capo,#view-pitchmap').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
   const nutCluster=document.getElementById('nut-preset-cluster');
   const capoCluster=document.getElementById('capo-cluster');
@@ -6351,6 +6398,7 @@ function _drawSegmentWave(g, topY, botY, frac, harm, color, extraOpacity){
 // In nut view also extends dashed continuation above effective nut up to main nut.
 function _drawWaveViz(frac, harm, color){
   if(nodeView==='capo') return; // capo handled by _drawCapoWaveViz
+  if(nodeView==='pitchmap') return; // ET notes don't have valid standing wave patterns
   const vl=document.getElementById('viz-layer');
   if(!vl||!harm||harm<1) return;
   const speakingTop=(nodeView==='nut')?nutEffY():NY;
@@ -6481,8 +6529,398 @@ function _syncTuneCandidates(){
   });
 }
 
-function tuneToKey(){
+// ── Pitch map overlay (#120) ──────────────────────────────────────
+// Draws ET scale note positions as moving overlay on top of physics nodes.
+// Each note is positioned at frac = fundFreq() / noteFreq (ET frequency).
+// Tonic = purple, diatonic = green, chromatic non-diatonic = coral.
+// Physics node circles and str° labels remain fully visible as backdrop.
+function _renderPitchMapOverlay(){
+  const g=document.getElementById('pitchmap-overlay');
+  if(!g) return;
+  g.innerHTML='';
+
+  const fund=fundFreq();
+  if(!fund||!isFinite(fund)) return;
+
+  const speakingPx=TY-nutEffY(); // pixel height of speaking length
+  const topY=nutEffY();          // SVG y of effective nut (top of speaking length)
+
+  // Build set of physics node y positions for snap-threshold highlight
+  const physYs=getVisibleNodes().map(n=>nY(n.frac));
+
+  // Collect all ET notes within string range
+  const dpc=diatonicPitchClasses();
+  const notes=[];
+  // Scan MIDI range wide enough to cover all visible positions
+  for(let midi=20;midi<=100;midi++){
+    const noteFreq=REF_HZ*Math.pow(2,(midi-REF_MIDI)/12);
+    const frac=fund/noteFreq;
+    if(frac<=0||frac>1.0001) continue; // outside string
+    const y=TY-frac*SPX;
+    if(y<topY-2||y>TY+2) continue;    // outside speaking length pixel zone
+    const pc=((midi%12)+12)%12;
+    const isTonic=pc===((homeKey%12)+12)%12;
+    const isDiatonic=dpc.has(pc);
+    notes.push({midi,noteFreq,frac,y,pc,isTonic,isDiatonic});
+  }
+
+  if(!notes.length) return;
+
+  // Sort by y descending (top of string first) for collision detection
+  notes.sort((a,b)=>a.y-b.y);
+
+  // Min pixel spacing below which labels are suppressed entirely (illegible at any size)
+  const SUPPRESS_PX=16;
+  const MIN_FS=11, MAX_FS=40;
+
+  // Pre-compute spacing for each note (min distance to nearest neighbor)
+  const spacings=notes.map((n,i)=>{
+    const prev=i>0?Math.abs(n.y-notes[i-1].y):Infinity;
+    const next=i<notes.length-1?Math.abs(notes[i+1].y-n.y):Infinity;
+    return Math.min(prev,next);
+  });
+
+  // Draw each note
+  const snapThreshPx=22; // SVG px — line brightens when this close to a physics node
+  notes.forEach((n,i)=>{
+    // Determine color
+    let lineColor, textColor;
+    if(n.isTonic){
+      lineColor=HOME_COL; textColor=HOME_COL;
+    } else if(n.isDiatonic){
+      lineColor='#1D9E75'; textColor='#0F6E56';
+    } else {
+      lineColor='#D85A30'; textColor='#993C1D';
+    }
+
+    // Check proximity to any physics node for highlight
+    const nearNode=physYs.some(py=>Math.abs(py-n.y)<snapThreshPx);
+    const lineOpacity=nearNode?0.75:0.4;
+    const lineW=nearNode?(n.isTonic?3.5:2.5):(n.isTonic?2.5:1.5);
+
+    // Draw line as two segments with gap across label zone (KD_RX / NOTE_X area)
+    // Left segment: full left side through the string
+    // Right segment: after NOTE_X labels — info/seg columns
+    const GAP_L=530, GAP_R=670;
+    [['0',String(GAP_L)],[String(GAP_R),String(SVG_W)]].forEach(([x1,x2])=>{
+      const seg=document.createElementNS('http://www.w3.org/2000/svg','line');
+      seg.setAttribute('x1',x1); seg.setAttribute('x2',x2);
+      seg.setAttribute('y1',String(n.y)); seg.setAttribute('y2',String(n.y));
+      seg.setAttribute('stroke',lineColor);
+      seg.setAttribute('stroke-width',String(lineW));
+      seg.setAttribute('opacity',String(lineOpacity));
+      seg.setAttribute('pointer-events','none');
+      g.appendChild(seg);
+    });
+
+    // Labels — check spacing against previous note
+    const spacing=spacings[i];
+    const tooClose=spacing<SUPPRESS_PX;
+    const showLbl=!tooClose||_pmShowSmallLabels;
+    if(!showLbl) return;
+
+    const kd=chromDeg(n.midi,homeKey);
+    const ni2=noteInfo(n.noteFreq);
+    const noteName=ni2.snapped?(ni2.spelledName+ni2.octave):'';
+    // Font size proportional to available spacing, clamped to [MIN_FS, MAX_FS]
+    const fs=Math.max(MIN_FS,Math.min(MAX_FS,Math.round(spacing*0.65)));
+    const yOff=fs*0.38;
+    const labelOpacity=tooClose?0.6:0.9;
+
+    // Key degree at KD_RX
+    const kdEl=document.createElementNS('http://www.w3.org/2000/svg','text');
+    kdEl.setAttribute('x',String(KD_RX));
+    kdEl.setAttribute('y',String(n.y+yOff));
+    kdEl.setAttribute('font-size',String(fs));
+    kdEl.setAttribute('font-weight','500');
+    kdEl.setAttribute('text-anchor','end');
+    kdEl.setAttribute('fill',textColor);
+    kdEl.setAttribute('opacity',String(labelOpacity));
+    kdEl.setAttribute('pointer-events','none');
+    kdEl.textContent=kd;
+    g.appendChild(kdEl);
+
+    // Note name at NOTE_X
+    if(noteName){
+      const nmEl=document.createElementNS('http://www.w3.org/2000/svg','text');
+      nmEl.setAttribute('x',String(NOTE_X));
+      nmEl.setAttribute('y',String(n.y+yOff));
+      nmEl.setAttribute('font-size',String(fs));
+      nmEl.setAttribute('font-weight','500');
+      nmEl.setAttribute('fill',textColor);
+      nmEl.setAttribute('opacity',String(labelOpacity));
+      nmEl.setAttribute('pointer-events','none');
+      nmEl.textContent=noteName;
+      g.appendChild(nmEl);
+    }
+    // Hit rect — always present regardless of label visibility
+    const hitRowH=30;
+    const hitRect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    hitRect.setAttribute('x','0');
+    hitRect.setAttribute('y',String(n.y-hitRowH/2));
+    hitRect.setAttribute('width',String(SVG_W));
+    hitRect.setAttribute('height',String(hitRowH));
+    hitRect.setAttribute('fill','transparent');
+    hitRect.setAttribute('class','row-hit');
+    const _pmFreq=n.noteFreq;
+    const _pmFrac=n.frac;
+    const _pmLabel=kd;
+    const _pmCol=textColor;
+    hitRect.addEventListener('mousedown',function(e){ try{
+      _tpFrac=_pmFrac; _tpStartX=e.clientX; _tpStartY=e.clientY; _tpMoved=false;
+      _tpOnPin=function(){ showStrip(_pmFreq,_pmFrac,_pmLabel,_pmCol); showLabel({frac:_pmFrac,ratio:_pmFreq/fundFreq(),label:_pmLabel,harm:0,primary:false,tonic:false,fs:'--',rs:'--',desc:''}); triggerViz(_pmFrac,0,nY(_pmFrac),_pmCol); };
+      playTone(_pmFreq);
+    }catch(ex){} });
+    hitRect.addEventListener('mouseenter',function(){ try{
+      if(dragging||(_pinnedFrac!==null&&Math.abs(_pinnedFrac-_pmFrac)>0.001)) return;
+      showStrip(_pmFreq,_pmFrac,_pmLabel,_pmCol);
+      showLabel({frac:_pmFrac,ratio:_pmFreq/fundFreq(),label:_pmLabel,harm:0,primary:false,tonic:false,fs:'--',rs:'--',desc:''});
+    }catch(ex){} });
+    hitRect.addEventListener('mouseleave',function(){ try{ if(!_pinnedFrac){ clearStrip(); hideLabel(); } }catch(ex){} });
+    hitRect.addEventListener('touchstart',function(e){ try{
+      playTone(_pmFreq);
+      if(_pinnedFrac!==null&&Math.abs(_pinnedFrac-_pmFrac)<0.001){
+        unpinAndClear();
+      } else {
+        if(!isFinite(_pmFrac)||_pmFrac<=0||_pmFrac>1) return;
+        _pinnedFrac=_pmFrac;
+        var _rhlG=document.getElementById('row-hl');
+        var _rhlY=nY(_pmFrac);
+        if(_rhlG&&isFinite(_rhlY)){
+          _rhlG.innerHTML='';
+          var _rhlR=document.createElementNS('http://www.w3.org/2000/svg','rect');
+          _rhlR.setAttribute('x','0'); _rhlR.setAttribute('y',String(_rhlY-16));
+          _rhlR.setAttribute('width','1380'); _rhlR.setAttribute('height','32');
+          _rhlR.setAttribute('fill','rgba(200,150,20,0.32)'); _rhlR.setAttribute('rx','2');
+          _rhlG.appendChild(_rhlR);
+        }
+        try{ var _pmHarm=Math.max(1,Math.round(1/_pmFrac)); triggerViz(_pmFrac,_pmHarm,_rhlY,_pmCol); }catch(_e){}
+        _origShowStrip_step5(_pmFreq,_pmFrac,_pmLabel,_pmCol);
+        try{
+          var _pmRatio=_pmFreq/fundFreq();
+          var _pn=Math.round(fundFreq()/_pmFreq*1000),_pd=1000,_pa=_pn,_pb=_pd,_pc;
+          while(_pb){_pc=_pb;_pb=_pa%_pb;_pa=_pc;}
+          var _pmSynNode={frac:_pmFrac,ratio:_pmRatio,label:_pmLabel,harm:_pmHarm,primary:false,tonic:false,
+            fs:(_pn/_pa)+'/'+(_pd/_pa),rs:(Math.round(_pmRatio*100)/100)+':1',desc:'ET note'};
+          drawRulerSVG(_pmSynNode);
+        }catch(_e){}
+        try{
+          var _esl=effectiveSpeakingLength();
+          var _lIn=fmtLen(_pmFrac*_esl), _uIn=fmtLen((1-_pmFrac)*_esl);
+          var _lHz=Math.round(_pmFreq);
+          var _uHz=_pmFrac<0.99?Math.round(fundFreq()/(1-_pmFrac)):0;
+          var _lNi=noteInfo(_pmFreq);
+          var _lNote=_lNi.snapped?_lNi.spelledName+_lNi.octave:'--';
+          var _lCol=_lNi.snapped&&isInKey(_lNi.midi)?'#0F6E56':'#993C1D';
+          var _uNi=_uHz>0?noteInfo(_uHz):null;
+          var _uNote=_uNi&&_uNi.snapped?_uNi.spelledName+_uNi.octave:'--';
+          var _uCol=_uNi&&_uNi.snapped&&isInKey(_uNi.midi)?'#0F6E56':'#993C1D';
+          var _sbRR=document.getElementById('rrail');
+          var _sbH=_sbRR?(_sbRR.clientHeight||300):300;
+          var _dotFV=Math.max(0.01,Math.min(0.99,((_sbH-54)-_pmFrac*(_sbH-120))/(_sbH-54)));
+          var _sbUp=document.getElementById('sb-upper');
+          var _sbLo=document.getElementById('sb-lower');
+          if(_sbUp){_sbUp.style.flex=String(_dotFV);_sbUp.innerHTML='<div class="sb-len">'+_uIn+'</div><div class="sb-hz">'+_uHz+' Hz</div><div class="sb-note" style="color:'+_uCol+';">'+_uNote+'</div>';}
+          if(_sbLo){_sbLo.style.flex=String(1-_dotFV);_sbLo.innerHTML='<div class="sb-note" style="color:'+_lCol+';">'+_lNote+'</div><div class="sb-hz">'+_lHz+' Hz</div><div class="sb-len">'+_lIn+'</div>';}
+        }catch(_e){}
+      }
+    }catch(ex){} },{passive:true});
+    hitRect.addEventListener('touchend',function(){ try{
+      _tpFrac=null; _tpMoved=false; _tpOnPin=null;
+    }catch(ex){} },{passive:true});
+    g.appendChild(hitRect);
+  });
+}
+
+// ── Pitch map snap helpers (#120) ────────────────────────────────
+
+// Returns tension (lbs) to place noteFreq at a given string frac.
+// frac = fund/noteFreq → fund = noteFreq*frac → T = (2Lf)²μ
+function _pmTensionForNoteAtFrac(noteFreq, frac){
   const L=effectiveSpeakingLength()*IN_TO_M, mu=muKgM;
+  const fund=noteFreq*frac;
+  const T=Math.pow(2*L*fund,2)*mu;
+  return T/LBS_TO_N;
+}
+
+// Returns the tonic pitch class Hz values that are currently on-string.
+function _pmTonicNotesOnString(){
+  const fund=fundFreq();
+  const tonicPc=((homeKey%12)+12)%12;
+  const results=[];
+  for(let midi=20;midi<=100;midi++){
+    if(((midi%12)+12)%12!==tonicPc) continue;
+    const freq=REF_HZ*Math.pow(2,(midi-REF_MIDI)/12);
+    const frac=fund/freq;
+    if(frac>0.01&&frac<=1.0) results.push({freq,frac,midi});
+  }
+  return results;
+}
+
+// Returns all ET notes currently on-string with their frac.
+function _pmAllNotesOnString(){
+  const fund=fundFreq();
+  const results=[];
+  for(let midi=20;midi<=100;midi++){
+    const freq=REF_HZ*Math.pow(2,(midi-REF_MIDI)/12);
+    const frac=fund/freq;
+    if(frac>0.01&&frac<=1.0) results.push({freq,frac,midi});
+  }
+  return results;
+}
+
+// All octaves of a pitch class, filtered to those whose tension-at-nut is in range.
+// Returns [{freq, lbs}] sorted by distance from 6 lbs (sweet spot).
+function _pmNutCandidatesForPc(pc){
+  const L=effectiveSpeakingLength()*IN_TO_M, mu=muKgM;
+  const results=[];
+  for(let midi=20;midi<=100;midi++){
+    if(((midi%12)+12)%12!==pc) continue;
+    const freq=REF_HZ*Math.pow(2,(midi-REF_MIDI)/12);
+    const T=Math.pow(2*L*freq,2)*mu;
+    const lbs=T/LBS_TO_N;
+    if(lbs>=0.5&&lbs<=15) results.push({freq,lbs,midi});
+  }
+  results.sort((a,b)=>Math.abs(a.lbs-6)-Math.abs(b.lbs-6));
+  return results;
+}
+
+// Core snap: compute target tension based on _pmSnapTarget.
+// Returns {lbs, freq} of the note that was snapped, or null.
+function _pmComputeSnapTension(){
+  const L=effectiveSpeakingLength()*IN_TO_M, mu=muKgM;
+  if(_pmSnapTarget==='note-nut'){
+    // Any ET note at nut: fund = noteFreq. Search all octaves of every pitch class
+    // on-string (or just-off-string), filter by valid tension, pick mid-range.
+    const fund=fundFreq();
+    const candidates=[];
+    for(let midi=20;midi<=100;midi++){
+      const freq=REF_HZ*Math.pow(2,(midi-REF_MIDI)/12);
+      const T=Math.pow(2*L*freq,2)*mu;
+      const lbs=T/LBS_TO_N;
+      if(lbs>=0.5&&lbs<=15) candidates.push({freq,lbs,midi});
+    }
+    if(!candidates.length) return null;
+    // Pick candidate whose current frac is closest to 1.0 (note closest to nut right now)
+    // among those with valid tension
+    const withFrac=candidates.map(c=>({...c,frac:fund/c.freq}));
+    // prefer notes that were visible (frac 0.01-1.0) or just past nut (frac 1.0-1.2)
+    const visible=withFrac.filter(c=>c.frac>0.01&&c.frac<=1.2);
+    if(!visible.length) return null;
+    const best=visible.reduce((b,c)=>Math.abs(c.frac-1.0)<Math.abs(b.frac-1.0)?c:b, visible[0]);
+    return {lbs:best.lbs, freq:best.freq};
+  }
+  if(_pmSnapTarget==='tonic-nut'){
+    // Tonic at nut: search all octaves of tonic pc for valid tension, prefer mid-range
+    const tonicPc=((homeKey%12)+12)%12;
+    const candidates=_pmNutCandidatesForPc(tonicPc);
+    if(!candidates.length) return null;
+    // Among valid candidates, pick one closest to current tension to minimize jump
+    // (if current is valid) or closest to mid-range (6 lbs) otherwise
+    const best=candidates.reduce((b,c)=>Math.abs(c.lbs-tensionLbs)<Math.abs(b.lbs-tensionLbs)?c:b, candidates[0]);
+    return {lbs:best.lbs, freq:best.freq};
+  }
+  // 'nearest': snap nearest tonic to closest physics node.
+  // Extend search slightly past nut (frac up to 1.15) for just-hidden tonics (#9)
+  const fund=fundFreq();
+  const tonicPc=((homeKey%12)+12)%12;
+  const extendedTonics=[];
+  for(let midi=20;midi<=100;midi++){
+    if(((midi%12)+12)%12!==tonicPc) continue;
+    const freq=REF_HZ*Math.pow(2,(midi-REF_MIDI)/12);
+    const frac=fund/freq;
+    if(frac>0.01&&frac<=1.15) extendedTonics.push({freq,frac,midi});
+  }
+  if(!extendedTonics.length) return null;
+  const nodeFreqs=getVisibleNodes().map(n=>n.frac);
+  let best=null, bestDelta=Infinity;
+  extendedTonics.forEach(t=>{
+    nodeFreqs.forEach(nf=>{
+      const lbs=_pmTensionForNoteAtFrac(t.freq,nf);
+      if(lbs<0.5||lbs>15) return;
+      const delta=Math.abs(lbs-tensionLbs);
+      if(delta<bestDelta){ bestDelta=delta; best={lbs,freq:t.freq}; }
+    });
+  });
+  return best;
+}
+
+// Animate tension from fromLbs to toLbs over 350ms, cubic ease-out.
+// Calls onComplete(targetLbs) when done. Cancels any prior animation.
+function _pmAnimateTension(fromLbs, toLbs, onComplete){
+  if(_pmSnapAnimId !== null){ cancelAnimationFrame(_pmSnapAnimId); _pmSnapAnimId=null; }
+  const DURATION=350;
+  const t0=performance.now();
+  function step(now){
+    const elapsed=now-t0;
+    const p=Math.min(1, elapsed/DURATION);
+    const eased=1-Math.pow(1-p, 3); // cubic ease-out
+    tensionLbs=fromLbs + (toLbs-fromLbs)*eased;
+    document.getElementById('ten-sl').value=tenValToSl(tensionLbs);
+    document.getElementById('ten-ro').value=tensionLbs.toFixed(1)+' lbs';
+    render();
+    if(p<1){
+      _pmSnapAnimId=requestAnimationFrame(step);
+    } else {
+      _pmSnapAnimId=null;
+      tensionLbs=toLbs; // ensure exact final value
+      document.getElementById('ten-sl').value=tenValToSl(tensionLbs);
+      document.getElementById('ten-ro').value=tensionLbs.toFixed(1)+' lbs';
+      _syncRegisterFromTension();
+      _syncTuneCandidates();
+      render();
+      if(onComplete) onComplete();
+    }
+  }
+  _pmSnapAnimId=requestAnimationFrame(step);
+}
+
+// Apply pitch map snap: animate tension to target, play snapped note on completion.
+function _pmApplySnap(){
+  if(!_pmSnapOn) return;
+  const result=_pmComputeSnapTension();
+  if(result===null) return;
+  const fromLbs=tensionLbs;
+  const toLbs=Math.max(0.5, Math.min(15, result.lbs));
+  _pmAnimateTension(fromLbs, toLbs, ()=>{
+    if(result.freq){
+      playTone(result.freq);
+      // Trigger node/wave viz at the snapped note's position
+      const newFrac=fundFreq()/result.freq;
+      if(newFrac>0.001&&newFrac<=1.5){
+        const svgY=nY(Math.min(newFrac,1.0));
+        triggerViz(Math.min(newFrac,1.0), 0, svgY, HOME_COL);
+      }
+    }
+  });
+}
+
+function tuneToKey(){
+  if(nodeView==='pitchmap'){
+    if(_pmTuneMode==='canonical'){
+      var tonics=_pmTonicNotesOnString();
+      if(!tonics.length){ _pmApplySnap(); return; }
+      var bestLbs=null;
+      [0.5,0.25,0.75].forEach(function(tf){
+        if(bestLbs!==null) return;
+        tonics.forEach(function(t){
+          if(bestLbs!==null) return;
+          var lbs=_pmTensionForNoteAtFrac(t.freq,tf);
+          if(lbs>=0.5&&lbs<=15) bestLbs=lbs;
+        });
+      });
+      if(bestLbs!==null){
+        var fromLbs=tensionLbs, toLbs=Math.max(0.5,Math.min(15,bestLbs));
+        _pmAnimateTension(fromLbs, toLbs, function(){
+          var t2=_pmTonicNotesOnString();
+          if(t2.length) playTone(t2.reduce(function(b,n){return Math.abs(n.frac-0.5)<Math.abs(b.frac-0.5)?n:b;},t2[0]).freq);
+        });
+      }
+    } else {
+      _pmApplySnap();
+    }
+    return;
+  }
   const rootPc=homeKey;
   const tc=homeNodeRatio(); // home node ratio relative to fundamental
 
@@ -6774,6 +7212,8 @@ render=function(){
   if(!ctG) return;
   ctG.innerHTML='';
   if(nodeView==='capo') return; // sub-node layers fill this space in capo mode
+  if(nodeView==='pitchmap'){ _renderPitchMapOverlay(); return; }
+  if(nodeView==='pitchmap'){ _renderPitchMapOverlay(); return; } // overlay draws its own labels
   const nutY=nutEffY();
   const fund=fundFreq();
   const lFS=15; // fixed label font size — smaller than node labels, visually distinct
@@ -7539,8 +7979,8 @@ function render(){
   const fi=noteInfo(fund);
   const nutRowH=nutFS+10;
 
-  // ── NUT ROW — hidden in nut height mode (replaced by travelling annotation) ──
-  if(nodeView!=='nut'){
+  // ── NUT ROW — hidden in nut height mode and pitchmap view ──
+  if(nodeView!=='nut' && nodeView!=='pitchmap'){
     const nutIsHome=isTonalCenter(1);
     const nutHomeLabel=remapDegree(1)||'1';
     const nutColor=nutIsHome?HOME_COL:(fi.snapped?(isInKey(fi.midi)?'#0F6E56':'rgba(153,60,29,0.6)'):GRAY);
@@ -7661,16 +8101,18 @@ function render(){
     const _hf=document.createElementNS('http://www.w3.org/2000/svg','tspan');
     _hf.setAttribute('font-style','italic'); _hf.textContent='f';
     _ht.appendChild(_hf); g.appendChild(_ht);
-    // home degree — right of string, colored
-    g.appendChild(mk('text',{x:HOME_X,y:y+yOff,'font-size':fs,'font-weight':'500',fill:c.text},displayLabel));
-    if(ni.snapped){
-      const kd=chromDeg(ni.midi,homeKey);
-      const keyCol=isHome?(inKey?'#0F6E56':'rgba(153,60,29,0.6)'):c.text;
-      g.appendChild(mk('text',{x:KD_RX,y:y+yOff,'font-size':fs,'font-weight':'500','text-anchor':'end',fill:keyCol},kd));
-      g.appendChild(mk('text',{x:NOTE_X,y:y+yOff,'font-size':fs,'font-weight':'500',fill:keyCol},ni.spelledName+ni.octave));
-    } else {
-      g.appendChild(mk('text',{x:KD_RX,y:y+yOff,'font-size':infoFS,'text-anchor':'end',fill:GRAY,opacity:0.3},'—'));
-      g.appendChild(mk('text',{x:NOTE_X,y:y+yOff,'font-size':infoFS,fill:GRAY,opacity:0.3},'—'));
+    // home degree — right of string, colored (hidden in pitchmap view)
+    if(nodeView!=='pitchmap') g.appendChild(mk('text',{x:HOME_X,y:y+yOff,'font-size':fs,'font-weight':'500',fill:c.text},displayLabel));
+    if(nodeView!=='pitchmap'){
+      if(ni.snapped){
+        const kd=chromDeg(ni.midi,homeKey);
+        const keyCol=isHome?(inKey?'#0F6E56':'rgba(153,60,29,0.6)'):c.text;
+        g.appendChild(mk('text',{x:KD_RX,y:y+yOff,'font-size':fs,'font-weight':'500','text-anchor':'end',fill:keyCol},kd));
+        g.appendChild(mk('text',{x:NOTE_X,y:y+yOff,'font-size':fs,'font-weight':'500',fill:keyCol},ni.spelledName+ni.octave));
+      } else {
+        g.appendChild(mk('text',{x:KD_RX,y:y+yOff,'font-size':infoFS,'text-anchor':'end',fill:GRAY,opacity:0.3},'—'));
+        g.appendChild(mk('text',{x:NOTE_X,y:y+yOff,'font-size':infoFS,fill:GRAY,opacity:0.3},'—'));
+      }
     }
     if(showPitchBars){
       g.appendChild(mk('text',{x:INFO_X,y:y+yOff,'font-size':infoFS,fill:c.text,opacity:0.8},
@@ -7679,28 +8121,30 @@ function render(){
         fmtLen(upperIn)+' | '+fmtLen(lowerIn)));
     }
 
-    const hitRect=mk('rect',{x:0,y:y-rowH/2,width:SVG_W,height:rowH,fill:'transparent',class:'row-hit'});
-    hitRect.addEventListener('mousedown',e=>{ try{
-      _tpFrac=node.frac; _tpStartX=e.clientX; _tpStartY=e.clientY; _tpMoved=false;
-      _tpOnPin=()=>{ triggerViz(node.frac,node.harm,y,c.text); showStrip(freq,node.frac,displayLabel,c.text); };
-      playTone(freq);
-    }catch(e){} });
-    hitRect.addEventListener('mouseenter',()=>{ try{
-      if(dragging||(_pinnedFrac!==null&&_pinnedFrac!==node.frac)) return;
-      showStrip(freq,node.frac,displayLabel,c.text);
-    }catch(e){} });
-    hitRect.addEventListener('mouseleave',()=>{ try{ clearStrip(); }catch(e){} });
-    hitRect.addEventListener('touchstart',e=>{ try{
-      _tpFrac=node.frac; _tpStartX=e.touches[0].clientX; _tpStartY=e.touches[0].clientY; _tpMoved=false;
-      _tpOnPin=()=>{ triggerViz(node.frac,node.harm,y,c.text); showStrip(freq,node.frac,displayLabel,c.text); };
-      playTone(freq);
-    }catch(e){} },{passive:true});
-    hitRect.addEventListener('touchend',()=>{ try{
-      if(_tpFrac!==null&&!_tpMoved){ if(_togglePin(node.frac,true)&&_tpOnPin) _tpOnPin(); }
-      else if(_pinnedFrac===null){ clearStrip(); }
-      _tpFrac=null; _tpMoved=false; _tpOnPin=null;
-    }catch(e){} },{passive:true});
-    g.appendChild(hitRect);
+    if(nodeView!=='pitchmap'){
+      const hitRect=mk('rect',{x:0,y:y-rowH/2,width:SVG_W,height:rowH,fill:'transparent',class:'row-hit'});
+      hitRect.addEventListener('mousedown',e=>{ try{
+        _tpFrac=node.frac; _tpStartX=e.clientX; _tpStartY=e.clientY; _tpMoved=false;
+        _tpOnPin=()=>{ triggerViz(node.frac,node.harm,y,c.text); showStrip(freq,node.frac,displayLabel,c.text); };
+        playTone(freq);
+      }catch(e){} });
+      hitRect.addEventListener('mouseenter',()=>{ try{
+        if(dragging||(_pinnedFrac!==null&&_pinnedFrac!==node.frac)) return;
+        showStrip(freq,node.frac,displayLabel,c.text);
+      }catch(e){} });
+      hitRect.addEventListener('mouseleave',()=>{ try{ clearStrip(); }catch(e){} });
+      hitRect.addEventListener('touchstart',e=>{ try{
+        _tpFrac=node.frac; _tpStartX=e.touches[0].clientX; _tpStartY=e.touches[0].clientY; _tpMoved=false;
+        _tpOnPin=()=>{ triggerViz(node.frac,node.harm,y,c.text); showStrip(freq,node.frac,displayLabel,c.text); };
+        playTone(freq);
+      }catch(e){} },{passive:true});
+      hitRect.addEventListener('touchend',()=>{ try{
+        if(_tpFrac!==null&&!_tpMoved){ if(_togglePin(node.frac,true)&&_tpOnPin) _tpOnPin(); }
+        else if(_pinnedFrac===null){ clearStrip(); }
+        _tpFrac=null; _tpMoved=false; _tpOnPin=null;
+      }catch(e){} },{passive:true});
+      g.appendChild(hitRect);
+    }
   });
 }
 
