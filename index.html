@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.4.0</title>
+<title>Washtub Bass String Map · v7.4.29</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -1556,7 +1556,7 @@ let _lastStripArgs=null; // cache last showStrip call args for replay on tension
 // Uses clientWidth/clientHeight instead of getBoundingClientRect to avoid
 // forced synchronous layout reflows which crash sandboxed iframes.
 // Layout is known from CSS: rrail=42px, sidebar=72px, both fixed.
-const _drawFanOverlay = (withinFs, crossFs, activeFrac, isSeg_, segType_, otherSegCol_) => {
+const _drawFanOverlay = (withinData, crossData, activeFrac, isSeg_, segType_, otherSegCol_) => {
   const fo=document.getElementById('fan-overlay');
   if(!fo) return;
   fo.innerHTML='';
@@ -1584,17 +1584,84 @@ const _drawFanOverlay = (withinFs, crossFs, activeFrac, isSeg_, segType_, otherS
     Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));
     return el;
   };
+  
+  // Extract fractions for compatibility
+  const withinFs = withinData.map(d=>d.frac);
+  
+  // Helper: Get Point A' for ghost nodes - extended to bottom of top rail
+  const getClippedRulPt = (data) => {
+    if(!data.isGhost) return rulPt(data.frac);
+    
+    // Extend line from ghost node through real off-screen tonic direction
+    // until it reaches the bottom edge of the top rail (Y = 0 in overlay coords)
+    const ghostPt = rulPt(data.frac); // Ghost at ruler boundary
+    const realTonicPt = strPt(data.realFrac); // Where real tonic would be (off-screen)
+    const topRailY = 0; // Bottom edge of top rail
+    
+    const dx = realTonicPt.x - ghostPt.x;
+    const dy = realTonicPt.y - ghostPt.y;
+    
+    if(Math.abs(dy) < 0.1) {
+      // Degenerate: use string X at top rail
+      return {x: lrW + tx + SX*sc, y: topRailY};
+    }
+    
+    // Find X where extended line crosses Y = topRailY
+    const pointAPrimeX = ghostPt.x + dx * (topRailY - ghostPt.y) / dy;
+    return {x: pointAPrimeX, y: topRailY};
+  };
+  
+  // Helper: Get Point B for ghost nodes - at string X, bottom of top rail
+  const getPointB = () => {
+    return {x: lrW + tx + SX*sc, y: 0};
+  };
+  
   // Shade polygon between nearest home nodes
   if(activeFrac!==null && withinFs.length>=2){
-    const above=withinFs.filter(f=>f>activeFrac);
-    const below=withinFs.filter(f=>f<activeFrac);
-    const nearAbove=above.length?Math.min(...above):null;
-    const nearBelow=below.length?Math.max(...below):null;
+    const above=withinData.filter(d=>d.frac>activeFrac);
+    const below=withinData.filter(d=>d.frac<activeFrac);
+    const nearAbove=above.length?above.reduce((min,curr)=>curr.frac<min.frac?curr:min):null;
+    const nearBelow=below.length?below.reduce((max,curr)=>curr.frac>max.frac?curr:max):null;
     if(nearAbove!==null && nearBelow!==null){
-      const sa=strPt(nearAbove), sb=strPt(nearBelow);
-      const ra=rulPt(nearAbove), rb=rulPt(nearBelow);
+      const sa=strPt(nearAbove.frac), sb=strPt(nearBelow.frac);
+      const ra=getClippedRulPt(nearAbove), rb=getClippedRulPt(nearBelow);
+      
+      let points;
+      
+      if(nearAbove.isGhost) {
+        // Upper ghost (past nut): new 5-point polygon path
+        // Point A' (extended angled endpoint) → Point B (at string X, top rail) → sb (lower string) → rb (lower ruler) → ghost
+        const ghostPt = rulPt(nearAbove.frac);
+        const pointB = getPointB();
+        points = [
+          `${ra.x.toFixed(1)},${ra.y.toFixed(1)}`,        // 1. Point A' (top right)
+          `${pointB.x.toFixed(1)},${pointB.y.toFixed(1)}`, // 2. Point B (top left)
+          `${sb.x.toFixed(1)},${sb.y.toFixed(1)}`,         // 3. Lower string
+          `${rb.x.toFixed(1)},${rb.y.toFixed(1)}`,         // 4. Lower ruler
+          `${ghostPt.x.toFixed(1)},${ghostPt.y.toFixed(1)}` // 5. Ghost node
+        ];
+      } else if(nearBelow.isGhost) {
+        // Lower ghost (past bridge): keep existing 5-point approach
+        const ghostPt = rulPt(nearBelow.frac);
+        points = [
+          `${sa.x.toFixed(1)},${sa.y.toFixed(1)}`,
+          `${sb.x.toFixed(1)},${sb.y.toFixed(1)}`,
+          `${rb.x.toFixed(1)},${rb.y.toFixed(1)}`,
+          `${ghostPt.x.toFixed(1)},${ghostPt.y.toFixed(1)}`,
+          `${ra.x.toFixed(1)},${ra.y.toFixed(1)}`
+        ];
+      } else {
+        // Regular 4-sided polygon when no ghost nodes
+        points = [
+          `${sa.x.toFixed(1)},${sa.y.toFixed(1)}`,
+          `${sb.x.toFixed(1)},${sb.y.toFixed(1)}`,
+          `${rb.x.toFixed(1)},${rb.y.toFixed(1)}`,
+          `${ra.x.toFixed(1)},${ra.y.toFixed(1)}`
+        ];
+      }
+      
       fo.appendChild(mk_('polygon',{
-        points:`${sa.x.toFixed(1)},${sa.y.toFixed(1)} ${sb.x.toFixed(1)},${sb.y.toFixed(1)} ${rb.x.toFixed(1)},${rb.y.toFixed(1)} ${ra.x.toFixed(1)},${ra.y.toFixed(1)}`,
+        points: points.join(' '),
         fill:'rgba(83,58,183,0.06)','pointer-events':'none'
       }));
     }
@@ -1609,16 +1676,33 @@ const _drawFanOverlay = (withinFs, crossFs, activeFrac, isSeg_, segType_, otherS
     }));
   }
   // Home node fan lines
-  withinFs.forEach(hf=>{
-    const sp=strPt(hf), rp=rulPt(hf);
-    fo.appendChild(mk_('line',{
-      x1:rp.x.toFixed(1),y1:rp.y.toFixed(1),x2:sp.x.toFixed(1),y2:sp.y.toFixed(1),
-      stroke:HOME_COL,'stroke-width':1,'stroke-dasharray':'3 4',opacity:0.4
-    }));
+  withinData.forEach(data=>{
+    const sp=strPt(data.frac), rp=getClippedRulPt(data);
+    
+    if(data.isGhost) {
+      // Solid line from Point A' to Point B (top edge of polygon)
+      const pointB = getPointB();
+      fo.appendChild(mk_('line',{
+        x1:rp.x.toFixed(1),y1:rp.y.toFixed(1),x2:pointB.x.toFixed(1),y2:pointB.y.toFixed(1),
+        stroke:HOME_COL,'stroke-width':1,opacity:0.4
+      }));
+      // Dashed line from ghost node to Point A'  
+      const nutPt = rulPt(data.frac);
+      fo.appendChild(mk_('line',{
+        x1:nutPt.x.toFixed(1),y1:nutPt.y.toFixed(1),x2:rp.x.toFixed(1),y2:rp.y.toFixed(1),
+        stroke:HOME_COL,'stroke-width':1,'stroke-dasharray':'3 4',opacity:0.4
+      }));
+    } else {
+      // Regular node: normal fan line
+      fo.appendChild(mk_('line',{
+        x1:rp.x.toFixed(1),y1:rp.y.toFixed(1),x2:sp.x.toFixed(1),y2:sp.y.toFixed(1),
+        stroke:HOME_COL,'stroke-width':1,'stroke-dasharray':'3 4',opacity:0.4
+      }));
+    }
   });
-  crossFs.forEach(hf=>{
+  crossData.forEach(data=>{
     if(!otherSegCol_) return;
-    const sp=strPt(hf), rp=rulPt(hf);
+    const sp=strPt(data.frac), rp=getClippedRulPt(data);
     fo.appendChild(mk_('line',{
       x1:rp.x.toFixed(1),y1:rp.y.toFixed(1),x2:sp.x.toFixed(1),y2:sp.y.toFixed(1),
       stroke:otherSegCol_,'stroke-width':1,'stroke-dasharray':'3 4',opacity:0.3
@@ -1680,6 +1764,7 @@ function drawRulerSVG(node){
 
   let html='';
   let bgHtml=''; // background layer — rendered first (behind everything)
+  let labelsHtml=''; // interval labels — rendered last (on top of dots)
 
   // Home fracs — correct in all modes with standard fracs (frac=1.0 = eff. nut in nut view)
   const homeFracs=getHomeNodeFracs();
@@ -1706,12 +1791,55 @@ function drawRulerSVG(node){
     crossFracs  = [];
   } else {
     // Segment perspective (existing logic — fully guarded)
-    withinHomeData = isSeg
-      ? getCapoSegHomeFracsWithFreq(segType, segCf)
-      : homeFracs.map(hf=>({frac:hf,
-          freq:hf>=0.999?fundFreq():(NODES.find(n=>Math.abs(n.frac-hf)<0.001)||{ratio:2}).ratio*fundFreq(),
-          ratio:hf>=0.999?1:(NODES.find(n=>Math.abs(n.frac-hf)<0.001)||{ratio:2}).ratio}));
-    crossHomeData = isSeg ? getCapoSegHomeFracsWithFreq(otherSegType, segCf) : [];
+    // TONIC MODE: Replace home nodes with tonic note positions
+    if(nodeView==='pitchmap' && _rulerRefMode==='tonic-notes' && !isSeg){
+      // Find tonic notes and populate withinHomeData with same structure as home nodes
+      const tonicData = [];
+      const fundFreqVal = fundFreq();
+      const offScreenTonics = { pastNut: [], pastBridge: [] };
+      
+      for(let midi=12; midi<=100; midi++){
+        if(chromDeg(midi, homeKey)==='1'){ // This is a tonic note
+          const freq = REF_HZ*Math.pow(2,(midi-REF_MIDI)/12);
+          const frac = fundFreqVal/freq;
+          
+          if(frac >= 0 && frac <= 1){ 
+            // Visible tonic note
+            tonicData.push({frac, freq, ratio:freq/fundFreqVal});
+          } else if(frac > 1){
+            // Past nut (off top of ruler)
+            offScreenTonics.pastNut.push({frac, freq, ratio:freq/fundFreqVal});
+          } else if(frac < 0){
+            // Past bridge (off bottom of ruler)  
+            offScreenTonics.pastBridge.push({frac, freq, ratio:freq/fundFreqVal});
+          }
+        }
+      }
+      
+      // Add ghost nodes for nearest off-screen tonic notes
+      if(offScreenTonics.pastNut.length > 0){
+        // Find nearest past-nut tonic (smallest frac > 1)
+        const nearest = offScreenTonics.pastNut.reduce((min, curr) => curr.frac < min.frac ? curr : min);
+        tonicData.push({frac: 1.0, freq: nearest.freq, ratio: nearest.ratio, isGhost: true, ghostDir: 'pastNut', realFrac: nearest.frac});
+      }
+      if(offScreenTonics.pastBridge.length > 0){
+        // Find nearest past-bridge tonic (largest frac < 0)  
+        const nearest = offScreenTonics.pastBridge.reduce((max, curr) => curr.frac > max.frac ? curr : max);
+        tonicData.push({frac: 0.0, freq: nearest.freq, ratio: nearest.ratio, isGhost: true, ghostDir: 'pastBridge', realFrac: nearest.frac});
+      }
+      
+      withinHomeData = tonicData;
+      crossHomeData = [];
+    } else {
+      // HOME NODE MODE: Existing logic unchanged
+      withinHomeData = isSeg
+        ? getCapoSegHomeFracsWithFreq(segType, segCf)
+        : homeFracs.map(hf=>({frac:hf,
+            freq:hf>=0.999?fundFreq():(NODES.find(n=>Math.abs(n.frac-hf)<0.001)||{ratio:2}).ratio*fundFreq(),
+            ratio:hf>=0.999?1:(NODES.find(n=>Math.abs(n.frac-hf)<0.001)||{ratio:2}).ratio}));
+      crossHomeData = isSeg ? getCapoSegHomeFracsWithFreq(otherSegType, segCf) : [];
+    }
+    
     withinFracs = withinHomeData.map(d=>d.frac);
     crossFracs  = crossHomeData.map(d=>d.frac);
   }
@@ -1721,7 +1849,7 @@ function drawRulerSVG(node){
   if(_pinnedFrac!==null && !_disableFanOverlay){
     requestAnimationFrame(()=>{
       try{
-        _drawFanOverlay(withinFracs, crossFracs, frac, isSeg, segType,
+        _drawFanOverlay(withinHomeData, crossHomeData, frac, isSeg, segType,
           (!useFullString && isSeg) ? otherSegCol : null);
       }catch(e){}
     });
@@ -1759,22 +1887,31 @@ function drawRulerSVG(node){
   [
     ...withinHomeData.map(d=>({...d, iconColor:_segIconColor,  iconFill:_segIconFill})),
     ...crossHomeData.map( d=>({...d, iconColor:otherSegCol||HOME_COL, iconFill:_crossIconFill}))
-  ].forEach(({frac:hf, freq:_hFreq, iconColor, iconFill})=>{
+  ].forEach(({frac:hf, freq:_hFreq, iconColor, iconFill, isGhost})=>{
     const hy=parseFloat(miniY(hf).toFixed(1));
     const mkS2=(tag,attrs)=>{
       const el=document.createElementNS('http://www.w3.org/2000/svg',tag);
       Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));
       return el;
     };
-    const hit=mkS2('circle',{cx:CX,cy:hy,r:12,fill:'transparent',style:'cursor:pointer;pointer-events:all;'});
-    hit.addEventListener('click',e=>{try{e.stopPropagation();playTone(_hFreq);_origShowStrip_step5(_hFreq,hf,'1',iconColor);}catch(e){}});
-    hit.addEventListener('touchstart',e=>{try{e.stopPropagation();playTone(_hFreq);_origShowStrip_step5(_hFreq,hf,'1',iconColor);}catch(e){}},{passive:true});
-    _homeIconEls.push(
-      mkS2('circle',{cx:CX,cy:hy,r:7,fill:'none',stroke:iconColor,'stroke-width':1.4,opacity:0.4}),
-      mkS2('circle',{cx:CX,cy:hy,r:4,fill:iconFill,stroke:iconColor,'stroke-width':1.4}),
-      mkS2('circle',{cx:CX,cy:hy,r:1.8,fill:iconColor}),
-      hit
-    );
+    
+    if(isGhost){
+      // Ghost node: single dashed circle, no interaction
+      _homeIconEls.push(
+        mkS2('circle',{cx:CX,cy:hy,r:7,fill:'none',stroke:iconColor,'stroke-width':1.4,opacity:0.6,'stroke-dasharray':'3 2'})
+      );
+    } else {
+      // Regular home node: multiple circles with interaction
+      const hit=mkS2('circle',{cx:CX,cy:hy,r:12,fill:'transparent',style:'cursor:pointer;pointer-events:all;'});
+      hit.addEventListener('click',e=>{try{e.stopPropagation();playTone(_hFreq);_origShowStrip_step5(_hFreq,hf,'1',iconColor);}catch(e){}});
+      hit.addEventListener('touchstart',e=>{try{e.stopPropagation();playTone(_hFreq);_origShowStrip_step5(_hFreq,hf,'1',iconColor);}catch(e){}},{passive:true});
+      _homeIconEls.push(
+        mkS2('circle',{cx:CX,cy:hy,r:7,fill:'none',stroke:iconColor,'stroke-width':1.4,opacity:0.4}),
+        mkS2('circle',{cx:CX,cy:hy,r:4,fill:iconFill,stroke:iconColor,'stroke-width':1.4}),
+        mkS2('circle',{cx:CX,cy:hy,r:1.8,fill:iconColor}),
+        hit
+      );
+    }
   });
 
   // Spans + interval labels + dot
@@ -1800,14 +1937,20 @@ function drawRulerSVG(node){
     if(upperFrac!==null){
       const uy=activeMiniY(upperFrac);
       const crossUp=isCrossCapo(upperFrac);
+      const upperGhost=withinHomeData.find(d=>Math.abs(d.frac-upperFrac)<0.002)?.isGhost;
+      const dashArray=crossUp?' stroke-dasharray="5 3"':(upperGhost?' stroke-dasharray="8 4"':'');
+      const lineWidth=upperGhost?'2':'3';
       html+=`<line x1="${CX}" y1="${uy.toFixed(1)}" x2="${CX}" y2="${dy.toFixed(1)}"
-        stroke="${HOME_COL}" stroke-width="3" stroke-linecap="round"${crossUp?' stroke-dasharray="5 3"':''}/>`;
+        stroke="${HOME_COL}" stroke-width="${lineWidth}" stroke-linecap="round"${dashArray}/>`;
     }
     if(lowerFrac!==null){
       const ly=activeMiniY(lowerFrac);
       const crossLo=isCrossCapo(lowerFrac);
+      const lowerGhost=withinHomeData.find(d=>Math.abs(d.frac-lowerFrac)<0.002)?.isGhost;
+      const dashArray=crossLo?' stroke-dasharray="5 3"':(lowerGhost?' stroke-dasharray="8 4"':'');
+      const lineWidth=lowerGhost?'2':'3';
       html+=`<line x1="${CX}" y1="${dy.toFixed(1)}" x2="${CX}" y2="${ly.toFixed(1)}"
-        stroke="${HOME_COL}" stroke-width="3" stroke-linecap="round"${crossLo?' stroke-dasharray="5 3"':''}/>`;
+        stroke="${HOME_COL}" stroke-width="${lineWidth}" stroke-linecap="round"${dashArray}/>`;
     }
     if(crossFracs.length>0&&otherSegCol){
       crossFracs.forEach(hf=>{
@@ -1830,8 +1973,8 @@ function drawRulerSVG(node){
         :(intervalNameET(node.ratio/uHomeRatio));
       const lblY=uy-12;
       const lblW=crossUp?26:20;
-      html+=`<rect x="${(CX-lblW/2).toFixed(1)}" y="${lblY-10}" width="${lblW}" height="13" rx="2" fill="rgba(255,255,255,0.95)"/>`;
-      html+=`<text x="${CX}" y="${lblY}" text-anchor="middle" font-size="${crossUp?9:12}" font-weight="800" fill="${HOME_COL}">${itvl}</text>`;
+      labelsHtml+=`<rect x="${(CX-lblW/2).toFixed(1)}" y="${lblY-10}" width="${lblW}" height="13" rx="2" fill="rgba(255,255,255,0.95)"/>`;
+      labelsHtml+=`<text x="${CX}" y="${lblY}" text-anchor="middle" font-size="${crossUp?9:12}" font-weight="800" fill="${HOME_COL}">${itvl}</text>`;
     }
     if(lowerFrac!==null){
       const ly=activeMiniY(lowerFrac);
@@ -1842,8 +1985,8 @@ function drawRulerSVG(node){
         ?intervalNameCompound(lHomeRatio/nodeRatioForInterval)
         :(intervalNameET(lHomeRatio/node.ratio));
       const lblW=crossLo?26:20;
-      html+=`<rect x="${(CX-lblW/2).toFixed(1)}" y="${ly+10}" width="${lblW}" height="13" rx="2" fill="rgba(255,255,255,0.95)"/>`;
-      html+=`<text x="${CX}" y="${ly+20}" text-anchor="middle" font-size="${crossLo?9:12}" font-weight="800" fill="${HOME_COL}">${itvl}</text>`;
+      labelsHtml+=`<rect x="${(CX-lblW/2).toFixed(1)}" y="${ly+10}" width="${lblW}" height="13" rx="2" fill="rgba(255,255,255,0.95)"/>`;
+      labelsHtml+=`<text x="${CX}" y="${ly+20}" text-anchor="middle" font-size="${crossLo?9:12}" font-weight="800" fill="${HOME_COL}">${itvl}</text>`;
     }
 
     // Ghost home node dots — for off-string tonics that have no on-string home node
@@ -1863,8 +2006,8 @@ function drawRulerSVG(node){
           html+=`<circle cx="${CX}" cy="${MINI_TOP}" r="5" fill="none"
             stroke="${HOME_COL}" stroke-width="1.5" opacity="0.45" stroke-dasharray="3 2"/>`;
           // Interval label just below ghost dot
-          html+=`<rect x="${CX-10}" y="${MINI_TOP+6}" width="20" height="13" rx="2" fill="rgba(255,255,255,0.95)"/>`;
-          html+=`<text x="${CX}" y="${MINI_TOP+16}" text-anchor="middle" font-size="12"
+          labelsHtml+=`<rect x="${CX-10}" y="${MINI_TOP+6}" width="20" height="13" rx="2" fill="rgba(255,255,255,0.95)"/>`;
+          labelsHtml+=`<text x="${CX}" y="${MINI_TOP+16}" text-anchor="middle" font-size="12"
             font-weight="800" fill="${HOME_COL}" opacity="0.7">${itvl}</text>`;
         }
       }
@@ -1881,8 +2024,8 @@ function drawRulerSVG(node){
           html+=`<circle cx="${CX}" cy="${MINI_BOT}" r="5" fill="none"
             stroke="${HOME_COL}" stroke-width="1.5" opacity="0.45" stroke-dasharray="3 2"/>`;
           // Interval label just above ghost dot
-          html+=`<rect x="${CX-10}" y="${MINI_BOT-19}" width="20" height="13" rx="2" fill="rgba(255,255,255,0.95)"/>`;
-          html+=`<text x="${CX}" y="${MINI_BOT-9}" text-anchor="middle" font-size="12"
+          labelsHtml+=`<rect x="${CX-10}" y="${MINI_BOT-19}" width="20" height="13" rx="2" fill="rgba(255,255,255,0.95)"/>`;
+          labelsHtml+=`<text x="${CX}" y="${MINI_BOT-9}" text-anchor="middle" font-size="12"
             font-weight="800" fill="${HOME_COL}" opacity="0.7">${itvl}</text>`;
         }
       }
@@ -1981,6 +2124,8 @@ function drawRulerSVG(node){
   svg.innerHTML=bgHtml+html;
   // Append home node icon DOM elements (need event listeners, can't be in innerHTML)
   _homeIconEls.forEach(el=>svg.appendChild(el));
+  // Append interval labels last so they render on top of dots
+  if(labelsHtml) svg.insertAdjacentHTML('beforeend', labelsHtml);
   }catch(e){} // swallow any rendering errors — never crash the app
 }
 
@@ -2263,7 +2408,7 @@ function renderNodeViewCtx(view){
     const muteSvg=_muted
       ?`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h3l4-4v14l-4-4H3z" stroke="#b42828" stroke-width="1.3" stroke-linejoin="round"/><line x1="14" y1="7" x2="18" y2="13" stroke="#b42828" stroke-width="1.5" stroke-linecap="round"/><line x1="18" y1="7" x2="14" y2="13" stroke="#b42828" stroke-width="1.5" stroke-linecap="round"/></svg>`
       :`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h3l4-4v14l-4-4H3z" stroke="#533AB7" stroke-width="1.3" stroke-linejoin="round"/><path d="M14 6.5c1.5 1 2.5 2.2 2.5 3.5s-1 2.5-2.5 3.5" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/><path d="M15.5 4c2.5 1.5 4 3.5 4 6s-1.5 4.5-4 6" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/></svg>`;
-    return `<div class="br-ctx-row" style="flex:0 0 auto;padding:2px 6px;"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">Washtub v7.4.0</span></div>
+    return `<div class="br-ctx-row" style="flex:0 0 auto;padding:2px 6px;"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">Washtub v7.4.29</span></div>
             <div class="br-ctx-row" style="gap:5px;align-items:center;padding:4px 6px;">
               <div class="br-action-btn${muteActive}" onclick="toggleMute()" title="${_muted?'Unmute':'Mute'}">
                 ${muteSvg}
@@ -2335,18 +2480,19 @@ function renderNodeViewCtx(view){
     const kn=NOTES[((homeKey%12)+12)%12];
     return '<div class="br-ctx-row" style="gap:3px;">'
       +'<span class="br-chip-lbl" style="white-space:nowrap;">tune:</span>'
-      +'<div class="br-poly-btn'+(tuneNearest?' on':'')+'" onclick="_pmTuneMode=\'nearest\';renderBRCtx()">'+kn+' &gt; any</div>'
-      +'<div class="br-poly-btn'+(!tuneNearest?' on':'')+'" onclick="_pmTuneMode=\'canonical\';renderBRCtx()">'+kn+' &gt; fund</div>'
+      +'<div class="br-poly-btn'+(tuneNearest?' on':'')+'" style="white-space:nowrap;" onclick="_pmTuneMode=\'nearest\';renderBRCtx()">'+kn+'&gt;any</div>'
+      +'<div class="br-poly-btn'+(!tuneNearest?' on':'')+'" style="white-space:nowrap;" onclick="_pmTuneMode=\'canonical\';renderBRCtx()">'+kn+'&gt;fund</div>'
       +'</div>'
       +'<div class="br-ctx-row" style="gap:3px;">'
-      +'<div class="br-poly-btn'+(snapOn?' on':'')+'" style="flex:0 0 auto;padding:0 6px;" onclick="_pmSnapOn=!_pmSnapOn;renderBRCtx()">node snap</div>'
-      +'<div class="br-poly-btn'+(stN?' on':'')+'" style="'+dimmed+'" onclick="_pmSnapTarget=\'nearest\';renderBRCtx()">'+kn+' &gt; any</div>'
-      +'<div class="br-poly-btn'+(stTN?' on':'')+'" style="'+dimmed+'" onclick="_pmSnapTarget=\'tonic-nut\';renderBRCtx()">'+kn+' &gt; fund</div>'
-      +'<div class="br-poly-btn'+(stNN?' on':'')+'" style="'+dimmed+'" onclick="_pmSnapTarget=\'note-nut\';renderBRCtx()">any &gt; fund</div>'
+      +'<div class="br-poly-btn'+(snapOn?' on':'')+'" style="flex:0 0 auto;padding:0 6px;white-space:nowrap;" onclick="_pmSnapOn=!_pmSnapOn;renderBRCtx()">node snap</div>'
+      +'<div class="br-poly-btn'+(stN?' on':'')+'" style="'+dimmed+';white-space:nowrap;" onclick="_pmSnapTarget=\'nearest\';renderBRCtx()">'+kn+'&gt;any</div>'
+      +'<div class="br-poly-btn'+(stTN?' on':'')+'" style="'+dimmed+';white-space:nowrap;" onclick="_pmSnapTarget=\'tonic-nut\';renderBRCtx()">'+kn+'&gt;fund</div>'
+      +'<div class="br-poly-btn'+(stNN?' on':'')+'" style="'+dimmed+';white-space:nowrap;" onclick="_pmSnapTarget=\'note-nut\';renderBRCtx()">any&gt;fund</div>'
       +'</div>'
       +'<div class="br-ctx-row" style="gap:3px;">'
-      +'<div class="br-poly-btn'+(smallOn?' on':'')+'" style="flex:0 0 auto;padding:0 6px;" onclick="_pmShowSmallLabels=!_pmShowSmallLabels;render();renderBRCtx()">show tiny labels</div>'
+      +'<div class="br-poly-btn'+(smallOn?' on':'')+'" style="flex:0 0 auto;padding:0 6px;" onclick="_pmShowSmallLabels=!_pmShowSmallLabels;_renderPitchMapOverlay();renderBRCtx()">show tiny labels</div>'
       +'<div class="br-poly-btn'+(_pmDiatonicOnly?' on':'')+'" style="flex:0 0 auto;padding:0 6px;" onclick="_pmDiatonicOnly=!_pmDiatonicOnly;render();renderBRCtx()">diatonic only</div>'
+      +'<div class="br-poly-btn'+(_rulerRefMode==='tonic-notes'?' on':'')+'" style="flex:0 0 auto;padding:0 6px;" onclick="_rulerRefMode=(_rulerRefMode===\'home-nodes\'?\'tonic-notes\':\'home-nodes\');renderBRCtx();if(_pinnedFrac!==null&&_activeNode)drawRulerSVG(_activeNode)">tonic ruler</div>'
       +'</div>';
   }
   return '';
@@ -3116,6 +3262,7 @@ let _pmTuneMode        = 'nearest'; // 'nearest' | 'canonical' — tune-to-key t
 let _pmShowSmallLabels = true;      // show labels when note spacing is tight
 let _pmSnapAnimId      = null;      // rAF id for in-progress snap animation
 let _pmDiatonicOnly    = false;     // show only diatonic notes in pitchmap overlay
+let _rulerRefMode      = 'tonic-notes'; // 'home-nodes' | 'tonic-notes' — ruler reference
 let _playPanelOpen = false;
 let _sidebarWasOpen = false;  // sidebar state before drawer opened
 let _savedPinFrac = null;     // pinned node saved before playback, restored after
@@ -5068,7 +5215,7 @@ setTimeout(()=>{
 
   function tenStart(clientY){
     _tDrag=true; _tStartY=clientY; _tStartLbs=tensionLbs;
-    if(nodeView==='pitchmap') unpinAndClear();
+    unpinAndClear();
     _tenStartTone();
   }
   function tenEnd(){ if(!_tDrag) return; _tDrag=false; _tenStopTone(); if(nodeView==='pitchmap') _pmApplySnap(); }
@@ -6614,10 +6761,12 @@ function _syncTuneCandidates(){
         _syncRegisterFromTension();
         _syncTuneCandidates();
         render();
+        if(_pinnedFrac!==null) setRowHL(_pinnedFrac, 0.32);
         _tuneSeqTimer=setTimeout(()=>{
           stopActive();
           playTone(fundFreq());
           triggerViz(1.0, 1, nodeView==='nut'?nutEffY():NY, HOME_COL);
+          if(_pinnedFrac!==null) setRowHL(_pinnedFrac, 0.32);
         }, 600);
       } else {
         tuneToKey();
@@ -7090,6 +7239,7 @@ function tuneToKey(){
   _syncRegisterFromTension(); // keep register buttons in sync with tuned tension
   _syncTuneCandidates();      // reflect chosen candidate in cluster
   render();
+  if(_pinnedFrac!==null) setRowHL(_pinnedFrac, 0.32);
 
   // Capture "after" frequency — same logic as before, but now with updated tension
   const _capoAfterFreq = nodeView==='capo'
@@ -7114,6 +7264,7 @@ function tuneToKey(){
     triggerViz(_vizFrac, _vizHarm, _vizY, _vizCol);
     _tuneSeqTimer=null;
     refreshPreviewHL(); // #52: restore preview highlights after tune sequence completes
+    if(_pinnedFrac!==null) setRowHL(_pinnedFrac, 0.32);
   }, toneDuration*1000 + toneSpacing*1000);
 }
 
