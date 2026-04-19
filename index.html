@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.4.29</title>
+<title>Washtub Bass String Map · v7.5.5</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -837,6 +837,14 @@ input[type=range]{width:110px;cursor:pointer;}
         <button class="pd-btn" id="pds-full" onclick="setPlayScaleStyle('full',this)">str</button>
       </div>
       <div class="pd-lbl">scale range</div>
+    </div>
+    <!-- Capo playback section: single segment or trans-capo (both). Always visible, greyed outside capo mode. -->
+    <div class="pd-sec" id="pd-capo-section">
+      <div class="pd-row">
+        <button class="pd-btn on" id="pdtc-single" onclick="setTransCapoSegments('single')">single</button>
+        <button class="pd-btn"    id="pdtc-both"   onclick="setTransCapoSegments('both')">both</button>
+      </div>
+      <div class="pd-lbl">capo play</div>
     </div>
     <!-- Direction: dims only when chord+block active -->
     <div class="pd-sec" id="pd-dir-section">
@@ -2408,7 +2416,7 @@ function renderNodeViewCtx(view){
     const muteSvg=_muted
       ?`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h3l4-4v14l-4-4H3z" stroke="#b42828" stroke-width="1.3" stroke-linejoin="round"/><line x1="14" y1="7" x2="18" y2="13" stroke="#b42828" stroke-width="1.5" stroke-linecap="round"/><line x1="18" y1="7" x2="14" y2="13" stroke="#b42828" stroke-width="1.5" stroke-linecap="round"/></svg>`
       :`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h3l4-4v14l-4-4H3z" stroke="#533AB7" stroke-width="1.3" stroke-linejoin="round"/><path d="M14 6.5c1.5 1 2.5 2.2 2.5 3.5s-1 2.5-2.5 3.5" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/><path d="M15.5 4c2.5 1.5 4 3.5 4 6s-1.5 4.5-4 6" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/></svg>`;
-    return `<div class="br-ctx-row" style="flex:0 0 auto;padding:2px 6px;"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">Washtub v7.4.29</span></div>
+    return `<div class="br-ctx-row" style="flex:0 0 auto;padding:2px 6px;"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">Washtub v7.5.5</span></div>
             <div class="br-ctx-row" style="gap:5px;align-items:center;padding:4px 6px;">
               <div class="br-action-btn${muteActive}" onclick="toggleMute()" title="${_muted?'Unmute':'Mute'}">
                 ${muteSvg}
@@ -3254,6 +3262,7 @@ let _playTimers   = [];
 let _playActive   = false;
 let _tuneTargetCandidate = null; // #109 — TC root freq for tuneToKey; null = auto-pick best
 let _tuneCandDeselected = false; // #109 — true after manual tension drag; suppresses auto-highlight
+let _transCapoSegments = 'single'; // #89 — 'single' | 'both'; capo-mode playback uses one segment or both
 
 // ── Pitch map view state (#120) ───────────────────────────────────
 let _pmSnapOn          = true;      // snap tonic to nearest node on thumb release
@@ -3437,7 +3446,12 @@ function _syncRegisterReadout(){
 function _stringFreqBounds(){
   const fund=fundFreq();
   const maxR=Math.max(...getVisibleNodes().map(n=>n.ratio));
-  return {lo:fund, hi:fund*maxR};
+  // #89 D6: in trans-capo mode, the reachable ceiling extends via the upper segment
+  // — a register reachable on upper but not on lower should register as available.
+  // In single-capo and non-capo modes, keep the lower-segment ceiling (pre-existing
+  // behavior; single-mode upper-segment reach underestimate flagged for later cleanup).
+  const hiBase=(nodeView==='capo' && _transCapoSegments==='both') ? capoUpperFreq() : fund;
+  return {lo:fund, hi:hiBase*maxR};
 }
 
 function togglePlayOffString(){
@@ -3568,6 +3582,29 @@ function setPlayScaleStyle(s){
   _updatePlayDimming(); updatePlayBtn();
 }
 function setPlayDir(d){ playDir=d; _syncDir(d); updatePlayBtn(); }
+
+// #89 — trans-capo playback mode toggle. 'single' uses _playCapoSegment() as before;
+// 'both' uses pitch-threshold split across lower and upper segments. Only meaningful
+// in capo view; section is visually greyed outside capo but state still persists.
+function setTransCapoSegments(v){
+  if(v!=='single' && v!=='both') return;
+  _transCapoSegments=v;
+  _syncTransCapoBtns();
+  updatePlayBtn();
+}
+function _syncTransCapoBtns(){
+  const single=document.getElementById('pdtc-single');
+  const both=document.getElementById('pdtc-both');
+  if(single) single.classList.toggle('on', _transCapoSegments==='single');
+  if(both)   both.classList.toggle('on',   _transCapoSegments==='both');
+  // Grey the whole section when not in capo mode
+  const sec=document.getElementById('pd-capo-section');
+  if(sec){
+    const inCapo = (typeof nodeView!=='undefined' && nodeView==='capo');
+    sec.style.opacity=inCapo?'':'0.35';
+    sec.style.pointerEvents=inCapo?'':'none';
+  }
+}
 function setPlayRoot(r){
   playRoot=r;
   // When switching to pinned, auto-select the register containing the pinned node
@@ -4078,6 +4115,18 @@ function refreshPreviewHL(){
         :(seg==='lower'?node.frac*cf:cf+node.frac*(1-cf));
       if(seg==='lower'){ if(played) tealFracs.push(fullFrac); else tealSkipFracs.push(fullFrac); }
       else { if(played) goldFracs.push(fullFrac); else goldSkipFracs.push(fullFrac); }
+      // #89 v7.5.2: alt-segment echoes from merged trans-capo coincidences
+      if(typeof f==='object' && f._altSegs){
+        f._altSegs.forEach(altSeg=>{
+          const altNode=_nodeForFreqCapo(fv, altSeg);
+          if(!altNode) return;
+          const altFrac=altNode._isFund
+            ?(altSeg==='lower'?cf:1.0)
+            :(altSeg==='lower'?altNode.frac*cf:cf+altNode.frac*(1-cf));
+          if(altSeg==='lower'){ if(played) tealFracs.push(altFrac); else tealSkipFracs.push(altFrac); }
+          else { if(played) goldFracs.push(altFrac); else goldSkipFracs.push(altFrac); }
+        });
+      }
     } else {
       // Check tick nodes first
       if(isTick){
@@ -4261,12 +4310,115 @@ function buildPlayFreqs(){
   const fund = fundFreq();
   const hnRatio = homeNodeRatio();
 
-  // ── Capo view: build from the chosen segment ─────────────────────
+  // ── Capo view: build from chosen segment(s) ─────────────────────
   if(nodeView==='capo'){
-    const seg=_playCapoSegment();
     const cn=CAPO_NODES[capoNodeIdx];
     const cf=1-cn.phi;
-    const segFund=seg==='lower'?fund/cf:fund/(1-cf);
+    const lowerFund=fund/cf;
+    const upperFund=fund/(1-cf);
+
+    // Trans-capo branch (#89): both segments, pitch-threshold split per D1/D2.
+    // Notes < capoUpperFreq → lower segment; >= → upper segment.
+    // 20¢ tolerance below threshold: ET scale degrees that are "meant to be"
+    // the JI capo interval (e.g. ET P5 is 2¢ below JI P5, ET m3 is 15¢ below
+    // JI m3) still route to upper. 20¢ is safely below the min inter-capo-node
+    // spacing, so no spurious routing for non-capo-interval scale notes.
+    if(_transCapoSegments==='both'){
+      const uFreq=upperFund;
+      const uThresh=uFreq*Math.pow(2,-20/1200); // 20¢ below JI upper fund
+      const segOf=f => (f>=uThresh ? 'upper' : 'lower');
+      // Root: tonic at lower-segment fundamental is the natural start.
+      const _lnodes=NODES.map(n=>({freq:n.ratio*lowerFund}));
+      _lnodes.push({freq:lowerFund});
+      let rootFreq=_findKeyRootFreq(_lnodes, lowerFund*hnRatio);
+      while(rootFreq < lowerFund*0.99) rootFreq*=2;
+
+      if(playSeq==='chord'){
+        const steps=MODE_SCALES[currentMode];
+        const semi=[0]; let acc=0;
+        for(let i=0;i<6;i++){acc+=steps[i];semi.push(acc);}
+        const voiceList=[1,3,5,7,9,11,13];
+        const octShiftAt=[9,11,13];
+        let freqs=voiceList.filter(v=>playVoiceSet[v]).map(v=>{
+          const idx=VOICE_DEG_IDX[v];
+          const st=semi[idx%7]+Math.floor(idx/7)*12+(octShiftAt.includes(v)?12:0);
+          return rootFreq*Math.pow(2,st/12);
+        });
+        for(let inv=0;inv<playInversion;inv++) if(freqs.length>1) freqs.push(freqs.shift()*2);
+        // D4: per-voice segment assignment by threshold.
+        return freqs.map(f=>({freq:f,_seg:segOf(f)}));
+      }
+
+      if(playSeq==='scale-full'){
+        // v7.5.4: enumerate the full diatonic scale across the combined segment range.
+        // For each scale tone, look up any NODE(s) snapping to its TET midi.
+        // Match → play the best-matching NODE's JI pitch, highlight its segment(s).
+        // No match → play the ET scale tone with no viz/highlight (physically unreachable
+        // via a fixed harmonic stop, but still audible via tension).
+        const candidates=[
+          {freq:lowerFund, _seg:'lower', _isFund:true, frac:cf,   harm:1},
+          {freq:upperFund, _seg:'upper', _isFund:true, frac:1-cf, harm:1}
+        ];
+        NODES.forEach(n=>{
+          candidates.push({freq:n.ratio*lowerFund, frac:n.frac, harm:n.harm, _seg:'lower', _node:n});
+          candidates.push({freq:n.ratio*upperFund, frac:n.frac, harm:n.harm, _seg:'upper', _node:n});
+        });
+        // Index NODE candidates by snapped TET midi. Unsnapped entries have no clean
+        // TET identity and won't match any scale tone — exclude them from the index.
+        const tagged=candidates.map(c=>({...c,_ni:noteInfo(c.freq)}))
+                               .filter(c=>c._ni.snapped);
+        const byMidi=new Map();
+        tagged.forEach(c=>{
+          if(!byMidi.has(c._ni.midi)) byMidi.set(c._ni.midi, []);
+          byMidi.get(c._ni.midi).push(c);
+        });
+        // Top of combined range: highest playable NODE ratio (4:1) on upper segment.
+        const topFreq=upperFund*4;
+        const steps=MODE_SCALES[currentMode];
+        const scale=[];
+        let f=rootFreq;
+        let stepIdx=0;
+        while(f<=topFreq*1.001 && stepIdx<100){
+          const sni=noteInfo(f);
+          const group=sni.snapped?byMidi.get(sni.midi):null;
+          if(group && group.length>0){
+            const sorted=[...group].sort((a,b)=>Math.abs(a._ni.cents)-Math.abs(b._ni.cents));
+            const primary=sorted[0];
+            const entry={
+              freq: primary.freq,
+              frac: primary.frac,
+              harm: primary.harm,
+              _seg: primary._seg,
+              _isFund: primary._isFund,
+              _node: primary._node
+            };
+            if(sorted.length>1){
+              entry._altSegs=sorted.slice(1).map(c=>c._seg);
+            }
+            scale.push(entry);
+          } else {
+            // No NODE match — play ET scale tone without highlight.
+            // _seg by pitch-threshold keeps strip/filter logic sensible.
+            const seg=(f>=uThresh)?'upper':'lower';
+            scale.push({freq:f, _seg:seg, _unmatched:true});
+          }
+          f*=Math.pow(2, steps[stepIdx%7]/12);
+          stepIdx++;
+        }
+        return scale;
+      }
+
+      // scale-1oct (trans-capo): ET steps from rootFreq; each freq assigned by threshold.
+      const steps=MODE_SCALES[currentMode];
+      const freqObjs=[{freq:rootFreq,_seg:segOf(rootFreq)}];
+      let f=rootFreq;
+      steps.forEach(st=>{f*=Math.pow(2,st/12);freqObjs.push({freq:f,_seg:segOf(f)});});
+      return freqObjs;
+    }
+
+    // Single-segment branch (existing behavior, unchanged).
+    const seg=_playCapoSegment();
+    const segFund=seg==='lower'?lowerFund:upperFund;
     // Locate key root among segment node frequencies
     const _segNodes=NODES.map(n=>({freq:n.ratio*segFund}));
     _segNodes.push({freq:segFund});
@@ -4626,7 +4778,12 @@ function _startPlaySequence(){
   // Using note names (not raw freqs) handles JI vs ET divergence and ensures
   // only nodes whose actual pitch is being played light up.
   const isCapo=nodeView==='capo';
-  const _seg=isCapo?_playCapoSegment():null;
+  // Per-call capo segment: reads from freq object if annotated (trans-capo
+  // per-note segment tag), else falls back to single-segment selection.
+  const _segFor=f=>{
+    if(!isCapo) return null;
+    return (typeof f==='object' && f._seg) ? f._seg : _playCapoSegment();
+  };
   // Use name+octave so B2 doesn't match when B3 is played
   const _playNoteSet=new Set(
     rawFreqs.map(f=>{
@@ -4641,7 +4798,7 @@ function _startPlaySequence(){
   };
 
   const _doViz=isCapo
-    ?(f=>_vizForFreqCapo(typeof f==='object'?f.freq:f, _seg))
+    ?(f=>_vizForFreqCapo(typeof f==='object'?f.freq:f, _segFor(f)))
     :(f=>{
       const fv=typeof f==='object'?f.freq:f;
       const ni=noteInfo(fv);
@@ -4652,7 +4809,7 @@ function _startPlaySequence(){
   // This handles JI/ET divergence and catches chord block multi-highlight
   const _doHl=f=>{
     const fv=typeof f==='object'?f.freq:f;
-    if(isCapo){ _hlNodeForFreqCapo(fv, _seg); return; } // #67: capo-aware highlight
+    if(isCapo){ _hlNodeForFreqCapo(fv, _segFor(f)); return; } // #67: capo-aware highlight
     const ni=noteInfo(fv);
     if(!ni.snapped || !isInKey(ni.midi)){
       // Non-diatonic note: clear all ruler/label state so stale state doesn't persist
@@ -4696,7 +4853,7 @@ function _startPlaySequence(){
     if(isCapo){
       // Capo: node-matched notes handled by _hlNodeForFreqCapo→_showSubNode.
       // For unmatched ET scale steps, show basic kd/noteStr for consistency with full/nut mode.
-      const capoNode=_nodeForFreqCapo(fv, _seg);
+      const capoNode=_nodeForFreqCapo(fv, _segFor(f));
       if(capoNode) return; // _showSubNode already wrote nts-right
       dst.innerHTML=
         `<div style="display:flex;align-items:baseline;gap:4px;line-height:1;">
@@ -4752,32 +4909,59 @@ function _startPlaySequence(){
     }
   };
 
+  // #89 v7.5.2: fire viz + row-HL rect for each alt segment on a merged coincident pitch.
+  // Primary seg already handled by _doViz/_doHl (including its strip update).
+  // Alts get the visual echo only — strip stays on the primary's identity.
+  const _doAltSegs=f=>{
+    if(!isCapo) return;
+    if(typeof f!=='object' || !f._altSegs) return;
+    const fv=f.freq;
+    const cn2=CAPO_NODES[capoNodeIdx];
+    const cf2=1-cn2.phi;
+    f._altSegs.forEach(altSeg=>{
+      _vizForFreqCapo(fv, altSeg);
+      const g=document.getElementById('row-hl');
+      if(!g) return;
+      const node=_nodeForFreqCapo(fv, altSeg);
+      if(!node) return;
+      const fullFrac=node._isFund
+        ?(altSeg==='lower'?cf2:1.0)
+        :(altSeg==='lower'?node.frac*cf2:cf2+node.frac*(1-cf2));
+      const hlColor=altSeg==='lower'?(_HL_TEAL+'0.32)'):(_HL_GOLD+'0.32)');
+      _drawRowHLRect(g, fullFrac, hlColor);
+    });
+  };
+
   if(playSeq==='chord'){
-    const freqs=rawFreqs.map(f=>typeof f==='object'?f.freq:f);
+    // Preserve freq objects (with _seg annotation) through pipeline; extract .freq only for playTone.
+    const _freqOf=f=>typeof f==='object'?f.freq:f;
+    const objs=rawFreqs;
     if(playChordStyle==='block'){
-      freqs.forEach(f=>playTone(f));
-      freqs.forEach(f=>_doViz(f));
-      _doHlAll(); // highlight all nodes whose note is in the chord
-      _doStrip(freqs[0]);
+      objs.forEach(f=>playTone(_freqOf(f)));
+      objs.forEach(f=>_doViz(f));
+      _doHlAll(); // highlight all nodes whose note is in the chord (non-capo only)
+      _doStrip(objs[0]);
       _playTimers.push(setTimeout(stopPlaySequence,D));
       return;
     }
-    let seq=[...freqs];
+    let seq=[...objs];
     if(playDir==='down') seq=[...seq].reverse();
     if(playDir==='updown') seq=[...seq,...[...seq].reverse().slice(1)];
     seq.forEach((f,i)=>{
-      _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); _doViz(f); _doHl(f); _doStrip(f); },i*step));
+      _playTimers.push(setTimeout(()=>{ stopActive(); playTone(_freqOf(f)); _doViz(f); _doHl(f); _doStrip(f); _doAltSegs(f); },i*step));
       _playTimers.push(setTimeout(()=>{ hideLabel(); const d=document.getElementById('nts-right');if(d)d.innerHTML=''; },i*step+D));
     });
     _playTimers.push(setTimeout(stopPlaySequence,seq.length*step));
     return;
   }
 
-  let seq=rawFreqs.map(f=>typeof f==='object'?f.freq:f);
+  // Preserve freq objects (with _seg annotation) through pipeline; extract .freq only for playTone.
+  const _freqOf=f=>typeof f==='object'?f.freq:f;
+  let seq=[...rawFreqs];
   if(playDir==='down') seq=[...seq].reverse();
   if(playDir==='updown') seq=[...seq,...[...seq].reverse().slice(1)];
   seq.forEach((f,i)=>{
-    _playTimers.push(setTimeout(()=>{ stopActive(); playTone(f); _doViz(f); _doHl(f); _doStrip(f); },i*step));
+    _playTimers.push(setTimeout(()=>{ stopActive(); playTone(_freqOf(f)); _doViz(f); _doHl(f); _doStrip(f); _doAltSegs(f); },i*step));
     _playTimers.push(setTimeout(()=>{ hideLabel(); const d=document.getElementById('nts-right');if(d)d.innerHTML=''; },i*step+D));
   });
   // Item 63: clear strip after last note completes
@@ -4799,6 +4983,7 @@ setTimeout(()=>{
   _syncDir(playDir);
   _syncRoot(playRoot);
   _syncVoiceBtnLabels();
+  _syncTransCapoBtns(); // #89 — initial greyed state based on nodeView
   updatePlayBtn();
 },50);
 
@@ -5471,6 +5656,8 @@ function setNodeView(view, btn){
       document.getElementById('len-ro').value=fmtLen(stringInches);
     }
   }
+  // #89 — re-sync trans-capo tray section greyed/active state
+  if(typeof _syncTransCapoBtns==='function') _syncTransCapoBtns();
   render();
 }
 
