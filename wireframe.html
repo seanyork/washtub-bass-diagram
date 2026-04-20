@@ -2,14 +2,33 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=430, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Washtub Prototype</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; padding: 0; background: #000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; color: #1a1a1a; overflow: hidden; }
-  body { width: 100vw; height: 100vh; height: 100dvh; display: flex; align-items: center; justify-content: center; }
+  html {
+    margin: 0; padding: 0;
+    background: #000;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  body {
+    margin: 0; padding: 0;
+    background: #000;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    color: #1a1a1a;
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: none;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
   :root {
     --purple: #533AB7;
@@ -32,8 +51,10 @@
   }
 
   #app-shell {
-    width: 100vw; max-width: 430px;
-    height: 100vh; height: 100dvh;
+    width: 100%;
+    max-width: 430px;
+    height: 100vh;
+    height: 100dvh;
     background: var(--wire-bg);
     position: relative;
     overflow: hidden;
@@ -296,6 +317,7 @@
   .sp-sec .row .btn { padding: 4px 9px; background: white; border: 0.5px solid var(--purple); border-radius: 3px; font-size: 10px; color: var(--purple); cursor: pointer; }
   .sp-sec .row .btn.on { background: var(--purple); color: white; }
   .sp-sec .row .fld { flex: 0 0 66px; background: white; border: 0.5px solid var(--wire-stroke); border-radius: 3px; padding: 4px 7px; font-size: 10px; color: var(--ink); font-family: monospace; text-align: right; }
+  .sp-sec .row.subrow .fld { flex: 0 0 58px; font-size: 9.5px; padding: 3px 5px; }
   .sp-sec .row .u { font-size: 9px; color: var(--ink-fade); min-width: 24px; }
   .sp-sec .row.subrow { padding-left: 10px; }
 
@@ -500,14 +522,17 @@
           <div class="row subrow">
             <span class="lbl">length</span>
             <div class="fld">69.0"</div>
+            <div class="sp-track" data-slider="deflen" data-min="24" data-max="200" data-fmt="inches" style="flex:1;min-width:40px;"><div class="sp-thumb" style="left:25%"></div></div>
           </div>
           <div class="row subrow">
             <span class="lbl">tension</span>
             <div class="fld">5.0 lbs</div>
+            <div class="sp-track" data-slider="deften" data-min="1" data-max="25" data-fmt="lbs" style="flex:1;min-width:40px;"><div class="sp-thumb" style="left:17%"></div></div>
           </div>
           <div class="row subrow">
             <span class="lbl">density</span>
             <div class="fld">0.000754</div>
+            <div class="sp-track" data-slider="defmu" data-min="0.0001" data-max="0.005" data-fmt="mu" style="flex:1;min-width:40px;"><div class="sp-thumb" style="left:40%"></div></div>
           </div>
           <div class="row subrow">
             <div class="btn">reset</div>
@@ -519,14 +544,17 @@
           <div class="row subrow">
             <span class="lbl">nut 1</span>
             <div class="fld">6.0"</div>
+            <div class="sp-track" data-slider="nut1" data-min="0" data-max="36" data-fmt="inches" style="flex:1;min-width:40px;"><div class="sp-thumb" style="left:17%"></div></div>
           </div>
           <div class="row subrow">
             <span class="lbl">nut 2</span>
             <div class="fld">12.0"</div>
+            <div class="sp-track" data-slider="nut2" data-min="0" data-max="36" data-fmt="inches" style="flex:1;min-width:40px;"><div class="sp-thumb" style="left:33%"></div></div>
           </div>
           <div class="row subrow">
             <span class="lbl">nut 3</span>
             <div class="fld">19.0"</div>
+            <div class="sp-track" data-slider="nut3" data-min="0" data-max="36" data-fmt="inches" style="flex:1;min-width:40px;"><div class="sp-thumb" style="left:53%"></div></div>
           </div>
           <div class="row subrow">
             <div class="btn">reset to factory</div>
@@ -1120,6 +1148,15 @@ function setupGenericSlider(track) {
     if (fmt === 'sec2') return val.toFixed(2) + 's';
     if (fmt === 'int') return Math.round(val).toString();
     if (fmt === 'inches') return val.toFixed(1) + ' in';
+    if (fmt === 'lbs') return val.toFixed(1) + ' lbs';
+    if (fmt === 'mu') return val.toFixed(6);
+    return val.toFixed(1);
+  }
+
+  // For sliders that update an adjacent .fld element instead of a #{key}-val element
+  function formatField(val) {
+    if (fmt === 'inches') return val.toFixed(1) + '"';
+    if (fmt === 'lbs') return val.toFixed(1) + ' lbs';
     if (fmt === 'mu') return val.toFixed(6);
     return val.toFixed(1);
   }
@@ -1129,9 +1166,13 @@ function setupGenericSlider(track) {
     thumb.style.left = pct + '%';
     const val = min + (pct / 100) * (max - min);
     state.sliders[key] = pct;
-    // Update value label
+    // Update value label (if present)
     const valEl = document.getElementById(key + '-val');
     if (valEl) valEl.textContent = format(val);
+    // Update adjacent .fld (if present — for my bass defaults / nut preset sliders)
+    const row = track.parentElement;
+    const fld = row && row.querySelector('.fld');
+    if (fld && !valEl) fld.textContent = formatField(val);
     log(`${key}: ${format(val)}`);
   }
 
@@ -1317,6 +1358,31 @@ function wireEvents() {
 }
 
 // ============ INIT ============
+
+// Global swipe/pinch prevention — Safari edge swipes and pinch-to-zoom
+// that would otherwise move the app around and interfere with control testing.
+// Matches the real app's behavior.
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('gesturechange', e => e.preventDefault());
+document.addEventListener('gestureend', e => e.preventDefault());
+
+// Prevent default touchmove everywhere EXCEPT inside elements that opt-in to scroll
+// (panel bodies need to scroll internally).
+document.addEventListener('touchmove', e => {
+  let el = e.target;
+  while (el && el !== document.body) {
+    if (el.classList && (
+      el.classList.contains('vp-body') ||
+      el.classList.contains('sp-body') ||
+      el.id === 'play-drawer'
+    )) {
+      return; // allow scroll inside these containers
+    }
+    el = el.parentElement;
+  }
+  e.preventDefault();
+}, { passive: false });
+
 setupTensionSlider();
 wireEvents();
 renderAll();
