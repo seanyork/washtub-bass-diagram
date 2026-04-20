@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Washtub Prototype</title>
+<title>Washtub Prototype v1.4</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html {
@@ -19,14 +19,11 @@
     background: #000;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
     color: #1a1a1a;
+    font-size: 13px;
     overflow: hidden;
     overscroll-behavior: none;
     touch-action: none;
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh;
     display: flex;
-    align-items: center;
     justify-content: center;
   }
 
@@ -51,8 +48,10 @@
   }
 
   #app-shell {
+    flex: 1 1 auto;
     width: 100%;
     max-width: 430px;
+    min-width: 0;
     height: 100vh;
     height: 100dvh;
     background: var(--wire-bg);
@@ -383,15 +382,16 @@
 
   /* Debug panel */
   #debug {
-    position: fixed; bottom: 4px; right: 4px;
-    font-size: 9px; color: rgba(255,255,255,0.3);
-    background: rgba(0,0,0,0.4);
+    position: fixed; top: 4px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px; color: rgba(255,0,0,0.85);
+    background: rgba(255,255,0,0.9);
     padding: 3px 6px; border-radius: 3px;
     font-family: monospace;
     pointer-events: none;
-    max-width: 200px;
     line-height: 1.3;
     z-index: 99;
+    font-weight: 700;
   }
 </style>
 </head>
@@ -777,7 +777,15 @@ const state = {
 
 const debug = document.getElementById('debug');
 function log(msg) {
-  debug.textContent = msg;
+  // Show actual rendered dimensions alongside action
+  const shell = document.getElementById('app-shell');
+  const body = document.body;
+  const html = document.documentElement;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const dims = shell ? `shell:${shell.offsetWidth}x${shell.offsetHeight}` : '';
+  const viewp = `vp:${vw}x${vh}`;
+  debug.textContent = `${viewp} · ${dims} · ${msg}`;
   console.log(msg);
 }
 
@@ -1388,6 +1396,10 @@ wireEvents();
 renderAll();
 updateFundBlock(state.tensionLbs);
 log('ready');
+
+// Keep debug readout in sync with viewport changes
+window.addEventListener('resize', () => log('resize'));
+window.addEventListener('orientationchange', () => setTimeout(() => log('rotated'), 200));
 </script>
 
 </body>
