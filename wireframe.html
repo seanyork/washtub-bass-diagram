@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Washtub Prototype v1.6</title>
+<title>Washtub Prototype v1.7</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html {
@@ -395,6 +395,41 @@
     -webkit-user-select: text;
     -webkit-touch-callout: default;
   }
+  /* ===== Narrow viewport (< 380px, e.g. iOS Display Zoom "Larger Text") ===== */
+  @media (max-width: 379.9px) {
+    /* Settings panel expands to full width right of left rail */
+    #settings-panel {
+      width: calc(100vw - 56px);
+    }
+    /* Splash narrows back to 114px (just rrail + sidebar), canvas stays ~150px */
+    #splash {
+      width: 114px;
+    }
+    /* Tighten mode button padding and type size */
+    #br-top .b {
+      font-size: 10px;
+      padding: 1px;
+    }
+    #br-top .b.act {
+      font-size: 9.5px;
+    }
+    #br-top .b.act .ic {
+      font-size: 10px;
+    }
+    /* Tighten mute button */
+    #br-top .mute-btn {
+      width: 28px;
+      font-size: 12px;
+    }
+    /* Reduce gaps on button row */
+    #br-top {
+      gap: 2px;
+      padding: 3px;
+    }
+    /* Debug strip smaller */
+    #debug { font-size: 8px; }
+  }
+
 </style>
 </head>
 <body>
@@ -1259,22 +1294,27 @@ function wireEvents() {
     });
   });
 
-  // Settings toggle
+  // Narrow viewport detection for exclusive-panel rule
+  function isNarrow() { return window.innerWidth < 380; }
+
+  // Settings toggle — at narrow widths, opening settings closes view
   document.getElementById('settings-toggle').addEventListener('click', () => {
     state.settingsOpen = !state.settingsOpen;
+    if (state.settingsOpen && isNarrow()) state.viewOpen = false;
     renderAll();
-    log(`settings: ${state.settingsOpen}`);
+    log(`settings: ${state.settingsOpen}${isNarrow() && state.settingsOpen ? ' (narrow: view closed)' : ''}`);
   });
   document.getElementById('settings-close').addEventListener('click', () => {
     state.settingsOpen = false;
     renderAll();
   });
 
-  // View toggle
+  // View toggle — at narrow widths, opening view closes settings
   document.getElementById('view-toggle').addEventListener('click', () => {
     state.viewOpen = !state.viewOpen;
+    if (state.viewOpen && isNarrow()) state.settingsOpen = false;
     renderAll();
-    log(`view: ${state.viewOpen}`);
+    log(`view: ${state.viewOpen}${isNarrow() && state.viewOpen ? ' (narrow: settings closed)' : ''}`);
   });
   document.getElementById('view-close').addEventListener('click', () => {
     state.viewOpen = false;
@@ -1417,8 +1457,16 @@ updateFundBlock(state.tensionLbs);
 log('ready');
 
 // Keep debug readout in sync with viewport changes
-window.addEventListener('resize', () => log('resize'));
-window.addEventListener('orientationchange', () => setTimeout(() => log('rotated'), 200));
+// Also: enforce exclusive-panel rule if viewport shrinks to narrow
+function onViewportChange() {
+  if (window.innerWidth < 380 && state.viewOpen && state.settingsOpen) {
+    state.viewOpen = false; // prefer settings when both were open
+    renderAll();
+  }
+  log('resize');
+}
+window.addEventListener('resize', onViewportChange);
+window.addEventListener('orientationchange', () => setTimeout(onViewportChange, 200));
 </script>
 
 </body>
