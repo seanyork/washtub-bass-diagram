@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Washtub Prototype v1.5</title>
+<title>Washtub Prototype v1.6</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html {
@@ -386,12 +386,14 @@
     background: rgba(255,255,0,0.95);
     padding: 2px 4px;
     font-family: monospace;
-    pointer-events: none;
     line-height: 1.2;
     z-index: 99;
     font-weight: 700;
     text-align: center;
     word-break: break-all;
+    user-select: text;
+    -webkit-user-select: text;
+    -webkit-touch-callout: default;
   }
 </style>
 </head>
