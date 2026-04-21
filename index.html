@@ -438,8 +438,45 @@ input[type=range]{width:110px;cursor:pointer;}
 #br-top .b .ic{font-size:12px;color:#533AB7;line-height:1;}
 #br-top .b.mode .ic{display:none;}
 
-/* Splash panel — Phase 6 populates. Hidden until then. */
-#splash{display:none;}
+/* Splash panel — Phase 6 real styles. Right-side 156px panel overlaying
+   the app body on first load. Dismisses on any tap inside #app-shell (tap
+   also delivers to the target button naturally via capture-phase listener).
+   Version chip at top preserves the br-chip-lbl styling from its former
+   bottom-rail home. No persistence: fresh load re-shows splash. */
+#splash{display:flex;flex-direction:column;position:absolute;top:0;right:0;bottom:0;width:156px;background:linear-gradient(160deg,rgba(83,58,183,0.08),rgba(15,110,86,0.05));border-left:0.5px dashed rgba(83,58,183,0.4);padding:12px 10px;gap:10px;z-index:20;overflow:auto;}
+#splash.dismissed{display:none;}
+@media(prefers-color-scheme:dark){#splash{background:linear-gradient(160deg,rgba(83,58,183,0.22),rgba(15,110,86,0.14));border-left-color:rgba(175,169,236,0.45);}}
+#splash .splash-ver{font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:#8A8882;line-height:1;padding-bottom:2px;}
+@media(prefers-color-scheme:dark){#splash .splash-ver{color:#aaa;}}
+#splash h4{margin:0;font-size:12px;color:#533AB7;font-weight:700;letter-spacing:0.02em;}
+@media(prefers-color-scheme:dark){#splash h4{color:#AFA9EC;}}
+#splash p{margin:0;font-size:10px;color:#1a1a1a;line-height:1.35;}
+@media(prefers-color-scheme:dark){#splash p{color:#e0e0e0;}}
+#splash .sp-mode-list{display:flex;flex-direction:column;gap:3px;}
+#splash .sp-mode{font-size:9px;color:#5F5E5A;padding:3px 6px;border-radius:3px;background:rgba(255,255,255,0.65);border:0.5px solid rgba(83,58,183,0.2);line-height:1.25;}
+#splash .sp-mode b{color:#533AB7;font-weight:700;}
+#splash .sp-mode.here{border-color:#533AB7;background:rgba(83,58,183,0.10);}
+#splash .sp-mode.here b::after{content:' — you\'re here';font-weight:500;color:#533AB7;}
+@media(prefers-color-scheme:dark){
+  #splash .sp-mode{background:rgba(255,255,255,0.06);color:#ccc;border-color:rgba(175,169,236,0.25);}
+  #splash .sp-mode b{color:#AFA9EC;}
+  #splash .sp-mode.here{background:rgba(83,58,183,0.22);border-color:#AFA9EC;}
+  #splash .sp-mode.here b::after{color:#AFA9EC;}
+}
+#splash .sp-tour-btn{margin-top:auto;background:#533AB7;color:#fff;padding:8px 6px;border-radius:4px;text-align:center;font-size:11px;font-weight:600;letter-spacing:0.02em;cursor:pointer;border:none;}
+#splash .sp-tour-btn:active{background:#3E2C8A;}
+#splash .sp-dismiss{font-size:8.5px;font-style:italic;color:#8A8882;text-align:center;line-height:1.2;}
+@media(prefers-color-scheme:dark){#splash .sp-dismiss{color:#888;}}
+
+/* v7.6 narrow-viewport tweaks — splash only in Chat 1. Phase 7 (Chat 2)
+   broadens this block with mode-button tightening, mute shrink, panel
+   exclusivity, etc. */
+@media(max-width:379.9px){
+  #splash{width:114px;padding:10px 8px;}
+  #splash h4{font-size:11px;}
+  #splash p{font-size:9.5px;}
+  #splash .sp-mode{font-size:8.5px;}
+}
 
 /* Transitional orphans div — Phase 2 moves #br-nv and #br-ap here
    while their contents find new homes. Hidden from view. */
@@ -817,6 +854,25 @@ input[type=range]{width:110px;cursor:pointer;}
   <!-- Overlay SVG: inside app-body, spans canvas+ruler for fan lines + shade -->
   <svg id="fan-overlay" xmlns="http://www.w3.org/2000/svg"
     style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:12;"></svg>
+
+  <!-- v7.6 Phase 6 splash panel — first-load welcome. Dismisses on any tap
+       inside #app-shell (shell-level capture-phase listener below). Tapping
+       a button during dismissal delivers the click to that button normally.
+       Version chip relocated here from the old bottom-rail ctx. -->
+  <div id="splash">
+    <div class="splash-ver" id="splash-ver">Washtub v7.6.0</div>
+    <h4>Welcome</h4>
+    <p>Tap anywhere to start. Pull the pole to change tension &mdash; the string's pitch changes and notes slide along it.</p>
+    <div class="sp-mode-list">
+      <div class="sp-mode" data-sp-mode="map"><b>map</b></div>
+      <div class="sp-mode here" data-sp-mode="nodes"><b>nodes</b></div>
+      <div class="sp-mode" data-sp-mode="nut"><b>nut</b></div>
+      <div class="sp-mode" data-sp-mode="capo"><b>capo</b></div>
+    </div>
+    <button class="sp-tour-btn" id="splash-tour-btn" onclick="_onSplashTourBtn(event)">? take the tour</button>
+    <div class="sp-dismiss">tap anywhere &rarr;</div>
+  </div>
+
   </div><!-- end app-body -->
 
   <!-- bottom rail — v7.6 Phase 2 restructure: #br-top (7 buttons) + #br-ctx (2 rows, populated by Phase 5) -->
@@ -1213,6 +1269,67 @@ function _selectSnapTarget(v){
   const pop=document.getElementById('snap-target-popover');
   if(pop) pop.classList.remove('open');
   renderBRCtx();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// v7.6 Phase 6 — splash panel dismiss + version chip sync
+// Splash shows on first load, dismisses on any tap inside #app-shell.
+// Capture-phase listener so the dismiss happens on the first tap, but
+// taps on buttons still deliver to their own handlers via the normal
+// bubble phase. The tour button explicitly stops propagation to avoid
+// double-firing (the shell listener + the tour button's own handler).
+// No persistence — splash returns on fresh page load.
+// ══════════════════════════════════════════════════════════════════
+let _splashDismissed=false;
+
+function _dismissSplash(){
+  if(_splashDismissed) return;
+  _splashDismissed=true;
+  const sp=document.getElementById('splash');
+  if(sp) sp.classList.add('dismissed');
+}
+
+// Splash tour button: dismiss + open tour. Stop propagation so the shell
+// listener doesn't also fire (which would try to dismiss twice — harmless,
+// but stopProp keeps the event flow readable).
+function _onSplashTourBtn(e){
+  if(e && e.stopPropagation) e.stopPropagation();
+  _dismissSplash();
+  if(typeof openTour==='function') openTour();
+}
+
+// Sync splash version chip from the VERSION constant so every tertiary
+// bump updates one place and the chip follows.
+function _syncSplashVer(){
+  const el=document.getElementById('splash-ver');
+  if(el) el.textContent='Washtub '+VERSION;
+}
+
+// Mark the initial mode as "you're here" in the splash mode list. If app
+// boots with brNodeView !== 'full', move the .here class to the matching
+// row. Static HTML has .here on 'nodes' by default; this only fires if
+// startup mode differs.
+function _syncSplashHereMark(){
+  const currentMode=_V76_VIEW_TO_MODE[nodeView];
+  if(!currentMode) return;
+  document.querySelectorAll('#splash .sp-mode').forEach(row=>{
+    row.classList.toggle('here', row.dataset.spMode===currentMode);
+  });
+}
+
+// Install the capture-phase dismiss listener on #app-shell. Fires once
+// per app lifetime — _dismissSplash() is idempotent.
+function _installSplashDismissListener(){
+  const shell=document.getElementById('app-shell');
+  if(!shell) return;
+  function handler(){
+    if(_splashDismissed) return;
+    _dismissSplash();
+  }
+  shell.addEventListener('click', handler, true);
+  // Touchstart too — on iOS, a tap on a non-button region might not
+  // produce a click event. Capture phase + passive listener.
+  shell.addEventListener('touchstart', handler, {capture:true, passive:true});
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -9861,11 +9978,16 @@ setInterval(()=>{
 // into #br-ctx. Without this the initial 'full'/'nodes' mode would show
 // an empty context area on first load until any state change triggers a
 // later renderBRCtx() call.
+// v7.6 Phase 6 addendum — splash version chip sync, initial "you're here"
+// marker, and the shell capture-phase dismiss listener.
 // ══════════════════════════════════════════════════════════════════
 _syncModeButtons();
 _syncMuteBtn();
 _syncPanelBtns();
 try{ renderBRCtx(); }catch(e){ if(window._dbgErr) window._dbgErr('init renderBRCtx: '+(e&&e.message||e)); }
+_syncSplashVer();
+_syncSplashHereMark();
+_installSplashDismissListener();
 </script>
 </body>
 </html>
