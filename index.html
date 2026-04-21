@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.6.0</title>
+<title>Washtub Bass String Map · v7.6.1</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -510,6 +510,68 @@ input[type=range]{width:110px;cursor:pointer;}
   #br-ctx .ctx-row .chip.teal-chip{background:rgba(15,110,86,0.2);}
   #br-ctx .ctx-row .idle{color:#888;}
 }
+/* ══════════════════════════════════════════════════════════════════
+   v7.6 UI REFRESH — PHASE 3 SETTINGS PANEL (Chat 2 v7.6.1)
+   #settings-panel overlay. Flush top/bottom; 260px wide at desktop;
+   narrow-viewport expansion to calc(100vw - 56px) lives in Phase 7.
+   Sections: Playback Tones (waveform/polyphony/volume/duration/
+   spacing) and Physics & Calibration (units/length/density + my bass
+   defaults with editable fields + nut preset values). Footer: tour +
+   readme. Wires to existing engine vars (waveform/polyOn/volume/
+   toneDuration/toneSpacing/useInches/stringInches/muKgM/def-len/
+   def-ten/def-mu/nutPresets) via _spSet*() wrappers and setupSpSlider.
+   ══════════════════════════════════════════════════════════════════ */
+#settings-panel{display:none;flex-direction:column;position:absolute;top:0;bottom:0;left:56px;width:260px;background:#fff;border-right:0.5px solid rgba(128,128,128,0.25);border-left:0.5px solid rgba(128,128,128,0.25);z-index:13;}
+#settings-panel.open{display:flex;}
+@media(prefers-color-scheme:dark){#settings-panel{background:#1a1a1a;border-color:rgba(255,255,255,0.15);}}
+
+/* Header */
+#settings-panel .sp-head{flex-shrink:0;padding:10px 14px;background:rgba(128,128,128,0.07);border-bottom:0.5px solid rgba(128,128,128,0.2);display:flex;align-items:center;justify-content:space-between;}
+#settings-panel .sp-head .t{font-size:13px;font-weight:700;color:#1a1a1a;letter-spacing:0.01em;}
+#settings-panel .sp-head .x{font-size:16px;color:#5F5E5A;cursor:pointer;padding:2px 8px;user-select:none;line-height:1;}
+#settings-panel .sp-head .x:active{opacity:0.6;}
+@media(prefers-color-scheme:dark){#settings-panel .sp-head{background:rgba(255,255,255,0.04);}#settings-panel .sp-head .t{color:#e0e0e0;}#settings-panel .sp-head .x{color:#aaa;}}
+
+/* Scrollable body */
+#settings-panel .sp-body{flex:1 1 0%;overflow-y:auto;overflow-x:hidden;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:16px;min-height:0;-webkit-overflow-scrolling:touch;touch-action:auto;}
+
+/* Sections */
+.sp-sec{display:flex;flex-direction:column;gap:4px;}
+.sp-sec .sec-h{font-size:10px;font-weight:700;color:#1a1a1a;letter-spacing:0.08em;text-transform:uppercase;border-bottom:0.5px solid rgba(128,128,128,0.2);padding-bottom:4px;margin-bottom:2px;}
+.sp-sec .sub-h{font-size:10px;font-weight:700;color:#5F5E5A;margin-top:6px;letter-spacing:0.02em;}
+@media(prefers-color-scheme:dark){.sp-sec .sec-h{color:#e0e0e0;border-bottom-color:rgba(255,255,255,0.15);}.sp-sec .sub-h{color:#aaa;}}
+
+/* Row patterns */
+.sp-sec .row{display:flex;gap:6px;align-items:center;font-size:11px;min-height:26px;flex-wrap:wrap;}
+.sp-sec .row .lbl{min-width:70px;color:#5F5E5A;font-size:10px;}
+.sp-sec .row .btn{padding:4px 9px;background:#fff;border:0.5px solid #533AB7;border-radius:3px;font-size:10px;color:#533AB7;cursor:pointer;white-space:nowrap;}
+.sp-sec .row .btn.on{background:#533AB7;color:#fff;}
+.sp-sec .row .btn:active{opacity:0.75;}
+.sp-sec .row.subrow{padding-left:10px;gap:4px;}
+@media(prefers-color-scheme:dark){.sp-sec .row .lbl{color:#aaa;}.sp-sec .row .btn{background:#1a1a1a;}}
+
+/* Row-stack: label + value on top, full-width slider below */
+.sp-sec .row-stack{display:flex;flex-direction:column;gap:2px;padding:4px 0 0 0;}
+.sp-sec .row-stack .top{display:flex;justify-content:space-between;align-items:center;gap:6px;}
+.sp-sec .row-stack .top .lbl{font-size:10px;color:#5F5E5A;flex:1 1 auto;min-width:0;}
+.sp-sec .row-stack .top .val{font-size:10px;color:#533AB7;font-weight:600;font-family:monospace;min-width:60px;text-align:right;}
+@media(prefers-color-scheme:dark){.sp-sec .row-stack .top .lbl{color:#aaa;}.sp-sec .row-stack .top .val{color:#AFA9EC;}}
+
+/* Editable input inside a row-stack top — replaces the .val display */
+.sp-sec .row-stack .top .fld.editable{flex:0 0 84px;font-size:10px;padding:3px 7px;margin:0;}
+
+/* sp-track — horizontal slider track + thumb */
+.sp-sec .row-stack .sp-track{width:100%;height:4px;background:rgba(83,58,183,0.15);border-radius:2px;position:relative;margin:6px 0 10px;cursor:pointer;touch-action:none;}
+.sp-sec .row-stack .sp-thumb{position:absolute;top:-5px;width:14px;height:14px;background:#533AB7;border:2px solid #fff;box-shadow:0 0 0 0.5px #533AB7;border-radius:50%;pointer-events:none;transform:translateX(-50%);}
+@media(prefers-color-scheme:dark){.sp-sec .row-stack .sp-track{background:rgba(175,169,236,0.22);}.sp-sec .row-stack .sp-thumb{background:#AFA9EC;border-color:#1a1a1a;box-shadow:0 0 0 0.5px #AFA9EC;}}
+
+/* Footer (tour + readme) */
+#settings-panel .sp-foot{flex-shrink:0;border-top:1px solid #533AB7;background:rgba(83,58,183,0.08);padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;}
+#settings-panel .sp-foot .foot-btn{flex:1;background:#fff;border:1px solid #533AB7;border-radius:5px;padding:9px 6px;text-align:center;font-size:11px;font-weight:600;color:#533AB7;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;}
+#settings-panel .sp-foot .foot-btn.primary{background:#533AB7;color:#fff;}
+#settings-panel .sp-foot .foot-btn:active{opacity:0.75;}
+@media(prefers-color-scheme:dark){#settings-panel .sp-foot{background:rgba(83,58,183,0.20);}#settings-panel .sp-foot .foot-btn{background:#1a1a1a;}#settings-panel .sp-foot .foot-btn.primary{background:#533AB7;color:#fff;}}
+
 /* ══ end v4 APP SHELL CSS ═══════════════════════════════════════════ */
 </style>
 </head>
@@ -873,6 +935,104 @@ input[type=range]{width:110px;cursor:pointer;}
     <div class="sp-dismiss">tap anywhere &rarr;</div>
   </div>
 
+  <!-- v7.6 Phase 3 settings panel — Playback Tones + Physics & Calibration.
+       Overlays #app-body flush top-to-bottom, 260px wide. Opens via
+       #br-settings-btn, closes via ✕ (no tap-outside close per standing rule).
+       All sliders and editable fields wire to existing engine vars through
+       setupSpSlider() + _spSetWaveform/_spSetPoly/_spSetUnits wrappers.
+       Footer: primary tour btn (openTour stub) + readme btn (openReadmePicker). -->
+  <div id="settings-panel">
+    <div class="sp-head">
+      <div class="t">Settings</div>
+      <div class="x" id="sp-close-btn" onclick="_closeSettingsPanel()" title="Close settings">&#10005;</div>
+    </div>
+    <div class="sp-body">
+      <div class="sp-sec">
+        <div class="sec-h">Playback Tones</div>
+        <div class="row">
+          <span class="lbl">waveform</span>
+          <div class="btn sp-wav-btn" data-val="sine"   onclick="_spSetWaveform('sine',this)">sine</div>
+          <div class="btn sp-wav-btn" data-val="warm"   onclick="_spSetWaveform('warm',this)">warm</div>
+          <div class="btn sp-wav-btn" data-val="string" onclick="_spSetWaveform('string',this)">string</div>
+        </div>
+        <div class="row">
+          <span class="lbl">polyphony</span>
+          <div class="btn sp-poly-btn" data-val="on"  style="min-width:36px;text-align:center;" onclick="_spSetPoly(true,this)">on</div>
+          <div class="btn sp-poly-btn" data-val="off" style="min-width:36px;text-align:center;" onclick="_spSetPoly(false,this)">off</div>
+        </div>
+        <div class="row-stack">
+          <div class="top"><span class="lbl">volume</span><span class="val" id="sp-vol-val">65%</span></div>
+          <div class="sp-track" data-slider="vol"><div class="sp-thumb" style="left:0%"></div></div>
+        </div>
+        <div class="row-stack">
+          <div class="top"><span class="lbl">tone duration</span><span class="val" id="sp-dur-val">0.5 s</span></div>
+          <div class="sp-track" data-slider="dur"><div class="sp-thumb" style="left:0%"></div></div>
+        </div>
+        <div class="row-stack">
+          <div class="top"><span class="lbl">tone spacing</span><span class="val" id="sp-spc-val">0.00 s</span></div>
+          <div class="sp-track" data-slider="spc"><div class="sp-thumb" style="left:0%"></div></div>
+        </div>
+      </div>
+
+      <div class="sp-sec">
+        <div class="sec-h">Physics &amp; Calibration</div>
+        <div class="row">
+          <span class="lbl">units</span>
+          <div class="btn sp-unit-btn" data-val="in" style="min-width:32px;text-align:center;" onclick="_spSetUnits('in',this)">in</div>
+          <div class="btn sp-unit-btn" data-val="cm" style="min-width:32px;text-align:center;" onclick="_spSetUnits('cm',this)">cm</div>
+        </div>
+        <div class="row-stack">
+          <div class="top"><span class="lbl">string length</span><span class="val" id="sp-len-val">69.0"</span></div>
+          <div class="sp-track" data-slider="len"><div class="sp-thumb" style="left:0%"></div></div>
+        </div>
+        <div class="row-stack">
+          <div class="top"><span class="lbl">string density</span><span class="val" id="sp-mu-val">0.000754 kg/m</span></div>
+          <div class="sp-track" data-slider="mu"><div class="sp-thumb" style="left:0%"></div></div>
+        </div>
+
+        <div class="sub-h">my bass defaults</div>
+        <div class="row-stack">
+          <div class="top"><span class="lbl">length</span><input class="fld editable" type="text" id="sp-deflen-fld" data-fld="deflen" value='69.0"'></div>
+          <div class="sp-track" data-slider="deflen"><div class="sp-thumb" style="left:0%"></div></div>
+        </div>
+        <div class="row-stack">
+          <div class="top"><span class="lbl">tension</span><input class="fld editable" type="text" id="sp-deften-fld" data-fld="deften" value="5.0 lbs"></div>
+          <div class="sp-track" data-slider="deften"><div class="sp-thumb" style="left:0%"></div></div>
+        </div>
+        <div class="row-stack">
+          <div class="top"><span class="lbl">density</span><input class="fld editable" type="text" id="sp-defmu-fld" data-fld="defmu" value="0.000754 kg/m"></div>
+          <div class="sp-track" data-slider="defmu"><div class="sp-thumb" style="left:0%"></div></div>
+        </div>
+        <div class="row subrow">
+          <div class="btn" onclick="_spResetDefaults()">reset</div>
+          <div class="btn" onclick="_spApplyDefaults()">apply</div>
+          <div class="btn" onclick="_spUseCurrent()">use current</div>
+        </div>
+
+        <div class="sub-h">nut preset values</div>
+        <div class="row-stack">
+          <div class="top"><span class="lbl">nut 1</span><input class="fld editable" type="text" id="sp-nut1-fld" data-fld="nut1" value='6.0"'></div>
+          <div class="sp-track" data-slider="nut1"><div class="sp-thumb" style="left:0%"></div></div>
+        </div>
+        <div class="row-stack">
+          <div class="top"><span class="lbl">nut 2</span><input class="fld editable" type="text" id="sp-nut2-fld" data-fld="nut2" value='12.0"'></div>
+          <div class="sp-track" data-slider="nut2"><div class="sp-thumb" style="left:0%"></div></div>
+        </div>
+        <div class="row-stack">
+          <div class="top"><span class="lbl">nut 3</span><input class="fld editable" type="text" id="sp-nut3-fld" data-fld="nut3" value='19.0"'></div>
+          <div class="sp-track" data-slider="nut3"><div class="sp-thumb" style="left:0%"></div></div>
+        </div>
+        <div class="row subrow">
+          <div class="btn" onclick="_spResetNutPresets()">reset to factory</div>
+        </div>
+      </div>
+    </div>
+    <div class="sp-foot">
+      <div class="foot-btn primary" id="sp-foot-tour" onclick="_spOpenTour()">? take the tour</div>
+      <div class="foot-btn" id="sp-foot-readme" onclick="_spOpenReadme()">readme</div>
+    </div>
+  </div>
+
   </div><!-- end app-body -->
 
   <!-- bottom rail — v7.6 Phase 2 restructure: #br-top (7 buttons) + #br-ctx (2 rows, populated by Phase 5) -->
@@ -1118,7 +1278,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.6.0';
+const VERSION='v7.6.1';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -1164,13 +1324,17 @@ function _handleModeClick(mode){
   if(typeof renderBRCtx==='function') renderBRCtx();
 }
 
-// Toggles settings panel open state. In Chat 1 the panel DOM does not yet
-// exist — this just flips the flag and visual state. Narrow-viewport
-// exclusivity rule: opening settings at <380px closes the view panel.
+// Toggles settings panel open state. Panel DOM lives in #settings-panel
+// (added Phase 3). Narrow-viewport exclusivity rule: opening settings at
+// <380px closes the view panel. _syncSettingsPanel() paints the .open
+// class on the panel DOM; _syncPanelBtns() paints the .on class on the
+// bottom-rail settings button.
 function _toggleSettingsPanel(){
   _settingsPanelOpen=!_settingsPanelOpen;
   if(_settingsPanelOpen && isNarrow()) _viewPanelOpen=false;
   _syncPanelBtns();
+  _syncSettingsPanel();
+  if(typeof _syncViewPanel==='function') _syncViewPanel(); // Phase 4 wiring
 }
 
 // Mirrors _toggleSettingsPanel for the view panel.
@@ -1212,6 +1376,370 @@ function _syncMuteBtn(){
   mb.classList.toggle('muted', _muted);
   mb.textContent=_muted?'\uD83D\uDD07':'\uD83D\uDD0A'; // speaker-muted / speaker
 }
+
+// ══════════════════════════════════════════════════════════════════
+// v7.6 UI REFRESH — PHASE 3 SETTINGS PANEL WIRING (Chat 2 v7.6.1)
+// Handlers for #settings-panel. Sliders + editable fields wire to
+// existing engine vars (waveform/polyOn/volume/toneDuration/toneSpacing/
+// useInches/stringInches/muKgM/def-len/def-ten/def-mu/nutPresets) via
+// _spSet* wrappers and setupSpSlider(). Values sync both directions:
+// engine state -> panel display via _spSyncAll(); panel edits ->
+// engine state via the generic slider handler.
+// ══════════════════════════════════════════════════════════════════
+
+// Paints the .open class on #settings-panel to match _settingsPanelOpen.
+// Called from _toggleSettingsPanel() (forward-referenced via typeof in
+// that fn to stay safe if script ordering changes).
+function _syncSettingsPanel(){
+  const p=document.getElementById('settings-panel');
+  if(!p) return;
+  p.classList.toggle('open', _settingsPanelOpen);
+  // Re-sync display values when opening so they reflect any engine state
+  // changes that happened while the panel was closed.
+  if(_settingsPanelOpen) _spSyncAll();
+}
+
+// Closes the settings panel (X button + Phase 7 tap-outside-NEVER per
+// standing guard #7: settings close only via X or same-button toggle).
+function _closeSettingsPanel(){
+  _settingsPanelOpen=false;
+  _syncPanelBtns();
+  _syncSettingsPanel();
+}
+
+// ── Button group wrappers ─────────────────────────────────────────
+// Each paints the group's .on class in the new panel AND updates the
+// underlying engine state. Waveform + units delegate to the legacy
+// setter (which paints the hidden #legacy-controls btn). Polyphony has
+// no persistent legacy button, so state is set directly.
+
+function _spSetWaveform(w, btn){
+  document.querySelectorAll('#settings-panel .sp-wav-btn').forEach(function(b){b.classList.remove('on');});
+  if(btn && btn.classList) btn.classList.add('on');
+  const legacy=document.getElementById('wav-'+w);
+  if(legacy && typeof setWaveform==='function') setWaveform(w, legacy);
+}
+
+function _spSetPoly(on, btn){
+  document.querySelectorAll('#settings-panel .sp-poly-btn').forEach(function(b){b.classList.remove('on');});
+  if(btn && btn.classList) btn.classList.add('on');
+  // Mirror setPoly's side effects without relying on its parentElement query
+  polyOn=!!on;
+  if(!on && typeof stopActive==='function') stopActive();
+}
+
+function _spSetUnits(u, btn){
+  document.querySelectorAll('#settings-panel .sp-unit-btn').forEach(function(b){b.classList.remove('on');});
+  if(btn && btn.classList) btn.classList.add('on');
+  const legacy=document.getElementById('unit-'+u);
+  if(legacy && typeof setUnits==='function') setUnits(u, legacy);
+  // Units change rewrites length/density formatting — re-sync panel.
+  _spSyncAll();
+}
+
+// ── Slider value <-> pct conversions ──────────────────────────────
+// Linear for most keys; log-scale for mu/defmu to match the engine's
+// muSlToVal curve.
+
+function _spSliderMin(key){
+  if(key==='vol') return 0;
+  if(key==='dur') return 0.2;
+  if(key==='spc') return 0;
+  if(key==='len' || key==='deflen') return 24;
+  if(key==='mu'  || key==='defmu')  return 0.0001;
+  if(key==='deften') return 0.5;
+  if(key==='nut1'||key==='nut2'||key==='nut3') return 0;
+  return 0;
+}
+function _spSliderMax(key){
+  if(key==='vol') return 100;
+  if(key==='dur') return 4.0;
+  if(key==='spc') return 1.0;
+  if(key==='len' || key==='deflen') return 200;
+  if(key==='mu'  || key==='defmu')  return 0.005;
+  if(key==='deften') return 15;
+  if(key==='nut1'||key==='nut2'||key==='nut3') return 36;
+  return 100;
+}
+function _spIsLog(key){ return key==='mu' || key==='defmu'; }
+function _spPctToVal(key, pct){
+  pct=Math.max(0,Math.min(1,pct));
+  if(_spIsLog(key)){
+    const lo=_spSliderMin(key), hi=_spSliderMax(key);
+    return lo*Math.pow(hi/lo, pct);
+  }
+  return _spSliderMin(key) + pct*(_spSliderMax(key)-_spSliderMin(key));
+}
+function _spValToPct(key, val){
+  const lo=_spSliderMin(key), hi=_spSliderMax(key);
+  if(_spIsLog(key)){
+    if(val<=lo) return 0;
+    if(val>=hi) return 1;
+    return Math.log(val/lo)/Math.log(hi/lo);
+  }
+  return Math.max(0,Math.min(1,(val-lo)/(hi-lo)));
+}
+
+// Display format per key. Length uses fmtLen (respects units).
+function _spFmt(key, val){
+  if(key==='vol') return Math.round(val)+'%';
+  if(key==='dur') return val.toFixed(1)+' s';
+  if(key==='spc') return val.toFixed(2)+' s';
+  if(key==='len' || key==='deflen' || key==='nut1' || key==='nut2' || key==='nut3'){
+    return (typeof fmtLen==='function')?fmtLen(val):(val.toFixed(1)+'"');
+  }
+  if(key==='mu' || key==='defmu') return val.toFixed(6)+' kg/m';
+  if(key==='deften') return val.toFixed(1)+' lbs';
+  return val.toFixed(2);
+}
+
+// Apply a new user-visible value to the engine side. Length keys (len,
+// deflen, nut1-3) always receive inches here; cm conversion happens in
+// the editable-input handler before apply is called.
+function _spApplyVal(key, val){
+  if(key==='vol' && typeof syncSlider==='function'){
+    syncSlider('vol', val);
+  } else if(key==='dur' && typeof syncSlider==='function'){
+    syncSlider('dur', val);
+  } else if(key==='spc' && typeof syncSlider==='function'){
+    syncSlider('spc', val);
+  } else if(key==='len' && typeof syncSlider==='function'){
+    // syncSlider('len', v) expects inches; also keep #len-sl element in
+    // sync so any legacy-UI code that reads it stays consistent.
+    const slEl=document.getElementById('len-sl');
+    if(slEl) slEl.value=val;
+    syncSlider('len', val);
+  } else if(key==='mu' && typeof syncSlider==='function'){
+    // 'mu' key expects a linear 1-100 slider value; convert kg/m -> slider.
+    const sv=(typeof muValToSl==='function')?muValToSl(val):1;
+    const slEl=document.getElementById('mu-sl');
+    if(slEl) slEl.value=sv;
+    syncSlider('mu', sv);
+  } else if(key==='deflen'){
+    const dl=document.getElementById('def-len');
+    if(dl) dl.value=(typeof fmtLen==='function')?fmtLen(val):(val.toFixed(1)+'"');
+  } else if(key==='deften'){
+    const dt=document.getElementById('def-ten');
+    if(dt) dt.value=val.toFixed(1)+' lbs';
+  } else if(key==='defmu'){
+    const dm=document.getElementById('def-mu');
+    if(dm) dm.value=val.toFixed(6);
+  } else if(key==='nut1' || key==='nut2' || key==='nut3'){
+    const idx=parseInt(key.slice(3),10)-1;
+    if(typeof nutPresets!=='undefined' && idx>=0 && idx<3){
+      const maxNut=(typeof stringInches!=='undefined')?stringInches*0.85:200;
+      const clamped=Math.max(0, Math.min(maxNut, val));
+      nutPresets[idx]=clamped;
+      const legFld=document.getElementById('nut-pre-'+idx);
+      if(legFld) legFld.value=(typeof fmtLen==='function')?fmtLen(clamped):(clamped.toFixed(1)+'"');
+      if(typeof renderBRCtx==='function') renderBRCtx();
+    }
+  }
+}
+
+// Read current engine-side value for a slider key. For 'len' in nut mode,
+// returns effective speaking length (matches legacy #len-sl behavior).
+function _spCurrentVal(key){
+  if(key==='vol' && typeof volume!=='undefined') return volume*100;
+  if(key==='dur' && typeof toneDuration!=='undefined') return toneDuration;
+  if(key==='spc' && typeof toneSpacing!=='undefined') return toneSpacing;
+  if(key==='len' && typeof stringInches!=='undefined'){
+    if(typeof nodeView!=='undefined' && nodeView==='nut' && typeof effectiveSpeakingLength==='function') return effectiveSpeakingLength();
+    return stringInches;
+  }
+  if(key==='mu' && typeof muKgM!=='undefined') return muKgM;
+  if(key==='deflen'){
+    const el=document.getElementById('def-len');
+    if(el){ const n=parseFloat(el.value); if(!isNaN(n)) return (typeof useInches!=='undefined' && !useInches)?n/2.54:n; }
+    return 69;
+  }
+  if(key==='deften'){
+    const el=document.getElementById('def-ten');
+    if(el){ const n=parseFloat(el.value); if(!isNaN(n)) return n; }
+    return 5;
+  }
+  if(key==='defmu'){
+    const el=document.getElementById('def-mu');
+    if(el){ const n=parseFloat(el.value); if(!isNaN(n)) return n; }
+    return 0.000754;
+  }
+  if(key==='nut1'||key==='nut2'||key==='nut3'){
+    if(typeof nutPresets!=='undefined'){
+      const idx=parseInt(key.slice(3),10)-1;
+      if(idx>=0 && idx<3) return nutPresets[idx];
+    }
+    return 0;
+  }
+  return 0;
+}
+
+// Wire one slider track. Sets up drag listeners, binds the editable input
+// (if any) in the same row-stack. Called once per track at _spInit time.
+function setupSpSlider(track){
+  const thumb=track.querySelector('.sp-thumb');
+  if(!thumb) return;
+  const key=track.dataset.slider;
+  if(!key) return;
+  let dragging=false;
+
+  const updateFromPct=function(pct, skipInputUpdate){
+    pct=Math.max(0,Math.min(1,pct));
+    thumb.style.left=(pct*100).toFixed(2)+'%';
+    const val=_spPctToVal(key, pct);
+    _spApplyVal(key, val);
+    const stack=track.closest('.row-stack');
+    if(stack){
+      const valEl=stack.querySelector('.top .val');
+      if(valEl) valEl.textContent=_spFmt(key, val);
+      if(!skipInputUpdate){
+        const fldEl=stack.querySelector('.top input.fld.editable');
+        if(fldEl) fldEl.value=_spFmt(key, val);
+      }
+    }
+  };
+
+  const onMove=function(e){
+    if(!dragging) return;
+    e.preventDefault();
+    const rect=track.getBoundingClientRect();
+    const clientX=(e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+    const pct=(clientX-rect.left)/Math.max(1,rect.width);
+    updateFromPct(pct);
+  };
+  const onStart=function(e){ dragging=true; onMove(e); };
+  const onEnd=function(){ dragging=false; };
+
+  track.addEventListener('touchstart',  onStart, {passive:false});
+  track.addEventListener('touchmove',   onMove,  {passive:false});
+  track.addEventListener('touchend',    onEnd);
+  track.addEventListener('touchcancel', onEnd);
+  track.addEventListener('mousedown',   onStart);
+  window.addEventListener('mousemove',  onMove);
+  window.addEventListener('mouseup',    onEnd);
+
+  // Editable input in the same row-stack — typing updates slider + engine.
+  const stack=track.closest('.row-stack');
+  if(stack){
+    const input=stack.querySelector('input.fld.editable');
+    if(input){
+      const onInputChange=function(e){
+        const raw=(e.target.value||'').trim();
+        const m=raw.match(/[-+]?[0-9]*\.?[0-9]+(?:e[-+]?[0-9]+)?/i);
+        if(!m) return;
+        const n=parseFloat(m[0]);
+        if(isNaN(n)) return;
+        let val=n;
+        // Length-family keys: convert cm back to inches if metric display.
+        if(typeof useInches!=='undefined' && !useInches){
+          if(key==='deflen' || key==='nut1' || key==='nut2' || key==='nut3'){
+            val=n/2.54;
+          }
+        }
+        const lo=_spSliderMin(key), hi=_spSliderMax(key);
+        val=Math.max(lo, Math.min(hi, val));
+        const pct=_spValToPct(key, val);
+        updateFromPct(pct, true);
+        e.target.value=_spFmt(key, val);
+      };
+      input.addEventListener('change', onInputChange);
+      input.addEventListener('keydown', function(ev){
+        if(ev.key==='Enter'){ ev.preventDefault(); ev.target.blur(); }
+      });
+    }
+  }
+}
+
+// ── My bass defaults + nut preset wrappers ─────────────────────────
+// Delegate to existing engine helpers, then re-sync panel UI.
+
+function _spResetDefaults(){
+  if(typeof resetDefaults==='function') resetDefaults();
+  _spSyncAll();
+}
+function _spApplyDefaults(){
+  if(typeof applyDefaults==='function') applyDefaults();
+  _spSyncAll();
+}
+function _spUseCurrent(){
+  if(typeof useCurrentSettings==='function') useCurrentSettings();
+  _spSyncAll();
+}
+function _spResetNutPresets(){
+  const factory=[6, 12, 19];
+  if(typeof nutPresets!=='undefined'){
+    for(let i=0;i<3;i++){
+      nutPresets[i]=factory[i];
+      const legFld=document.getElementById('nut-pre-'+i);
+      if(legFld) legFld.value=(typeof fmtLen==='function')?fmtLen(factory[i]):(factory[i].toFixed(1)+'"');
+    }
+    if(typeof renderBRCtx==='function') renderBRCtx();
+  }
+  _spSyncAll();
+}
+
+// ── Footer handlers ───────────────────────────────────────────────
+
+function _spOpenTour(){
+  _closeSettingsPanel();
+  if(typeof openTour==='function') openTour();
+}
+function _spOpenReadme(){
+  _closeSettingsPanel();
+  if(typeof openReadmePicker==='function') openReadmePicker();
+  else if(typeof openReadme==='function') openReadme('overview');
+}
+
+// ── Full-panel sync ───────────────────────────────────────────────
+// Paints every button's .on state and every slider's thumb + value
+// display to match current engine state. Called on panel open and
+// after engine-side state changes (units toggle, apply defaults, etc.).
+
+function _spSyncAll(){
+  if(!document.getElementById('settings-panel')) return;
+  if(typeof waveform!=='undefined'){
+    document.querySelectorAll('#settings-panel .sp-wav-btn').forEach(function(b){
+      b.classList.toggle('on', b.dataset.val===waveform);
+    });
+  }
+  if(typeof polyOn!=='undefined'){
+    document.querySelectorAll('#settings-panel .sp-poly-btn').forEach(function(b){
+      b.classList.toggle('on', (b.dataset.val==='on')===!!polyOn);
+    });
+  }
+  if(typeof useInches!=='undefined'){
+    document.querySelectorAll('#settings-panel .sp-unit-btn').forEach(function(b){
+      b.classList.toggle('on', (b.dataset.val==='in')===useInches);
+    });
+  }
+  const tracks=document.querySelectorAll('#settings-panel .sp-track');
+  tracks.forEach(function(tr){
+    const thumb=tr.querySelector('.sp-thumb');
+    const key=tr.dataset.slider;
+    if(!thumb || !key) return;
+    const val=_spCurrentVal(key);
+    const pct=_spValToPct(key, val);
+    thumb.style.left=(pct*100).toFixed(2)+'%';
+    const stack=tr.closest('.row-stack');
+    if(stack){
+      const valEl=stack.querySelector('.top .val');
+      if(valEl) valEl.textContent=_spFmt(key, val);
+      const fld=stack.querySelector('.top input.fld.editable');
+      if(fld) fld.value=_spFmt(key, val);
+    }
+  });
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+// Wire every .sp-track once at startup. Deferred to next tick so all
+// engine state (volume/toneDuration/etc.) is declared before first
+// sync attempt. _spSyncAll() runs again each time the panel opens.
+
+function _spInit(){
+  if(!document.getElementById('settings-panel')) return;
+  document.querySelectorAll('#settings-panel .sp-track').forEach(setupSpSlider);
+  _spSyncAll();
+}
+setTimeout(_spInit, 0);
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 Phase 5 — pitchmap context helpers
