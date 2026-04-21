@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Washtub Prototype v1.9</title>
+<title>Washtub Prototype v1.10</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html {
@@ -169,7 +169,7 @@
   .pz::before { content: ''; position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; background: var(--purple); border-radius: 50%; }
   .pz .pz-lbl { font-size: 7px; color: var(--purple); font-weight: 700; letter-spacing: 0.06em; margin-bottom: 3px; }
   .pz .pz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
-  .pz .pz-grid .zb { height: 22px; background: var(--wire-fill); border: 0.5px solid var(--wire-stroke); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--ink); font-weight: 600; cursor: pointer; }
+  .pz .pz-grid .zb { height: 22px; background: var(--wire-fill); border: 0.5px solid var(--wire-stroke); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--ink); font-weight: 600; cursor: pointer; -webkit-appearance: none; appearance: none; }
 
   /* Capo sidebar clusters */
   .cap-cluster { border-top: 0.5px solid rgba(128,128,128,0.12); padding: 4px 4px; flex-shrink: 0; }
@@ -242,7 +242,7 @@
   .sec .pin-dot.pinned { background: var(--purple); }
 
   .zoom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-  .zoom-grid .zb { height: 28px; background: var(--wire-fill); border: 0.5px solid var(--wire-stroke); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--ink); font-weight: 600; cursor: pointer; }
+  .zoom-grid .zb { height: 28px; background: var(--wire-fill); border: 0.5px solid var(--wire-stroke); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--ink); font-weight: 600; cursor: pointer; -webkit-appearance: none; appearance: none; }
   .sec .status { font-size: 8.5px; color: var(--ink-fade); text-align: center; margin-top: 2px; line-height: 1.3; }
 
   .stack-group { display: flex; flex-direction: column; gap: 2px; }
@@ -316,6 +316,27 @@
   .sp-sec .row .btn.on { background: var(--purple); color: white; }
   .sp-sec .row .fld { flex: 0 0 66px; background: white; border: 0.5px solid var(--wire-stroke); border-radius: 3px; padding: 4px 7px; font-size: 10px; color: var(--ink); font-family: monospace; text-align: right; }
   .sp-sec .row.subrow .fld { flex: 0 0 58px; font-size: 9.5px; padding: 3px 5px; }
+  .sp-sec .row-stack .top .fld.editable {
+    flex: 0 0 76px;
+    background: white;
+    border: 0.5px solid var(--purple);
+    border-radius: 3px;
+    padding: 3px 7px;
+    font-size: 10px;
+    color: var(--ink);
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+    text-align: right;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    user-select: text;
+    -webkit-user-select: text;
+    touch-action: auto;
+  }
+  .sp-sec .row-stack .top .fld.editable:focus {
+    border-color: var(--purple);
+    background: var(--purple-very-light);
+  }
   .sp-sec .row .u { font-size: 9px; color: var(--ink-fade); min-width: 24px; }
   .sp-sec .row.subrow { padding-left: 10px; }
 
@@ -527,7 +548,7 @@
       </div>
       <div class="sp-body">
         <div class="sp-sec">
-          <div class="sec-h">Audio</div>
+          <div class="sec-h">Playback Tones</div>
           <div class="row">
             <span class="lbl">waveform</span>
             <div class="btn wave-btn" data-val="sine">sine</div>
@@ -536,54 +557,51 @@
           </div>
           <div class="row">
             <span class="lbl">polyphony</span>
-            <div class="btn poly-btn on" data-val="on">on</div>
-            <div class="btn poly-btn" data-val="off">off</div>
+            <div class="btn poly-btn on" data-val="on" style="min-width:36px;text-align:center;">on</div>
+            <div class="btn poly-btn" data-val="off" style="min-width:36px;text-align:center;">off</div>
           </div>
           <div class="row-stack">
             <div class="top"><span class="lbl">volume</span><span class="val" id="vol-val">65%</span></div>
             <div class="sp-track" data-slider="vol" data-min="0" data-max="100" data-fmt="pct"><div class="sp-thumb" style="left:65%"></div></div>
           </div>
           <div class="row-stack">
-            <div class="top"><span class="lbl">duration</span><span class="val" id="dur-val">0.5 s</span></div>
+            <div class="top"><span class="lbl">tone duration</span><span class="val" id="dur-val">0.5 s</span></div>
             <div class="sp-track" data-slider="dur" data-min="0.2" data-max="4.0" data-fmt="sec"><div class="sp-thumb" style="left:8%"></div></div>
           </div>
           <div class="row-stack">
-            <div class="top"><span class="lbl">spacing</span><span class="val" id="spc-val">0.20 s</span></div>
+            <div class="top"><span class="lbl">tone spacing</span><span class="val" id="spc-val">0.20 s</span></div>
             <div class="sp-track" data-slider="spc" data-min="0" data-max="1" data-fmt="sec2"><div class="sp-thumb" style="left:20%"></div></div>
           </div>
         </div>
 
         <div class="sp-sec">
           <div class="sec-h">Physics &amp; Calibration</div>
+          <div class="row">
+            <span class="lbl">units</span>
+            <div class="btn unit-btn on" data-val="in" style="min-width:32px;text-align:center;">in</div>
+            <div class="btn unit-btn" data-val="cm" style="min-width:32px;text-align:center;">cm</div>
+          </div>
           <div class="row-stack">
-            <div class="top"><span class="lbl">length</span><span class="val" id="len-val">69.0 in</span></div>
+            <div class="top"><span class="lbl">string length</span><span class="val" id="len-val">69.0 in</span></div>
             <div class="sp-track" data-slider="len" data-min="24" data-max="200" data-fmt="inches"><div class="sp-thumb" style="left:25%"></div></div>
           </div>
           <div class="row-stack">
-            <div class="top"><span class="lbl">density μ</span><span class="val" id="mu-val">0.000754</span></div>
+            <div class="top"><span class="lbl">string density</span><span class="val" id="mu-val">0.000754</span></div>
             <div class="sp-track" data-slider="mu" data-min="0.0001" data-max="0.005" data-fmt="mu"><div class="sp-thumb" style="left:40%"></div></div>
-          </div>
-          <div class="row">
-            <span class="lbl">units</span>
-            <div class="btn unit-btn on" data-val="in">in</div>
-            <div class="btn unit-btn" data-val="cm">cm</div>
           </div>
 
           <div class="sub-h">my bass defaults</div>
-          <div class="row subrow">
-            <span class="lbl">length</span>
-            <div class="fld">69.0"</div>
-            <div class="sp-track" data-slider="deflen" data-min="24" data-max="200" data-fmt="inches" style="flex:1;min-width:40px;"><div class="sp-thumb" style="left:25%"></div></div>
+          <div class="row-stack">
+            <div class="top"><span class="lbl">length</span><input class="fld editable" type="text" value="69.0&quot;" data-fld="deflen"></div>
+            <div class="sp-track" data-slider="deflen" data-min="24" data-max="200" data-fmt="inches"><div class="sp-thumb" style="left:25%"></div></div>
           </div>
-          <div class="row subrow">
-            <span class="lbl">tension</span>
-            <div class="fld">5.0 lbs</div>
-            <div class="sp-track" data-slider="deften" data-min="1" data-max="25" data-fmt="lbs" style="flex:1;min-width:40px;"><div class="sp-thumb" style="left:17%"></div></div>
+          <div class="row-stack">
+            <div class="top"><span class="lbl">tension</span><input class="fld editable" type="text" value="5.0 lbs" data-fld="deften"></div>
+            <div class="sp-track" data-slider="deften" data-min="1" data-max="25" data-fmt="lbs"><div class="sp-thumb" style="left:17%"></div></div>
           </div>
-          <div class="row subrow">
-            <span class="lbl">density</span>
-            <div class="fld">0.000754</div>
-            <div class="sp-track" data-slider="defmu" data-min="0.0001" data-max="0.005" data-fmt="mu" style="flex:1;min-width:40px;"><div class="sp-thumb" style="left:40%"></div></div>
+          <div class="row-stack">
+            <div class="top"><span class="lbl">density</span><input class="fld editable" type="text" value="0.000754" data-fld="defmu"></div>
+            <div class="sp-track" data-slider="defmu" data-min="0.0001" data-max="0.005" data-fmt="mu"><div class="sp-thumb" style="left:40%"></div></div>
           </div>
           <div class="row subrow">
             <div class="btn">reset</div>
@@ -592,20 +610,17 @@
           </div>
 
           <div class="sub-h">nut preset values</div>
-          <div class="row subrow">
-            <span class="lbl">nut 1</span>
-            <div class="fld">6.0"</div>
-            <div class="sp-track" data-slider="nut1" data-min="0" data-max="36" data-fmt="inches" style="flex:1;min-width:40px;"><div class="sp-thumb" style="left:17%"></div></div>
+          <div class="row-stack">
+            <div class="top"><span class="lbl">nut 1</span><input class="fld editable" type="text" value="6.0&quot;" data-fld="nut1"></div>
+            <div class="sp-track" data-slider="nut1" data-min="0" data-max="36" data-fmt="inches"><div class="sp-thumb" style="left:17%"></div></div>
           </div>
-          <div class="row subrow">
-            <span class="lbl">nut 2</span>
-            <div class="fld">12.0"</div>
-            <div class="sp-track" data-slider="nut2" data-min="0" data-max="36" data-fmt="inches" style="flex:1;min-width:40px;"><div class="sp-thumb" style="left:33%"></div></div>
+          <div class="row-stack">
+            <div class="top"><span class="lbl">nut 2</span><input class="fld editable" type="text" value="12.0&quot;" data-fld="nut2"></div>
+            <div class="sp-track" data-slider="nut2" data-min="0" data-max="36" data-fmt="inches"><div class="sp-thumb" style="left:33%"></div></div>
           </div>
-          <div class="row subrow">
-            <span class="lbl">nut 3</span>
-            <div class="fld">19.0"</div>
-            <div class="sp-track" data-slider="nut3" data-min="0" data-max="36" data-fmt="inches" style="flex:1;min-width:40px;"><div class="sp-thumb" style="left:53%"></div></div>
+          <div class="row-stack">
+            <div class="top"><span class="lbl">nut 3</span><input class="fld editable" type="text" value="19.0&quot;" data-fld="nut3"></div>
+            <div class="sp-track" data-slider="nut3" data-min="0" data-max="36" data-fmt="inches"><div class="sp-thumb" style="left:53%"></div></div>
           </div>
           <div class="row subrow">
             <div class="btn">reset to factory</div>
@@ -634,8 +649,8 @@
           <div class="zoom-grid">
             <div class="zb">+</div>
             <div class="zb">−</div>
-            <div class="zb">↕</div>
-            <div class="zb">↔</div>
+            <div class="zb" title="fit vertical"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="7" y1="1" x2="7" y2="13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><polyline points="4,4 7,1 10,4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="4,10 7,13 10,10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="zb" title="fit horizontal"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><polyline points="4,4 1,7 4,10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="10,4 13,7 10,10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
           </div>
           <div class="status" id="zoom-pin-status">100%<br>tap &amp; hold pin to lock</div>
         </div>
@@ -669,11 +684,11 @@
             <div class="b on nviz-btn">on</div>
           </div>
           <div class="sg-group">
-            <div class="sg-head"><span class="lbl">amp</span><span class="val" id="namp-val">24</span></div>
+            <div class="sg-head"><span class="lbl">amplitude</span><span class="val" id="namp-val">24</span></div>
             <div class="sg-track" data-slider="namp" data-min="5" data-max="60" data-fmt="int"><div class="sg-thumb" style="left:35%"></div></div>
           </div>
           <div class="sg-group">
-            <div class="sg-head"><span class="lbl">dur</span><span class="val" id="ndur-val">1.2s</span></div>
+            <div class="sg-head"><span class="lbl">duration</span><span class="val" id="ndur-val">1.2s</span></div>
             <div class="sg-track" data-slider="ndur" data-min="0.1" data-max="4.0" data-fmt="sec"><div class="sg-thumb" style="left:28%"></div></div>
           </div>
         </div>
@@ -685,11 +700,11 @@
             <div class="b wviz-btn">off</div>
           </div>
           <div class="sg-group">
-            <div class="sg-head"><span class="lbl">amp</span><span class="val" id="wamp-val">18</span></div>
+            <div class="sg-head"><span class="lbl">amplitude</span><span class="val" id="wamp-val">18</span></div>
             <div class="sg-track" data-slider="wamp" data-min="5" data-max="60" data-fmt="int"><div class="sg-thumb" style="left:24%"></div></div>
           </div>
           <div class="sg-group">
-            <div class="sg-head"><span class="lbl">dur</span><span class="val" id="wdur-val">0.8s</span></div>
+            <div class="sg-head"><span class="lbl">duration</span><span class="val" id="wdur-val">0.8s</span></div>
             <div class="sg-track" data-slider="wdur" data-min="0.1" data-max="4.0" data-fmt="sec"><div class="sg-thumb" style="left:18%"></div></div>
           </div>
         </div>
@@ -708,7 +723,7 @@
         <div class="sec gated" id="capo-only-sec">
           <div class="sec-h">capo mode</div>
           <div class="stack-group">
-            <div class="sg-lbl">on-string capo buttons</div>
+            <div class="sg-lbl">on-string buttons</div>
             <div class="sg-btns">
               <div class="b on os-btn" data-val="show" onclick="setCapoOnStr(true)">show</div>
               <div class="b os-btn" data-val="hide" onclick="setCapoOnStr(false)">hide</div>
@@ -942,8 +957,8 @@ function renderSidebar() {
         <div class="pz-grid">
           <div class="zb">+</div>
           <div class="zb">−</div>
-          <div class="zb">↕</div>
-          <div class="zb">↔</div>
+          <div class="zb" title="fit vertical"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="7" y1="1" x2="7" y2="13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><polyline points="4,4 7,1 10,4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="4,10 7,13 10,10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="zb" title="fit horizontal"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><polyline points="4,4 1,7 4,10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="10,4 13,7 10,10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         </div>
       </div>
     `;
@@ -1022,7 +1037,7 @@ function renderModeContext() {
       </div>
       <div class="row">
         <span class="chip lbl">snap</span>
-        <div class="btn teal ${state.pmSnap?'on':''}" onclick="togglePmSnap()">${state.pmSnap ? 'on' : 'off'}</div>
+        <div class="btn teal ${state.pmSnap?'on':''}" onclick="togglePmSnap()" style="min-width:34px;text-align:center;">${state.pmSnap ? 'on' : 'off'}</div>
         <span class="chip lbl">snap target</span>
         <div class="btn teal popover-btn" id="snap-target-btn" onclick="openSnapTargetPopover(event)" style="${state.pmSnap?'':'opacity:0.35;pointer-events:none;'};flex:1;min-width:0;text-align:left;">${snapTargetLabel} ▾</div>
       </div>`;
@@ -1054,7 +1069,7 @@ function renderModeContext() {
         <div class="chip amber-chip">▲▼ both</div>
         <span class="vr"></span>
         <span class="chip lbl">arp</span>
-        <div class="btn amber ${state.capoArpOn?'on':''}" onclick="toggleCapoArp()">${state.capoArpOn ? 'on' : 'off'}</div>
+        <div class="btn amber ${state.capoArpOn?'on':''}" onclick="toggleCapoArp()" style="min-width:34px;text-align:center;">${state.capoArpOn ? 'on' : 'off'}</div>
       </div>
       <div class="row" style="gap:2px;">${capoBtns}</div>`;
   }
@@ -1274,18 +1289,30 @@ function setupGenericSlider(track) {
     return val.toFixed(1);
   }
 
-  function updateFromPct(pct) {
+  function updateFromPct(pct, skipInputUpdate) {
     pct = Math.max(0, Math.min(100, pct));
     thumb.style.left = pct + '%';
     const val = min + (pct / 100) * (max - min);
     state.sliders[key] = pct;
-    // Update value label (if present)
+    // Update value label (if present — for viz sliders, main length/density)
     const valEl = document.getElementById(key + '-val');
     if (valEl) valEl.textContent = format(val);
-    // Update adjacent .fld (if present — for my bass defaults / nut preset sliders)
+    // For row-stack subrows: slider sits below its .top which contains the .fld / input
+    // Walk up to the row-stack container to find the editable input
+    const stackContainer = track.closest('.row-stack');
+    if (stackContainer && !skipInputUpdate) {
+      const editableInput = stackContainer.querySelector('input.fld.editable');
+      if (editableInput) editableInput.value = formatField(val);
+      // Non-editable .fld div (legacy, if any remain)
+      const fldDiv = stackContainer.querySelector('div.fld');
+      if (fldDiv) fldDiv.textContent = formatField(val);
+    }
+    // Also check if slider lives in a .row (not .row-stack) — legacy fallback
     const row = track.parentElement;
-    const fld = row && row.querySelector('.fld');
-    if (fld && !valEl) fld.textContent = formatField(val);
+    if (row && row.classList.contains('row') && !stackContainer) {
+      const fld = row.querySelector('.fld');
+      if (fld && !valEl) fld.textContent = formatField(val);
+    }
     log(`${key}: ${format(val)}`);
   }
 
@@ -1310,6 +1337,28 @@ function setupGenericSlider(track) {
   track.addEventListener('mousedown', onStart);
   window.addEventListener('mousemove', onMove);
   window.addEventListener('mouseup', onEnd);
+
+  // Bind editable input in the same row-stack: typing updates slider
+  const stackContainer = track.closest('.row-stack');
+  if (stackContainer) {
+    const editableInput = stackContainer.querySelector('input.fld.editable');
+    if (editableInput) {
+      editableInput.addEventListener('change', (e) => {
+        const raw = e.target.value.trim();
+        // Parse any numeric prefix
+        const m = raw.match(/[-+]?[0-9]*\.?[0-9]+/);
+        if (!m) return;
+        const n = parseFloat(m[0]);
+        if (isNaN(n)) return;
+        const clamped = Math.max(min, Math.min(max, n));
+        const pct = ((clamped - min) / (max - min)) * 100;
+        // Update slider without looping back to input
+        updateFromPct(pct, true);
+        // Re-format the input to canonical form
+        e.target.value = formatField(clamped);
+      });
+    }
+  }
 }
 
 // ============ EVENT WIRING ============
