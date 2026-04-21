@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Washtub Prototype v1.7</title>
+<title>Washtub Prototype v1.8</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html {
@@ -190,7 +190,7 @@
   #splash .dismiss { font-size: 7.5px; font-style: italic; color: var(--ink-fade); text-align: center; }
 
   /* Bottom rail */
-  #br { height: 126px; flex-shrink: 0; background: #FFF; border-top: 0.5px solid var(--wire-stroke); display: flex; flex-direction: column; z-index: 5; }
+  #br { height: 96px; flex-shrink: 0; background: #FFF; border-top: 0.5px solid var(--wire-stroke); display: flex; flex-direction: column; z-index: 5; }
   #br-top { display: flex; gap: 2px; padding: 4px; background: var(--wire-fill); border-bottom: 0.5px solid var(--wire-stroke); height: 44px; flex-shrink: 0; align-items: stretch; }
   #br-top .mute-btn {
     width: 32px; background: white; border: 0.5px solid var(--wire-stroke); border-radius: 6px;
@@ -378,6 +378,20 @@
   #tick-popover.open { display: block; }
   #tick-popover .po-item { padding: 8px 10px; border-radius: 3px; color: var(--ink); display: flex; align-items: center; justify-content: space-between; gap: 4px; cursor: pointer; }
   #tick-popover .po-item.on { background: var(--purple-light); color: var(--purple); font-weight: 600; }
+
+  /* Snap target popover — same style, positioned above its button */
+  #snap-target-popover {
+    position: fixed; z-index: 30;
+    border: 1px solid var(--teal); border-radius: 5px; background: white;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.18);
+    padding: 3px;
+    font-size: 11px;
+    display: none;
+    min-width: 180px;
+  }
+  #snap-target-popover.open { display: block; }
+  #snap-target-popover .po-item { padding: 9px 10px; border-radius: 3px; color: var(--ink); display: flex; align-items: center; justify-content: space-between; gap: 4px; cursor: pointer; }
+  #snap-target-popover .po-item.on { background: var(--teal-light); color: var(--teal); font-weight: 600; }
 
   /* Debug panel */
   #debug {
@@ -689,14 +703,19 @@
               <div class="b on tl-btn" data-val="off">off</div>
             </div>
           </div>
+          <div class="gated-msg" id="gated-msg">switch to map mode to use</div>
+        </div>
+
+        <div class="sec gated" id="capo-only-sec">
+          <div class="sec-h">capo mode only</div>
           <div class="stack-group">
-            <div class="sg-lbl">tonic ruler</div>
+            <div class="sg-lbl">on-string capo buttons</div>
             <div class="sg-btns">
-              <div class="b tr-btn" data-val="on">on</div>
-              <div class="b on tr-btn" data-val="off">off</div>
+              <div class="b on os-btn" data-val="show" onclick="setCapoOnStr(true)">show</div>
+              <div class="b os-btn" data-val="hide" onclick="setCapoOnStr(false)">hide</div>
             </div>
           </div>
-          <div class="gated-msg" id="gated-msg">switch to map mode to use</div>
+          <div class="gated-msg" id="capo-gated-msg">switch to capo mode to use</div>
         </div>
 
         <div class="sec legend">
@@ -754,6 +773,9 @@
       <div class="po-item" data-val="active only">active only</div>
       <div class="po-item" data-val="off">off</div>
     </div>
+
+    <!-- Snap target popover (populated dynamically) -->
+    <div id="snap-target-popover"></div>
 
   </div>
 
@@ -901,6 +923,18 @@ function renderGatedSections() {
     pmOnlySec.classList.add('gated');
     document.getElementById('gated-msg').style.display = '';
   }
+  const capoOnlySec = document.getElementById('capo-only-sec');
+  if (capoOnlySec) {
+    if (state.mode === 'capo') {
+      capoOnlySec.classList.remove('gated');
+      const msg = document.getElementById('capo-gated-msg');
+      if (msg) msg.style.display = 'none';
+    } else {
+      capoOnlySec.classList.add('gated');
+      const msg = document.getElementById('capo-gated-msg');
+      if (msg) msg.style.display = '';
+    }
+  }
 }
 
 function renderTonicRulerVisibility() {
@@ -986,22 +1020,24 @@ function renderModeContext() {
   const ctx = document.getElementById('br-ctx');
   let html = '';
   if (state.mode === 'map') {
+    const snapTargetLabel = {
+      'G>any':       'G > any node',
+      'G>fund':      'G > fundamental',
+      'any>fund':    'any note > fundamental'
+    }[state.pmSnapTarget] || state.pmSnapTarget;
     html = `
       <div class="row">
         <span class="chip lbl">tune</span>
-        <div class="btn teal ${state.pmTune==='G>any'?'on':''}" onclick="setPmTune('G>any')">G&gt;any</div>
-        <div class="btn teal ${state.pmTune==='G>fund'?'on':''}" onclick="setPmTune('G>fund')">G&gt;fund</div>
-      </div>
-      <div class="row">
-        <div class="btn teal ${state.pmSnap?'on':''}" onclick="togglePmSnap()">node snap</div>
-        <div class="btn teal ${state.pmSnapTarget==='G>any'?'on':''}" onclick="setPmSnapTgt('G>any')" style="${state.pmSnap?'':'opacity:0.35;pointer-events:none;'}">G&gt;any</div>
-        <div class="btn teal ${state.pmSnapTarget==='G>fund'?'on':''}" onclick="setPmSnapTgt('G>fund')" style="${state.pmSnap?'':'opacity:0.35;pointer-events:none;'}">G&gt;fund</div>
-        <div class="btn teal ${state.pmSnapTarget==='any>fund'?'on':''}" onclick="setPmSnapTgt('any>fund')" style="${state.pmSnap?'':'opacity:0.35;pointer-events:none;'}">any&gt;fund</div>
-      </div>
-      <div class="row">
-        <div class="btn teal ${state.pmTinyLabels?'on':''}" onclick="togglePmTinyLabels()">tiny labels</div>
-        <div class="btn teal ${state.pmDiatonicOnly?'on':''}" onclick="togglePmDiatonicOnly()">diatonic only</div>
+        <div class="btn teal cycle-btn" onclick="cyclePmTune()" title="cycle tune mode">${state.pmTune==='G>any' ? 'G &gt; any' : 'G &gt; fund'} ↻</div>
+        <span class="vr"></span>
+        <span class="chip lbl">view</span>
+        <div class="btn teal ${state.pmDiatonicOnly?'on':''}" onclick="togglePmDiatonicOnly()">diatonic</div>
         <div class="btn teal ${state.pmTonicRuler?'on':''}" onclick="togglePmTonicRuler()">tonic ruler</div>
+      </div>
+      <div class="row">
+        <span class="chip lbl">snap</span>
+        <div class="btn teal ${state.pmSnap?'on':''}" onclick="togglePmSnap()">${state.pmSnap ? 'on' : 'off'}</div>
+        <div class="btn teal popover-btn" id="snap-target-btn" onclick="openSnapTargetPopover(event)" style="${state.pmSnap?'':'opacity:0.35;pointer-events:none;'};flex:1;min-width:0;text-align:left;">${snapTargetLabel} ▾</div>
       </div>`;
   } else if (state.mode === 'nodes') {
     html = `<div style="flex:1;display:flex;align-items:center;padding:4px;font-size:11px;color:var(--ink-soft);letter-spacing:0.03em;">Washtub v7.5.5 — harmonic nodes (home)</div>`;
@@ -1018,7 +1054,6 @@ function renderModeContext() {
         <div class="btn flex">nut 2 · 12.0"</div>
         <div class="btn flex">nut 3 · 19.0"</div>
       </div>
-      <div class="row" style="justify-content:center;color:var(--ink-soft);font-size:9px;font-style:italic;">drag purple marker on string to adjust</div>
     `;
   } else if (state.mode === 'capo') {
     const capoNodes = ['m3','M3','P4','P5','m6','M6','m7','M7','P8'];
@@ -1030,31 +1065,60 @@ function renderModeContext() {
         <div class="chip amber-chip">▲ 27.6"</div>
         <div class="chip teal-chip">▼ 41.4"</div>
         <div class="chip amber-chip">▲▼ both</div>
-      </div>
-      <div class="row" style="gap:2px;">${capoBtns}</div>
-      <div class="row" style="gap:4px;">
+        <span class="vr"></span>
         <span class="chip lbl">arp</span>
-        <div class="btn amber ${!state.capoArpOn?'on':''}" onclick="setCapoArp(false)">off</div>
-        <div class="btn amber ${state.capoArpOn?'on':''}" onclick="setCapoArp(true)">on</div>
-        <div class="vr"></div>
-        <span class="chip lbl">on-str</span>
-        <div class="btn amber ${state.capoOnStrShow?'on':''}" onclick="setCapoOnStr(true)">show</div>
-        <div class="btn amber ${!state.capoOnStrShow?'on':''}" onclick="setCapoOnStr(false)">hide</div>
-      </div>`;
+        <div class="btn amber ${state.capoArpOn?'on':''}" onclick="toggleCapoArp()">${state.capoArpOn ? 'on' : 'off'}</div>
+      </div>
+      <div class="row" style="gap:2px;">${capoBtns}</div>`;
   }
   ctx.innerHTML = html;
 }
 
 // Context handlers
 window.setPmTune = v => { state.pmTune = v; renderModeContext(); log('pmTune: ' + v); };
+window.cyclePmTune = () => {
+  state.pmTune = (state.pmTune === 'G>any') ? 'G>fund' : 'G>any';
+  renderModeContext();
+  log('pmTune: ' + state.pmTune);
+};
 window.togglePmSnap = () => { state.pmSnap = !state.pmSnap; renderModeContext(); log('pmSnap: ' + state.pmSnap); };
 window.setPmSnapTgt = v => { state.pmSnapTarget = v; renderModeContext(); log('pmSnapTarget: ' + v); };
-window.togglePmTinyLabels = () => { state.pmTinyLabels = !state.pmTinyLabels; renderModeContext(); log('pmTinyLabels: ' + state.pmTinyLabels); };
+window.openSnapTargetPopover = (e) => {
+  e.stopPropagation();
+  const pop = document.getElementById('snap-target-popover');
+  const btn = document.getElementById('snap-target-btn');
+  if (!pop || !btn) return;
+  if (pop.classList.contains('open')) { pop.classList.remove('open'); return; }
+  const rect = btn.getBoundingClientRect();
+  // Position popover above the button
+  pop.style.left = Math.max(4, rect.left) + 'px';
+  pop.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
+  pop.style.top = 'auto';
+  // Render with current selection
+  const options = [
+    { val: 'G>any', label: 'G > any node' },
+    { val: 'G>fund', label: 'G > fundamental' },
+    { val: 'any>fund', label: 'any note > fundamental' }
+  ];
+  pop.innerHTML = options.map(o =>
+    `<div class="po-item ${state.pmSnapTarget===o.val?'on':''}" onclick="selectSnapTarget('${o.val}')">${o.label}${state.pmSnapTarget===o.val?' ✓':''}</div>`
+  ).join('');
+  pop.classList.add('open');
+};
+window.selectSnapTarget = (v) => {
+  state.pmSnapTarget = v;
+  document.getElementById('snap-target-popover').classList.remove('open');
+  renderModeContext();
+  log('pmSnapTarget: ' + v);
+};
+window.togglePmTinyLabels = () => { state.pmTinyLabels = !state.pmTinyLabels; log('pmTinyLabels: ' + state.pmTinyLabels); };
 window.togglePmDiatonicOnly = () => { state.pmDiatonicOnly = !state.pmDiatonicOnly; renderModeContext(); log('pmDiatonicOnly: ' + state.pmDiatonicOnly); };
 window.togglePmTonicRuler = () => { state.pmTonicRuler = !state.pmTonicRuler; renderModeContext(); log('pmTonicRuler: ' + state.pmTonicRuler); };
 window.setCapoNode = v => { state.capoNode = v; renderModeContext(); renderNodes(); log('capoNode: ' + v); };
 window.setCapoArp = v => { state.capoArpOn = v; renderModeContext(); log('capoArp: ' + v); };
-window.setCapoOnStr = v => { state.capoOnStrShow = v; renderModeContext(); renderNodes(); log('capoOnStr: ' + v); };
+window.toggleCapoArp = () => { state.capoArpOn = !state.capoArpOn; renderModeContext(); log('capoArp: ' + state.capoArpOn); };
+window.setCapoOnStr = v => { state.capoOnStrShow = v; renderNodes(); log('capoOnStr: ' + v); };
+window.toggleCapoOnStr = () => { state.capoOnStrShow = !state.capoOnStrShow; renderNodes(); log('capoOnStr: ' + state.capoOnStrShow); };
 
 // ============ NODE RENDERING ============
 function renderNodes() {
@@ -1366,7 +1430,7 @@ function wireEvents() {
     { cls: 'oct-btn', state: 'octaves' },
     { cls: 'pb-btn', state: 'pitchBars' },
     { cls: 'tl-btn', state: 'tinyLabels' },
-    { cls: 'tr-btn', state: 'tonicRuler' },
+    { cls: 'os-btn', state: 'capoOnStr' },
     { cls: 'wave-btn', state: 'waveform' },
     { cls: 'poly-btn', state: 'polyphony' },
     { cls: 'unit-btn', state: 'units' },
@@ -1376,6 +1440,11 @@ function wireEvents() {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.' + g.cls).forEach(b => b.classList.remove('on'));
         btn.classList.add('on');
+        // Also sync the state for os-btn (drives canvas rendering)
+        if (g.cls === 'os-btn') {
+          state.capoOnStrShow = (btn.dataset.val === 'show');
+          renderNodes();
+        }
         log(`${g.state}: ${btn.dataset.val}`);
       });
     });
@@ -1417,6 +1486,14 @@ function wireEvents() {
   document.addEventListener('click', (e) => {
     if (!popover.contains(e.target) && e.target !== tickBtn) {
       popover.classList.remove('open');
+    }
+    // Also close snap-target popover on outside click
+    const snapPop = document.getElementById('snap-target-popover');
+    const snapBtn = document.getElementById('snap-target-btn');
+    if (snapPop && snapPop.classList.contains('open') &&
+        !snapPop.contains(e.target) &&
+        (!snapBtn || e.target !== snapBtn)) {
+      snapPop.classList.remove('open');
     }
   });
 
