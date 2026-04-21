@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Washtub Prototype v1.8</title>
+<title>Washtub Prototype v1.9</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html {
@@ -190,7 +190,7 @@
   #splash .dismiss { font-size: 7.5px; font-style: italic; color: var(--ink-fade); text-align: center; }
 
   /* Bottom rail */
-  #br { height: 96px; flex-shrink: 0; background: #FFF; border-top: 0.5px solid var(--wire-stroke); display: flex; flex-direction: column; z-index: 5; }
+  #br { height: calc(96px + env(safe-area-inset-bottom, 0px)); flex-shrink: 0; background: #FFF; border-top: 0.5px solid var(--wire-stroke); display: flex; flex-direction: column; z-index: 5; }
   #br-top { display: flex; gap: 2px; padding: 4px; background: var(--wire-fill); border-bottom: 0.5px solid var(--wire-stroke); height: 44px; flex-shrink: 0; align-items: stretch; }
   #br-top .mute-btn {
     width: 32px; background: white; border: 0.5px solid var(--wire-stroke); border-radius: 6px;
@@ -206,7 +206,7 @@
   #br-top .b .ic { font-size: 12px; color: var(--purple); line-height: 1; }
   #br-top .b.mode .ic { display: none; }
 
-  #br-ctx { flex: 1; padding: 6px 8px; display: flex; flex-direction: column; gap: 5px; min-height: 0; overflow: hidden; }
+  #br-ctx { flex: 1; padding: 6px 8px calc(8px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 5px; min-height: 0; overflow: hidden; }
   #br-ctx .row { display: flex; gap: 4px; align-items: center; min-height: 22px; }
   #br-ctx .row .chip { padding: 2px 7px; background: var(--wire-fill); border: 0.5px solid var(--wire-stroke); border-radius: 3px; font-size: 10px; white-space: nowrap; }
   #br-ctx .row .chip.lbl { background: transparent; border: none; color: var(--ink-fade); font-size: 9px; padding: 2px; letter-spacing: 0.04em; text-transform: uppercase; }
@@ -695,7 +695,7 @@
         </div>
 
         <div class="sec gated" id="pm-only-sec">
-          <div class="sec-h">map mode only</div>
+          <div class="sec-h">map mode</div>
           <div class="stack-group">
             <div class="sg-lbl">tiny labels</div>
             <div class="sg-btns">
@@ -703,11 +703,10 @@
               <div class="b on tl-btn" data-val="off">off</div>
             </div>
           </div>
-          <div class="gated-msg" id="gated-msg">switch to map mode to use</div>
         </div>
 
         <div class="sec gated" id="capo-only-sec">
-          <div class="sec-h">capo mode only</div>
+          <div class="sec-h">capo mode</div>
           <div class="stack-group">
             <div class="sg-lbl">on-string capo buttons</div>
             <div class="sg-btns">
@@ -715,7 +714,6 @@
               <div class="b os-btn" data-val="hide" onclick="setCapoOnStr(false)">hide</div>
             </div>
           </div>
-          <div class="gated-msg" id="capo-gated-msg">switch to capo mode to use</div>
         </div>
 
         <div class="sec legend">
@@ -916,24 +914,12 @@ function renderPlayDrawer() {
 
 function renderGatedSections() {
   const pmOnlySec = document.getElementById('pm-only-sec');
-  if (state.mode === 'map') {
-    pmOnlySec.classList.remove('gated');
-    document.getElementById('gated-msg').style.display = 'none';
-  } else {
-    pmOnlySec.classList.add('gated');
-    document.getElementById('gated-msg').style.display = '';
+  if (pmOnlySec) {
+    pmOnlySec.classList.toggle('gated', state.mode !== 'map');
   }
   const capoOnlySec = document.getElementById('capo-only-sec');
   if (capoOnlySec) {
-    if (state.mode === 'capo') {
-      capoOnlySec.classList.remove('gated');
-      const msg = document.getElementById('capo-gated-msg');
-      if (msg) msg.style.display = 'none';
-    } else {
-      capoOnlySec.classList.add('gated');
-      const msg = document.getElementById('capo-gated-msg');
-      if (msg) msg.style.display = '';
-    }
+    capoOnlySec.classList.toggle('gated', state.mode !== 'capo');
   }
 }
 
@@ -1028,7 +1014,7 @@ function renderModeContext() {
     html = `
       <div class="row">
         <span class="chip lbl">tune</span>
-        <div class="btn teal cycle-btn" onclick="cyclePmTune()" title="cycle tune mode">${state.pmTune==='G>any' ? 'G &gt; any' : 'G &gt; fund'} ↻</div>
+        <div class="btn teal cycle-btn" onclick="cyclePmTune()" title="cycle tune mode" style="min-width:78px;text-align:center;">${state.pmTune==='G>any' ? 'G &gt; any' : 'G &gt; fund'} ↻</div>
         <span class="vr"></span>
         <span class="chip lbl">view</span>
         <div class="btn teal ${state.pmDiatonicOnly?'on':''}" onclick="togglePmDiatonicOnly()">diatonic</div>
@@ -1037,6 +1023,7 @@ function renderModeContext() {
       <div class="row">
         <span class="chip lbl">snap</span>
         <div class="btn teal ${state.pmSnap?'on':''}" onclick="togglePmSnap()">${state.pmSnap ? 'on' : 'off'}</div>
+        <span class="chip lbl">snap target</span>
         <div class="btn teal popover-btn" id="snap-target-btn" onclick="openSnapTargetPopover(event)" style="${state.pmSnap?'':'opacity:0.35;pointer-events:none;'};flex:1;min-width:0;text-align:left;">${snapTargetLabel} ▾</div>
       </div>`;
   } else if (state.mode === 'nodes') {
