@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.6.12</title>
+<title>Washtub Bass String Map · v7.6.14</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -135,11 +135,18 @@ input[type=range]{width:110px;cursor:pointer;}
    fund/note area stays visible on any viewport. */
 #lr-fund{width:46px;background:#fff;border:0.5px solid rgba(128,128,128,0.3);border-radius:3px;padding:3px 4px;display:flex;flex-direction:column;gap:1px;line-height:1.1;flex-shrink:0;}
 @media(prefers-color-scheme:dark){#lr-fund{background:#1e1e1e;border-color:rgba(128,128,128,0.25);}}
-#lr-fund-note{text-align:center;font-size:11px;font-weight:700;color:#533AB7;font-family:'SF Mono',Menlo,Consolas,monospace;padding-bottom:1px;border-bottom:0.5px solid rgba(128,128,128,0.15);margin-bottom:1px;position:relative;}
 #lr-fund .lr-fund-row{display:flex;align-items:baseline;gap:2px;}
 #lr-fund .lr-fund-row .val{flex:1;text-align:right;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:9.5px;color:#1a1a1a;font-weight:600;}
 @media(prefers-color-scheme:dark){#lr-fund .lr-fund-row .val{color:#e0e0e0;}}
 #lr-fund .lr-fund-row .unit{font-size:7px;color:#aaa;letter-spacing:0.02em;min-width:14px;text-align:left;}
+/* v7.6.14: note row — same val/unit flex structure as Hz/lbs rows, but
+   bigger purple-colored val (note name), purple-colored unit (cents sign,
+   only shown when |cents| >= 5), hairline separator below. Overrides the
+   generic .lr-fund-row rules above for the .lr-fund-note-row variant. */
+#lr-fund .lr-fund-note-row{border-bottom:0.5px solid rgba(128,128,128,0.15);padding-bottom:1px;margin-bottom:1px;}
+#lr-fund .lr-fund-note-row .val{font-size:13px;color:#533AB7;font-weight:700;}
+#lr-fund .lr-fund-note-row .unit{font-size:10px;color:#533AB7;font-weight:700;min-width:10px;opacity:0.8;}
+@media(prefers-color-scheme:dark){#lr-fund .lr-fund-note-row .val,#lr-fund .lr-fund-note-row .unit{color:#AFA9EC;}}
 
 /* canvas-wrap already has flex:1 from updated rule above */
 #canvas-wrap.dragging{cursor:grabbing;}
@@ -311,6 +318,17 @@ input[type=range]{width:110px;cursor:pointer;}
 @media(prefers-color-scheme:dark){.pd-btn{background:#2a2a2a;color:#ddd;}.pd-btn.on{background:#533AB7;color:#fff;border-color:#533AB7;}}
 /* dim entire section when not applicable */
 .pd-dim{opacity:0.18;pointer-events:none;}
+/* v7.6.14: capo play section — amber styling marks this section as
+   capo-related (same amber #C8821A used by .capo-snap-btn and the capo
+   mode chips in the bottom rail). Section is shown only in capo mode
+   (hidden via display:none by _syncTransCapoBtns when not in capo mode). */
+#pd-capo-section{border-top:1px solid rgba(200,130,26,0.45) !important;background:rgba(200,130,26,0.06);}
+@media(prefers-color-scheme:dark){#pd-capo-section{background:rgba(200,130,26,0.12);}}
+#pd-capo-section .pd-lbl{color:#C8821A;}
+@media(prefers-color-scheme:dark){#pd-capo-section .pd-lbl{color:#D89A3A;}}
+#pd-capo-section .pd-btn{border-color:rgba(200,130,26,0.4);}
+#pd-capo-section .pd-btn.on{background:#C8821A;color:#fff;border-color:#C8821A;}
+@media(prefers-color-scheme:dark){#pd-capo-section .pd-btn.on{background:#C8821A;color:#fff;border-color:#C8821A;}}
 /* Voice label style cycle button */
 .pd-style-btn{width:100%;height:26px;font-size:9px;font-weight:600;border:0.5px solid rgba(83,58,183,0.35);border-radius:4px;background:#EEEDFE;color:#533AB7;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;white-space:nowrap;}
 @media(prefers-color-scheme:dark){.pd-style-btn{background:rgba(83,58,183,0.2);color:#AFA9EC;border-color:rgba(83,58,183,0.4);}}
@@ -774,10 +792,10 @@ input[type=range]{width:110px;cursor:pointer;}
   <!-- scale spelling chip -->
   <div id="scale-spelling"></div>
   <!-- node view (hidden — new BR nav buttons call setNodeView passing these) -->
-  <button class="tog on" id="view-full" onclick="setNodeView('full',this)">full string</button>
+  <button class="tog" id="view-full" onclick="setNodeView('full',this)">full string</button>
   <button class="tog" id="view-nut" onclick="setNodeView('nut',this)">nut height</button>
   <button class="tog" id="view-capo" onclick="setNodeView('capo',this)">capo</button>
-  <button class="tog" id="view-pitchmap" onclick="setNodeView('pitchmap',this)">pitch map</button>
+  <button class="tog on" id="view-pitchmap" onclick="setNodeView('pitchmap',this)">pitch map</button>
   <!-- nut clusters -->
   <div id="nut-preset-cluster">
     <input id="nut-pre-0" value='6.0"' onchange="setNutPreset(0,this.value)">
@@ -916,7 +934,7 @@ input[type=range]{width:110px;cursor:pointer;}
         </div>
       </div>
       <div id="lr-fund">
-        <div id="lr-fund-note">G2</div>
+        <div class="lr-fund-row lr-fund-note-row"><span class="val" id="lr-fund-note">G2</span><span class="unit" id="lr-fund-cents"></span></div>
         <div class="lr-fund-row"><span class="val" id="lr-fund-num">98</span><span class="unit">Hz</span></div>
         <div class="lr-fund-row"><span class="val" id="lr-ten-val">5.0</span><span class="unit">lbs</span></div>
       </div>
@@ -1015,7 +1033,7 @@ input[type=range]{width:110px;cursor:pointer;}
   <g id="capo-sub-nodes"></g>
   <g id="capo-label-hits"></g>
 </g>
-<g id="pitchmap-overlay" display="none"></g>
+<g id="pitchmap-overlay"></g>
 <g id="viz-layer" pointer-events="none"></g>
       </div><!-- end svg-inner -->
       <!-- label panel: absolute, pointer-events:none, never shifts layout -->
@@ -1085,8 +1103,8 @@ input[type=range]{width:110px;cursor:pointer;}
     <h4>Welcome</h4>
     <p>Tap anywhere to start. Pull the pole to change tension &mdash; the string's pitch changes and notes slide along it.</p>
     <div class="sp-mode-list">
-      <div class="sp-mode" data-sp-mode="map"><b>map</b></div>
-      <div class="sp-mode here" data-sp-mode="nodes"><b>nodes</b></div>
+      <div class="sp-mode here" data-sp-mode="map"><b>map</b></div>
+      <div class="sp-mode" data-sp-mode="nodes"><b>nodes</b></div>
       <div class="sp-mode" data-sp-mode="nut"><b>nut</b></div>
       <div class="sp-mode" data-sp-mode="capo"><b>capo</b></div>
     </div>
@@ -1566,7 +1584,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.6.12';
+const VERSION='v7.6.14';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -2020,13 +2038,17 @@ function _spOpenReadme(){
   else if(typeof openReadme==='function') openReadme('overview');
 }
 
-// v7.6.12: Play-sample handler. Fires scale degrees 1 and 5 of the active
-// home key / mode at current tone settings (waveform, volume, duration,
-// polyphony, spacing). With spacing=0 + polyphony on, the notes overlap
-// (polyphony demo); with spacing=0 + polyphony off, the second cuts the
-// first. With spacing>0, the notes play sequentially regardless of
-// polyphony. Fifth frequency is computed from the sum of the first four
-// mode step semitones — correct across all modes (ionian P5, locrian d5).
+// v7.6.12: Play-sample handler. Plays scale degrees 1 and 5 of the active
+// home key / mode SEQUENTIALLY, matching the exact step timing used by the
+// real playback path (ref line 6428): step = toneDuration*1000 + max(30ms,
+// toneSpacing*1000). So the sample sounds identical to how the engine
+// would play these two notes in sequence via the play drawer. Polyphony
+// is handled elsewhere — this button always plays two separate tones.
+// Fifth frequency is computed from the sum of the first four mode step
+// semitones — correct across all modes (ionian P5, locrian d5, etc.).
+// v7.6.13: fixed step-timing bug — was using only toneSpacing*1000 as
+// the delay, which skipped the duration component and made the sample
+// sound much shorter than real playback.
 function _spPlaySample(){
   if(typeof fundFreq!=='function' || typeof playTone!=='function') return;
   const fund=fundFreq();
@@ -2035,13 +2057,11 @@ function _spPlaySample(){
   if(!steps||steps.length<4) return;
   const semisToFifth=steps[0]+steps[1]+steps[2]+steps[3];
   const fifthFreq=fund*Math.pow(2, semisToFifth/12);
-  const spacingMs=((typeof toneSpacing!=='undefined')?toneSpacing:0)*1000;
+  const D=((typeof toneDuration!=='undefined')?toneDuration:0.5)*1000;
+  const G=Math.max(30, ((typeof toneSpacing!=='undefined')?toneSpacing:0)*1000);
+  const step=D+G;
   playTone(fund);
-  if(spacingMs>0){
-    setTimeout(function(){ playTone(fifthFreq); }, spacingMs);
-  } else {
-    playTone(fifthFreq);
-  }
+  setTimeout(function(){ playTone(fifthFreq); }, step);
 }
 
 // ── Full-panel sync ───────────────────────────────────────────────
@@ -2708,14 +2728,19 @@ function updateFundDisplay(){
   const fund=fundFreq();
   const fi=noteInfo(fund);
   const noteEl=document.getElementById('lr-fund-note');
+  const centsEl=document.getElementById('lr-fund-cents');
   const numEl=document.getElementById('lr-fund-num');
   const tenEl=document.getElementById('lr-ten-val');
+  // v7.6.14: note row uses the same .lr-fund-row val/unit flex structure
+  // as the Hz/lbs rows. Note name lives in the val (right-aligned left
+  // column); cents sign (shown when |cents| >= 5) lives in the unit
+  // (left-aligned right column). The prior absolute-positioned cents
+  // span is no longer needed.
   if(noteEl){
-    const noteName=fi.spelledName+(fi.octave!==undefined?fi.octave:'');
-    const sign=Math.abs(fi.cents)>=5
-      ? '<span style="position:absolute;right:3px;top:50%;transform:translateY(-50%);font-size:16px;font-weight:700;opacity:0.75;">'+(fi.cents>0?'+':'\u2212')+'</span>'
-      : '';
-    noteEl.innerHTML=noteName+sign;
+    noteEl.textContent=fi.spelledName+(fi.octave!==undefined?fi.octave:'');
+  }
+  if(centsEl){
+    centsEl.textContent=(Math.abs(fi.cents)>=5)?(fi.cents>0?'+':'\u2212'):'';
   }
   if(numEl)  numEl.textContent=parseFloat(fund.toFixed(1));
   // v7.6.8: compact fund card layout has "lbs" unit in a separate static
@@ -3962,7 +3987,7 @@ setTimeout(()=>{
 // ── v4 BOTTOM RAIL STATE MACHINE (Steps 6–12) ═════════════════════
 
 // State: which node-view and which right panel are active
-let brNodeView = 'full';   // 'full' | 'nut' | 'capo'
+let brNodeView = 'pitchmap';   // 'full' | 'nut' | 'capo' | 'pitchmap' — v7.6.14: map default
 let brRightPanel = null;   // null | 'audio' | 'phys' | 'lgnd'
 let showPitchBars = false; // show/hide pitch bars + secondary info columns
 let tickLabelMode = 'scale'; // 'always' | 'scale' | 'active' | 'off'
@@ -5254,12 +5279,16 @@ function _syncTransCapoBtns(){
   const both=document.getElementById('pdtc-both');
   if(single) single.classList.toggle('on', _transCapoSegments==='single');
   if(both)   both.classList.toggle('on',   _transCapoSegments==='both');
-  // Grey the whole section when not in capo mode
+  // v7.6.14: Hide the whole capo play section (display:none) when not in
+  // capo mode rather than merely dimming it. The section carries amber
+  // styling when visible to signal its capo-specific nature. Restoring
+  // the empty string lets .pd-sec's default flex display take effect.
   const sec=document.getElementById('pd-capo-section');
   if(sec){
     const inCapo = (typeof nodeView!=='undefined' && nodeView==='capo');
-    sec.style.opacity=inCapo?'':'0.35';
-    sec.style.pointerEvents=inCapo?'':'none';
+    sec.style.display=inCapo?'':'none';
+    sec.style.opacity='';        // clear any legacy opacity override
+    sec.style.pointerEvents='';  // clear any legacy pointer-events override
   }
 }
 function setPlayRoot(r){
@@ -7221,7 +7250,7 @@ function tensionToFreq(lbs,inches,mu){
 function fundFreq(){return tensionToFreq(tensionLbs,effectiveSpeakingLength(),muKgM);}
 
 // ── Node view & nut height ────────────────────────────────────────
-let nodeView='full'; // 'full' | 'nut' | 'capo'
+let nodeView='pitchmap'; // 'full' | 'nut' | 'capo' | 'pitchmap' — v7.6.14: map is the default landing mode
 let nutOffsetInches=0;
 
 // ── Capo ──────────────────────────────────────────────────────────
