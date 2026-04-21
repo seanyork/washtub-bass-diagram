@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.6.2</title>
+<title>Washtub Bass String Map · v7.6.3</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -561,9 +561,16 @@ input[type=range]{width:110px;cursor:pointer;}
 .sp-sec .row-stack .top .fld.editable{flex:0 0 84px;font-size:10px;padding:3px 7px;margin:0;}
 
 /* sp-track — horizontal slider track + thumb */
-.sp-sec .row-stack .sp-track{width:100%;height:4px;background:rgba(83,58,183,0.15);border-radius:2px;position:relative;margin:6px 0 10px;cursor:pointer;touch-action:none;}
-.sp-sec .row-stack .sp-thumb{position:absolute;top:-5px;width:14px;height:14px;background:#533AB7;border:2px solid #fff;box-shadow:0 0 0 0.5px #533AB7;border-radius:50%;pointer-events:none;transform:translateX(-50%);}
-@media(prefers-color-scheme:dark){.sp-sec .row-stack .sp-track{background:rgba(175,169,236,0.22);}.sp-sec .row-stack .sp-thumb{background:#AFA9EC;border-color:#1a1a1a;box-shadow:0 0 0 0.5px #AFA9EC;}}
+.sp-sec .row-stack .sp-track{width:100%;height:6px;background:rgba(83,58,183,0.15);border-radius:3px;position:relative;margin:9px 0 14px;cursor:pointer;touch-action:none;overflow:visible;}
+/* v7.6.3: transparent pseudo-element extends the vertical hit area ~14px
+   above and below the visible 6px track. Net effective touch band is ~34px
+   tall along the slider row so fingers land easily on mobile, without
+   fattening the visible slider. Taps inside the extended zone hit-test as
+   the sp-track element (pseudos bubble to parent), so the existing touch
+   listeners fire unchanged. */
+.sp-sec .row-stack .sp-track::before{content:'';position:absolute;left:0;right:0;top:-14px;bottom:-14px;background:transparent;}
+.sp-sec .row-stack .sp-thumb{position:absolute;top:-7px;width:20px;height:20px;background:#533AB7;border:2.5px solid #fff;box-shadow:0 0 0 0.5px #533AB7, 0 1px 3px rgba(0,0,0,0.12);border-radius:50%;pointer-events:none;transform:translateX(-50%);}
+@media(prefers-color-scheme:dark){.sp-sec .row-stack .sp-track{background:rgba(175,169,236,0.22);}.sp-sec .row-stack .sp-thumb{background:#AFA9EC;border-color:#1a1a1a;box-shadow:0 0 0 0.5px #AFA9EC, 0 1px 3px rgba(0,0,0,0.3);}}
 
 /* Footer (tour + readme) */
 #settings-panel .sp-foot{flex-shrink:0;border-top:1px solid #533AB7;background:rgba(83,58,183,0.08);padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;}
@@ -1278,7 +1285,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.6.2';
+const VERSION='v7.6.3';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -1503,12 +1510,34 @@ function _spApplyVal(key, val){
     syncSlider('dur', val);
   } else if(key==='spc' && typeof syncSlider==='function'){
     syncSlider('spc', val);
-  } else if(key==='len' && typeof syncSlider==='function'){
-    // syncSlider('len', v) expects inches; also keep #len-sl element in
-    // sync so any legacy-UI code that reads it stays consistent.
-    const slEl=document.getElementById('len-sl');
-    if(slEl) slEl.value=val;
-    syncSlider('len', val);
+  } else if(key==='len'){
+    // v7.6.3: panel len slider ALWAYS sets stringInches (full physical string),
+    // regardless of mode. Nut offset stays absolute — preserved through
+    // stringInches changes, clamped only if it would exceed the 85% cap.
+    // This intentionally bypasses syncSlider('len') which in nut mode
+    // reinterprets the slider as effective-speaking-length control.
+    if(typeof _clearPin==='function') _clearPin();
+    if(typeof stringInches!=='undefined'){
+      stringInches=Math.max(24,Math.min(200,val));
+      // Clamp nut offset if new string length would make it invalid (>85%).
+      if(typeof nutOffsetInches!=='undefined' && nutOffsetInches > stringInches*0.85){
+        nutOffsetInches=stringInches*0.85;
+      }
+      const slEl=document.getElementById('len-sl');
+      if(slEl) slEl.value=stringInches;
+      const roEl=document.getElementById('len-ro');
+      if(roEl && typeof fmtLen==='function'){
+        // In nut mode, the legacy len-ro was showing effective speaking length;
+        // preserve that convention to keep the nut-mode bottom-rail readout
+        // correct (which reads from the same source via effectiveSpeakingLength).
+        if(typeof nodeView!=='undefined' && nodeView==='nut' && typeof effectiveSpeakingLength==='function'){
+          roEl.value=fmtLen(effectiveSpeakingLength());
+        } else {
+          roEl.value=fmtLen(stringInches);
+        }
+      }
+      if(typeof render==='function') render();
+    }
   } else if(key==='mu' && typeof syncSlider==='function'){
     // 'mu' key expects a linear 1-100 slider value; convert kg/m -> slider.
     const sv=(typeof muValToSl==='function')?muValToSl(val):1;
@@ -1544,7 +1573,9 @@ function _spCurrentVal(key){
   if(key==='dur' && typeof toneDuration!=='undefined') return toneDuration;
   if(key==='spc' && typeof toneSpacing!=='undefined') return toneSpacing;
   if(key==='len' && typeof stringInches!=='undefined'){
-    if(typeof nodeView!=='undefined' && nodeView==='nut' && typeof effectiveSpeakingLength==='function') return effectiveSpeakingLength();
+    // v7.6.3: panel len slider shows the full physical string length (stringInches)
+    // regardless of mode. Nut offset is independent — its effective-speaking
+    // readout lives in the nut-mode bottom-rail context chip, not here.
     return stringInches;
   }
   if(key==='mu' && typeof muKgM!=='undefined') return muKgM;
