@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.6.3</title>
+<title>Washtub Bass String Map · v7.6.4</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -579,6 +579,141 @@ input[type=range]{width:110px;cursor:pointer;}
 #settings-panel .sp-foot .foot-btn:active{opacity:0.75;}
 @media(prefers-color-scheme:dark){#settings-panel .sp-foot{background:rgba(83,58,183,0.20);}#settings-panel .sp-foot .foot-btn{background:#1a1a1a;}#settings-panel .sp-foot .foot-btn.primary{background:#533AB7;color:#fff;}}
 
+/* ══════════════════════════════════════════════════════════════════
+   v7.6 UI REFRESH — PHASE 4 VIEW PANEL (Chat 2 v7.6.4)
+   #view-panel overlay. Flush top/bottom; 114px wide, right-anchored.
+   Sections: zoom (2x2 grid + pin-dot), nodes (octaves/pitchbars/tick
+   labels), node viz (on/off + amp + dur), wave viz (on/off + amp +
+   dur), map mode gated (tiny labels), capo mode gated (on-string
+   buttons show/hide), legend. Wires to existing engine vars
+   (nodeOctaves/showPitchBars/tickLabelMode/nodeViz/waveViz/viz*Amp/
+   viz*Dur/zoom/fitV/zoomTo1) via _vp* wrappers + setupSgSlider helper.
+   Pinned zoom (#zoom-pinned-cluster) lives in sidebar when _zoomPinned.
+   ══════════════════════════════════════════════════════════════════ */
+#view-panel{display:none;flex-direction:column;position:absolute;top:0;bottom:0;right:0;width:114px;background:#fff;border-left:0.5px solid rgba(128,128,128,0.25);z-index:14;}
+#view-panel.open{display:flex;}
+@media(prefers-color-scheme:dark){#view-panel{background:#1a1a1a;border-left-color:rgba(255,255,255,0.15);}}
+
+/* View panel header */
+#view-panel .vp-head{flex-shrink:0;padding:6px 8px 5px;background:rgba(128,128,128,0.07);border-bottom:0.5px solid rgba(128,128,128,0.2);display:flex;align-items:center;justify-content:space-between;}
+#view-panel .vp-head .t{font-size:10px;font-weight:700;color:#1a1a1a;letter-spacing:0.08em;text-transform:uppercase;}
+#view-panel .vp-head .x{font-size:14px;color:#5F5E5A;cursor:pointer;padding:2px 6px;user-select:none;line-height:1;}
+#view-panel .vp-head .x:active{opacity:0.6;}
+@media(prefers-color-scheme:dark){#view-panel .vp-head{background:rgba(255,255,255,0.04);}#view-panel .vp-head .t{color:#e0e0e0;}#view-panel .vp-head .x{color:#aaa;}}
+
+/* Scrollable body */
+#view-panel .vp-body{flex:1 1 0%;overflow-y:auto;overflow-x:hidden;padding:8px 8px calc(10px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:11px;min-height:0;-webkit-overflow-scrolling:touch;touch-action:auto;}
+
+/* Generic section (view panel) */
+#view-panel .sec{display:flex;flex-direction:column;gap:5px;}
+#view-panel .sec .sec-h{font-size:9px;font-weight:700;color:#1a1a1a;letter-spacing:0.08em;text-transform:uppercase;border-bottom:0.5px solid rgba(128,128,128,0.2);padding-bottom:3px;display:flex;justify-content:space-between;align-items:center;}
+@media(prefers-color-scheme:dark){#view-panel .sec .sec-h{color:#e0e0e0;border-bottom-color:rgba(255,255,255,0.15);}}
+
+/* Pin-dot — tap-and-hold to pin zoom cluster into sidebar */
+#view-panel .pin-dot{width:14px;height:14px;border-radius:50%;border:1.2px solid #533AB7;background:#fff;display:inline-block;cursor:pointer;touch-action:manipulation;flex-shrink:0;}
+#view-panel .pin-dot.pinned{background:#533AB7;}
+@media(prefers-color-scheme:dark){#view-panel .pin-dot{background:#1a1a1a;border-color:#AFA9EC;}#view-panel .pin-dot.pinned{background:#AFA9EC;}}
+
+/* Zoom grid — 2x2 */
+#view-panel .zoom-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+#view-panel .zoom-grid .zb{height:28px;background:rgba(128,128,128,0.07);border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#1a1a1a;font-weight:600;cursor:pointer;-webkit-appearance:none;appearance:none;padding:0;font-family:inherit;}
+#view-panel .zoom-grid .zb:active{opacity:0.65;}
+@media(prefers-color-scheme:dark){#view-panel .zoom-grid .zb{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.15);color:#e0e0e0;}}
+
+/* Status line under zoom (e.g., '100%  tap & hold pin to lock') */
+#view-panel .sec .vp-status{font-size:8.5px;color:#8A8882;text-align:center;margin-top:2px;line-height:1.3;}
+@media(prefers-color-scheme:dark){#view-panel .sec .vp-status{color:#888;}}
+
+/* Stack group: label + row of buttons */
+#view-panel .stack-group{display:flex;flex-direction:column;gap:2px;}
+#view-panel .stack-group .sg-lbl{font-size:9px;color:#5F5E5A;letter-spacing:0.02em;}
+#view-panel .stack-group .sg-btns{display:flex;gap:3px;}
+#view-panel .stack-group .sg-btns .b{flex:1;padding:4px 4px;background:#fff;border:0.5px solid #533AB7;border-radius:3px;font-size:10px;color:#533AB7;text-align:center;cursor:pointer;white-space:nowrap;}
+#view-panel .stack-group .sg-btns .b.on{background:#533AB7;color:#fff;}
+#view-panel .stack-group .sg-btns .b:active{opacity:0.75;}
+@media(prefers-color-scheme:dark){#view-panel .stack-group .sg-lbl{color:#aaa;}#view-panel .stack-group .sg-btns .b{background:#1a1a1a;}}
+
+/* Tick-label popover opener (in nodes section) */
+#view-panel .tick-btn{padding:4px 6px;background:#fff;border:0.5px solid #533AB7;border-radius:3px;font-size:10px;color:#533AB7;display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:4px;}
+#view-panel .tick-btn::after{content:'\25BE';font-size:9px;margin-left:auto;}
+#view-panel .tick-btn:active{opacity:0.75;}
+@media(prefers-color-scheme:dark){#view-panel .tick-btn{background:#1a1a1a;}}
+
+/* Animation section on/off toggle row (node viz / wave viz headers) */
+#view-panel .anim-toggle-row{display:flex;gap:4px;align-items:center;margin-bottom:4px;}
+#view-panel .anim-toggle-row .lbl{flex:1;font-size:9px;color:#5F5E5A;}
+#view-panel .anim-toggle-row .b{padding:3px 10px;font-size:10px;border:0.5px solid #533AB7;background:#fff;color:#533AB7;border-radius:3px;cursor:pointer;min-width:34px;text-align:center;}
+#view-panel .anim-toggle-row .b.on{background:#533AB7;color:#fff;}
+#view-panel .anim-toggle-row .b:active{opacity:0.75;}
+@media(prefers-color-scheme:dark){#view-panel .anim-toggle-row .lbl{color:#aaa;}#view-panel .anim-toggle-row .b{background:#1a1a1a;}}
+
+/* Small slider inside view panel (node viz amp/dur, wave viz amp/dur) */
+#view-panel .sg-group{display:flex;flex-direction:column;gap:3px;margin-top:4px;}
+#view-panel .sg-head{display:flex;justify-content:space-between;align-items:center;gap:4px;}
+#view-panel .sg-head .lbl{font-size:9px;color:#5F5E5A;flex:1;min-width:0;}
+#view-panel .sg-head .val{font-size:9px;color:#533AB7;font-weight:600;font-family:monospace;min-width:28px;text-align:right;}
+#view-panel .sg-track{width:100%;height:6px;background:rgba(83,58,183,0.15);border-radius:3px;position:relative;margin:9px 0 14px;cursor:pointer;touch-action:none;overflow:visible;}
+/* Extended hit area (matches .sp-track pattern) */
+#view-panel .sg-track::before{content:'';position:absolute;left:0;right:0;top:-14px;bottom:-14px;background:transparent;}
+#view-panel .sg-thumb{position:absolute;top:-7px;width:20px;height:20px;background:#533AB7;border:2.5px solid #fff;box-shadow:0 0 0 0.5px #533AB7, 0 1px 3px rgba(0,0,0,0.12);border-radius:50%;pointer-events:none;transform:translateX(-50%);}
+@media(prefers-color-scheme:dark){
+  #view-panel .sg-head .lbl{color:#aaa;}
+  #view-panel .sg-head .val{color:#AFA9EC;}
+  #view-panel .sg-track{background:rgba(175,169,236,0.22);}
+  #view-panel .sg-thumb{background:#AFA9EC;border-color:#1a1a1a;box-shadow:0 0 0 0.5px #AFA9EC, 0 1px 3px rgba(0,0,0,0.3);}
+}
+
+/* Gated sections — dim when their target mode isn't active. No gated-msg
+   text per plan Phase 7 (opacity alone communicates gating). */
+#view-panel .sec.gated{opacity:0.4;pointer-events:none;}
+
+/* Legend section — separator + swatches */
+#view-panel .sec.legend{border-top:0.5px dashed rgba(128,128,128,0.35);padding-top:8px;}
+#view-panel .sec.legend .leg-item{display:flex;align-items:center;gap:4px;font-size:8.5px;color:#1a1a1a;padding:1px 0;line-height:1.25;}
+#view-panel .sec.legend .leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+#view-panel .sec.legend .leg-dot.d1{border:1.2px solid #0F6E56;background:#fff;}
+#view-panel .sec.legend .leg-dot.d2{border:1.2px solid #993C1D;background:#fff;}
+#view-panel .sec.legend .leg-dot.d3{background:#F7E0F9;border:1.5px solid #C92CD5;box-shadow:inset 0 0 0 1px #C92CD5;}
+#view-panel .sec.legend .leg-dot.d4{border:1px dashed #8A8882;background:#fff;}
+#view-panel .sec.legend .leg-dot.d5{width:12px;height:3px;background:rgba(83,58,183,0.35);border-radius:1px;}
+#view-panel .sec.legend .leg-item.offnode{gap:3px;}
+#view-panel .sec.legend .off-line{width:14px;height:1px;background:#0F6E56;flex-shrink:0;}
+#view-panel .sec.legend .off-rect{width:10px;height:8px;background:#D6ECE4;border:0.5px solid #0F6E56;border-radius:2px;flex-shrink:0;}
+@media(prefers-color-scheme:dark){
+  #view-panel .sec.legend{border-top-color:rgba(255,255,255,0.18);}
+  #view-panel .sec.legend .leg-item{color:#e0e0e0;}
+  #view-panel .sec.legend .leg-dot.d1{background:#1a1a1a;}
+  #view-panel .sec.legend .leg-dot.d2{background:#1a1a1a;}
+  #view-panel .sec.legend .leg-dot.d4{background:#1a1a1a;}
+}
+
+/* Tick-label popover — anchored near the tick-btn opener in #view-panel.
+   Purple palette (matches nodes context). Opens below the button. */
+#tick-popover{position:fixed;z-index:30;border:1px solid #533AB7;border-radius:5px;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.15);padding:3px;font-size:11px;display:none;min-width:110px;}
+#tick-popover.open{display:block;}
+#tick-popover .po-item{padding:8px 10px;border-radius:3px;color:#1a1a1a;display:flex;align-items:center;justify-content:space-between;gap:4px;cursor:pointer;white-space:nowrap;}
+#tick-popover .po-item.on{background:rgba(83,58,183,0.12);color:#533AB7;font-weight:600;}
+@media(prefers-color-scheme:dark){
+  #tick-popover{background:#1e1e1e;border-color:#AFA9EC;}
+  #tick-popover .po-item{color:#e0e0e0;}
+  #tick-popover .po-item.on{background:rgba(175,169,236,0.2);color:#AFA9EC;}
+}
+
+/* Pinned zoom cluster in sidebar — shown only when _zoomPinned is true.
+   Mirrors the view-panel's zoom section but compacted for sidebar width. */
+#zoom-pinned-cluster{display:none;flex-direction:column;padding:5px 4px;border-bottom:0.5px solid rgba(128,128,128,0.2);background:#fff;position:relative;}
+#zoom-pinned-cluster.visible{display:flex;}
+#zoom-pinned-cluster::before{content:'';position:absolute;top:4px;right:4px;width:7px;height:7px;background:#533AB7;border-radius:50%;}
+#zoom-pinned-cluster .pzc-lbl{font-size:7px;color:#533AB7;font-weight:700;letter-spacing:0.06em;margin-bottom:3px;}
+#zoom-pinned-cluster .pzc-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;}
+#zoom-pinned-cluster .pzc-grid .zb{height:22px;background:rgba(128,128,128,0.07);border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#1a1a1a;font-weight:600;cursor:pointer;-webkit-appearance:none;appearance:none;padding:0;font-family:inherit;}
+#zoom-pinned-cluster .pzc-grid .zb:active{opacity:0.65;}
+@media(prefers-color-scheme:dark){
+  #zoom-pinned-cluster{background:#1a1a1a;border-bottom-color:rgba(255,255,255,0.15);}
+  #zoom-pinned-cluster .pzc-lbl{color:#AFA9EC;}
+  #zoom-pinned-cluster .pzc-grid .zb{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.15);color:#e0e0e0;}
+}
+
 /* ══ end v4 APP SHELL CSS ═══════════════════════════════════════════ */
 </style>
 </head>
@@ -891,6 +1026,19 @@ input[type=range]{width:110px;cursor:pointer;}
     <!-- sidebar: flex-ratio h-rule -->
     <div id="sidebar">
       <button id="sb-toggle" onclick="toggleSidebar()">RULER ›</button>
+      <!-- v7.6 Phase 4 pinned zoom cluster — shows when _zoomPinned is true.
+           Tap-and-hold the pin-dot in the view panel's zoom section header
+           to pin/unpin. Ruler toggle above stays always on top; pitchmap
+           labels take precedence over this cluster in overlap. -->
+      <div id="zoom-pinned-cluster">
+        <div class="pzc-lbl">ZOOM</div>
+        <div class="pzc-grid">
+          <button class="zb" onclick="zoom(1.3)" title="zoom in">+</button>
+          <button class="zb" onclick="zoom(1/1.3)" title="zoom out">&#8722;</button>
+          <button class="zb" onclick="fitV()" title="fit vertical"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="7" y1="1" x2="7" y2="13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><polyline points="4,4 7,1 10,4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="4,10 7,13 10,10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="zb" onclick="zoomTo1()" title="fit horizontal"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><polyline points="4,4 1,7 4,10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="10,4 13,7 10,10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </div>
       <div id="sb-upper"></div>
       <div id="sb-hrule"></div>
       <div id="sb-lower"></div>
@@ -1040,6 +1188,118 @@ input[type=range]{width:110px;cursor:pointer;}
     </div>
   </div>
 
+  <!-- v7.6 Phase 4 view panel — zoom / nodes / viz toggles / gated map & capo
+       sections / legend. Overlays #app-body flush top-to-bottom from the right
+       edge, 114px wide. Opens via #br-view-btn, closes via ✕. Pin-dot in the
+       zoom section's header tap-and-holds to pin the zoom cluster into the
+       sidebar. -->
+  <div id="view-panel">
+    <div class="vp-head">
+      <div class="t">VIEW</div>
+      <div class="x" id="vp-close-btn" onclick="_closeViewPanel()" title="Close view">&#10005;</div>
+    </div>
+    <div class="vp-body">
+
+      <div class="sec">
+        <div class="sec-h"><span>zoom</span><span class="pin-dot" id="vp-zoom-pin" title="Tap &amp; hold to pin zoom cluster to sidebar"></span></div>
+        <div class="zoom-grid">
+          <button class="zb" onclick="zoom(1.3)" title="zoom in">+</button>
+          <button class="zb" onclick="zoom(1/1.3)" title="zoom out">&#8722;</button>
+          <button class="zb" onclick="fitV()" title="fit vertical"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="7" y1="1" x2="7" y2="13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><polyline points="4,4 7,1 10,4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="4,10 7,13 10,10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="zb" onclick="zoomTo1()" title="fit horizontal"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><polyline points="4,4 1,7 4,10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="10,4 13,7 10,10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+        <div class="vp-status" id="vp-zoom-status">100%<br>tap &amp; hold pin to lock</div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h">nodes</div>
+        <div class="stack-group">
+          <div class="sg-lbl">octaves</div>
+          <div class="sg-btns">
+            <div class="b vp-oct-btn" data-val="2" onclick="_vpSetOctaves(2,this)">2</div>
+            <div class="b vp-oct-btn" data-val="3" onclick="_vpSetOctaves(3,this)">3</div>
+          </div>
+        </div>
+        <div class="stack-group">
+          <div class="sg-lbl">pitch bars</div>
+          <div class="sg-btns">
+            <div class="b vp-pb-btn" data-val="on"  onclick="_vpSetPitchBars(true,this)">on</div>
+            <div class="b vp-pb-btn" data-val="off" onclick="_vpSetPitchBars(false,this)">off</div>
+          </div>
+        </div>
+        <div class="stack-group">
+          <div class="sg-lbl">tick labels</div>
+          <div class="tick-btn" id="vp-tick-btn" onclick="_vpOpenTickPopover(event)">in scale</div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h">node viz</div>
+        <div class="anim-toggle-row">
+          <span class="lbl">on / off</span>
+          <div class="b vp-nviz-btn" onclick="_vpToggleNodeViz(this)">on</div>
+        </div>
+        <div class="sg-group">
+          <div class="sg-head"><span class="lbl">amplitude</span><span class="val" id="vp-namp-val">30</span></div>
+          <div class="sg-track" data-slider="namp"><div class="sg-thumb" style="left:0%"></div></div>
+        </div>
+        <div class="sg-group">
+          <div class="sg-head"><span class="lbl">duration</span><span class="val" id="vp-ndur-val">3.0s</span></div>
+          <div class="sg-track" data-slider="ndur"><div class="sg-thumb" style="left:0%"></div></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h">wave viz</div>
+        <div class="anim-toggle-row">
+          <span class="lbl">on / off</span>
+          <div class="b vp-wviz-btn" onclick="_vpToggleWaveViz(this)">on</div>
+        </div>
+        <div class="sg-group">
+          <div class="sg-head"><span class="lbl">amplitude</span><span class="val" id="vp-wamp-val">60</span></div>
+          <div class="sg-track" data-slider="wamp"><div class="sg-thumb" style="left:0%"></div></div>
+        </div>
+        <div class="sg-group">
+          <div class="sg-head"><span class="lbl">duration</span><span class="val" id="vp-wdur-val">3.0s</span></div>
+          <div class="sg-track" data-slider="wdur"><div class="sg-thumb" style="left:0%"></div></div>
+        </div>
+      </div>
+
+      <div class="sec gated" id="vp-pm-sec">
+        <div class="sec-h">map mode</div>
+        <div class="stack-group">
+          <div class="sg-lbl">tiny labels</div>
+          <div class="sg-btns">
+            <div class="b vp-tl-btn" data-val="on"  onclick="_vpSetTinyLabels(true,this)">on</div>
+            <div class="b vp-tl-btn" data-val="off" onclick="_vpSetTinyLabels(false,this)">off</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec gated" id="vp-capo-sec">
+        <div class="sec-h">capo mode</div>
+        <div class="stack-group">
+          <div class="sg-lbl">on-string buttons</div>
+          <div class="sg-btns">
+            <div class="b vp-os-btn" data-val="show" onclick="_vpSetCapoOnStr(true,this)">show</div>
+            <div class="b vp-os-btn" data-val="hide" onclick="_vpSetCapoOnStr(false,this)">hide</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec legend">
+        <div class="sec-h">legend</div>
+        <div class="leg-item"><span class="leg-dot d1"></span>in key</div>
+        <div class="leg-item"><span class="leg-dot d2"></span>chromatic</div>
+        <div class="leg-item"><span class="leg-dot d3"></span>home / tonic</div>
+        <div class="leg-item"><span class="leg-dot d4"></span>between pitches</div>
+        <div class="leg-item"><span class="leg-dot d5"></span>ET tick</div>
+        <div class="leg-item offnode"><span class="off-line"></span><span class="off-rect"></span>off-node</div>
+      </div>
+
+    </div>
+  </div>
+
   </div><!-- end app-body -->
 
   <!-- bottom rail — v7.6 Phase 2 restructure: #br-top (7 buttons) + #br-ctx (2 rows, populated by Phase 5) -->
@@ -1068,6 +1328,14 @@ input[type=range]{width:110px;cursor:pointer;}
   <div id="readme-section-popover"></div>
   <!-- snap-target popover (v7.6 Phase 1 scaffolding) — populated by Phase 5 map-mode context -->
   <div id="snap-target-popover"></div>
+  <!-- tick-label popover (v7.6 Phase 4) — opens from view-panel nodes section's tick-btn opener.
+       4 options: in scale, always, active only, off. Closes on outside tap or selection. -->
+  <div id="tick-popover">
+    <div class="po-item" data-val="scale"  onclick="_vpSelectTickLabel('scale')">in scale</div>
+    <div class="po-item" data-val="always" onclick="_vpSelectTickLabel('always')">always</div>
+    <div class="po-item" data-val="active" onclick="_vpSelectTickLabel('active')">active only</div>
+    <div class="po-item" data-val="off"    onclick="_vpSelectTickLabel('off')">off</div>
+  </div>
   <!-- transitional orphans (v7.6 Phase 1 scaffolding) — Phase 2 parks #br-nv and #br-ap here while controls are rehomed. Display:none via CSS. -->
   <div id="transitional-orphans"></div>
 
@@ -1285,7 +1553,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.6.3';
+const VERSION='v7.6.4';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -1344,11 +1612,18 @@ function _toggleSettingsPanel(){
   if(typeof _syncViewPanel==='function') _syncViewPanel(); // Phase 4 wiring
 }
 
-// Mirrors _toggleSettingsPanel for the view panel.
+// Toggles view panel open state. Panel DOM lives in #view-panel (added
+// Phase 4). Narrow-viewport exclusivity rule: opening view at <380px
+// closes settings. _syncViewPanel() paints the .open class on the panel
+// DOM; _syncPanelBtns() paints the .on class on the bottom-rail view
+// button. When settings is narrow-forced closed, _syncSettingsPanel()
+// hides its panel DOM too.
 function _toggleViewPanel(){
   _viewPanelOpen=!_viewPanelOpen;
   if(_viewPanelOpen && isNarrow()) _settingsPanelOpen=false;
   _syncPanelBtns();
+  if(typeof _syncViewPanel==='function') _syncViewPanel();
+  if(typeof _syncSettingsPanel==='function') _syncSettingsPanel();
 }
 
 // Syncs the 4 mode buttons in #br-top to the current nodeView. Applies
@@ -1771,6 +2046,362 @@ function _spInit(){
   _spSyncAll();
 }
 setTimeout(_spInit, 0);
+
+// ══════════════════════════════════════════════════════════════════
+// v7.6 UI REFRESH — PHASE 4 VIEW PANEL WIRING (Chat 2 v7.6.4)
+// Handlers for #view-panel. Toggles wire to existing engine vars
+// (nodeOctaves/showPitchBars/tickLabelMode/nodeViz/waveViz/vizNodeAmp/
+// vizNodeDur/vizWaveAmp/vizWaveDur) via _vpSet* / _vpToggle* wrappers.
+// Sliders for amp/dur use setupSgSlider() (linear, no log branch).
+// Pin-dot tap-and-hold toggles _zoomPinned; when pinned, a compact
+// zoom cluster paints into the sidebar below the ruler toggle.
+// Tick popover opens below the tick-btn, closes on outside tap or
+// selection. Gated sections (map/capo) dim by opacity only.
+// Stub state vars _pmTinyLabels and _capoOnStrVisible hold their
+// values; render integration (actually hiding tiny labels / capo
+// on-string buttons) will layer on in a follow-up — the UI state
+// is correctly tracked from Phase 4 on.
+// ══════════════════════════════════════════════════════════════════
+
+let _zoomPinned=false;
+let _pmTinyLabels=false;
+let _capoOnStrVisible=true;
+let _vpHoldTimer=null;
+let _vpHoldMoved=false;
+
+// Paints the .open class on #view-panel to match _viewPanelOpen.
+function _syncViewPanel(){
+  const p=document.getElementById('view-panel');
+  if(!p) return;
+  p.classList.toggle('open', _viewPanelOpen);
+  if(_viewPanelOpen){
+    _vpSyncAll();
+    _vpSyncGatedSections();
+  }
+}
+
+// Closes the view panel (X button).
+function _closeViewPanel(){
+  _viewPanelOpen=false;
+  _syncPanelBtns();
+  _syncViewPanel();
+}
+
+// ── Button group wrappers ─────────────────────────────────────────
+
+function _vpSetOctaves(n, btn){
+  document.querySelectorAll('#view-panel .vp-oct-btn').forEach(function(b){b.classList.remove('on');});
+  if(btn && btn.classList) btn.classList.add('on');
+  if(typeof setNodeOctaves==='function') setNodeOctaves(n);
+}
+
+function _vpSetPitchBars(on, btn){
+  document.querySelectorAll('#view-panel .vp-pb-btn').forEach(function(b){b.classList.remove('on');});
+  if(btn && btn.classList) btn.classList.add('on');
+  // togglePitchBars flips the flag regardless of current value — only call
+  // if state would actually change, to avoid double-flip when panel sync fires.
+  if(typeof showPitchBars!=='undefined' && !!showPitchBars !== !!on && typeof togglePitchBars==='function'){
+    togglePitchBars();
+  }
+}
+
+function _vpToggleNodeViz(btn){
+  if(typeof nodeViz==='undefined' || typeof toggleNodeViz!=='function') return;
+  toggleNodeViz();
+  if(btn){
+    btn.classList.toggle('on', !!nodeViz);
+    btn.textContent=nodeViz?'on':'off';
+  }
+}
+
+function _vpToggleWaveViz(btn){
+  if(typeof waveViz==='undefined' || typeof toggleWaveViz!=='function') return;
+  toggleWaveViz();
+  if(btn){
+    btn.classList.toggle('on', !!waveViz);
+    btn.textContent=waveViz?'on':'off';
+  }
+}
+
+function _vpSetTinyLabels(on, btn){
+  document.querySelectorAll('#view-panel .vp-tl-btn').forEach(function(b){b.classList.remove('on');});
+  if(btn && btn.classList) btn.classList.add('on');
+  _pmTinyLabels=!!on;
+  // Render hook for tiny-label appearance change (if/when implemented) —
+  // calling render() so any future tiny-label branch picks up the flag.
+  if(typeof render==='function') render();
+}
+
+function _vpSetCapoOnStr(on, btn){
+  document.querySelectorAll('#view-panel .vp-os-btn').forEach(function(b){b.classList.remove('on');});
+  if(btn && btn.classList) btn.classList.add('on');
+  _capoOnStrVisible=!!on;
+  // Render hook for capo layer to respect new visibility. updateCapoLayer
+  // is called from render() and will consult _capoOnStrVisible once the
+  // integration lands. For now this just sets the flag + triggers render.
+  if(typeof render==='function') render();
+}
+
+// ── Tick-label popover ────────────────────────────────────────────
+// Opens below the tick-btn, closes on outside tap or selection.
+
+function _vpOpenTickPopover(e){
+  if(e && typeof e.stopPropagation==='function') e.stopPropagation();
+  const pop=document.getElementById('tick-popover');
+  const btn=document.getElementById('vp-tick-btn');
+  if(!pop || !btn) return;
+  if(pop.classList.contains('open')){ pop.classList.remove('open'); return; }
+  // Paint current-selection highlight + checkmark
+  const curMode=(typeof tickLabelMode!=='undefined')?tickLabelMode:'scale';
+  pop.querySelectorAll('.po-item').forEach(function(it){
+    const on=(it.dataset.val===curMode);
+    it.classList.toggle('on', on);
+    const base={scale:'in scale', always:'always', active:'active only', off:'off'}[it.dataset.val]||it.dataset.val;
+    it.textContent=base+(on?' \u2713':'');
+  });
+  const rect=btn.getBoundingClientRect();
+  // Anchor popover's right edge under the btn's right edge (popover is ~110px wide)
+  const popW=Math.max(110, pop.offsetWidth||110);
+  pop.style.left=Math.max(4, rect.right - popW)+'px';
+  pop.style.top=(rect.bottom+4)+'px';
+  pop.classList.add('open');
+}
+
+function _vpSelectTickLabel(mode){
+  const pop=document.getElementById('tick-popover');
+  if(pop) pop.classList.remove('open');
+  if(typeof tickLabelMode!=='undefined'){
+    tickLabelMode=mode;
+    const btn=document.getElementById('vp-tick-btn');
+    if(btn){
+      const lbl={scale:'in scale', always:'always', active:'active only', off:'off'}[mode]||mode;
+      btn.textContent=lbl;
+    }
+    if(typeof render==='function') render();
+    if(typeof renderBRCtx==='function') renderBRCtx();
+  }
+}
+
+// ── Generic small slider (view panel amp/dur) ─────────────────────
+// Linear, no log branch. Mirrors setupSpSlider's extended-hit-area
+// behavior: ::before pseudo on .sg-track extends the vertical touch
+// zone, listeners on .sg-track catch the extended taps.
+
+function _vpSliderMin(key){
+  if(key==='namp' || key==='wamp') return 5;
+  if(key==='ndur' || key==='wdur') return 0.1;
+  return 0;
+}
+function _vpSliderMax(key){
+  if(key==='namp' || key==='wamp') return 60;
+  if(key==='ndur' || key==='wdur') return 4.0;
+  return 100;
+}
+function _vpFmt(key, val){
+  if(key==='namp' || key==='wamp') return Math.round(val).toString();
+  if(key==='ndur' || key==='wdur') return val.toFixed(1)+'s';
+  return val.toFixed(1);
+}
+function _vpApplyVal(key, val){
+  if(key==='namp'){ if(typeof vizNodeAmp!=='undefined') vizNodeAmp=val; }
+  else if(key==='ndur'){ if(typeof vizNodeDur!=='undefined') vizNodeDur=val; }
+  else if(key==='wamp'){ if(typeof vizWaveAmp!=='undefined') vizWaveAmp=val; }
+  else if(key==='wdur'){ if(typeof vizWaveDur!=='undefined') vizWaveDur=val; }
+}
+function _vpCurrentVal(key){
+  if(key==='namp' && typeof vizNodeAmp!=='undefined') return vizNodeAmp;
+  if(key==='ndur' && typeof vizNodeDur!=='undefined') return vizNodeDur;
+  if(key==='wamp' && typeof vizWaveAmp!=='undefined') return vizWaveAmp;
+  if(key==='wdur' && typeof vizWaveDur!=='undefined') return vizWaveDur;
+  return _vpSliderMin(key);
+}
+function _vpPctToVal(key, pct){
+  pct=Math.max(0,Math.min(1,pct));
+  return _vpSliderMin(key) + pct*(_vpSliderMax(key)-_vpSliderMin(key));
+}
+function _vpValToPct(key, val){
+  const lo=_vpSliderMin(key), hi=_vpSliderMax(key);
+  return Math.max(0, Math.min(1, (val-lo)/(hi-lo)));
+}
+
+function setupSgSlider(track){
+  const thumb=track.querySelector('.sg-thumb');
+  if(!thumb) return;
+  const key=track.dataset.slider;
+  if(!key) return;
+  let dragging=false;
+
+  const updateFromPct=function(pct){
+    pct=Math.max(0,Math.min(1,pct));
+    thumb.style.left=(pct*100).toFixed(2)+'%';
+    const val=_vpPctToVal(key, pct);
+    _vpApplyVal(key, val);
+    const group=track.closest('.sg-group');
+    if(group){
+      const valEl=group.querySelector('.sg-head .val');
+      if(valEl) valEl.textContent=_vpFmt(key, val);
+    }
+  };
+  const onMove=function(e){
+    if(!dragging) return;
+    e.preventDefault();
+    const rect=track.getBoundingClientRect();
+    const clientX=(e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+    const pct=(clientX-rect.left)/Math.max(1,rect.width);
+    updateFromPct(pct);
+  };
+  const onStart=function(e){ dragging=true; onMove(e); };
+  const onEnd=function(){ dragging=false; };
+
+  track.addEventListener('touchstart',  onStart, {passive:false});
+  track.addEventListener('touchmove',   onMove,  {passive:false});
+  track.addEventListener('touchend',    onEnd);
+  track.addEventListener('touchcancel', onEnd);
+  track.addEventListener('mousedown',   onStart);
+  window.addEventListener('mousemove',  onMove);
+  window.addEventListener('mouseup',    onEnd);
+}
+
+// ── Gated sections (map mode / capo mode) ─────────────────────────
+
+function _vpSyncGatedSections(){
+  const pmSec=document.getElementById('vp-pm-sec');
+  const capoSec=document.getElementById('vp-capo-sec');
+  if(pmSec) pmSec.classList.toggle('gated', nodeView!=='pitchmap');
+  if(capoSec) capoSec.classList.toggle('gated', nodeView!=='capo');
+}
+
+// ── Zoom pin + sidebar cluster ────────────────────────────────────
+// Tap-and-hold (450ms) the pin-dot toggles _zoomPinned. Status text
+// under the zoom grid updates; when pinned, #zoom-pinned-cluster in
+// the sidebar becomes visible.
+
+function _vpSyncZoomPinned(){
+  const pinDot=document.getElementById('vp-zoom-pin');
+  if(pinDot) pinDot.classList.toggle('pinned', _zoomPinned);
+  const cluster=document.getElementById('zoom-pinned-cluster');
+  if(cluster) cluster.classList.toggle('visible', _zoomPinned);
+  const status=document.getElementById('vp-zoom-status');
+  if(status){
+    status.innerHTML=_zoomPinned ? 'PINNED<br>to sidebar' : '100%<br>tap &amp; hold pin to lock';
+  }
+}
+
+function _vpPinStartHold(e){
+  _vpHoldMoved=false;
+  clearTimeout(_vpHoldTimer);
+  _vpHoldTimer=setTimeout(function(){
+    if(_vpHoldMoved) return;
+    _zoomPinned=!_zoomPinned;
+    _vpSyncZoomPinned();
+  }, 450);
+}
+function _vpPinEndHold(){
+  clearTimeout(_vpHoldTimer);
+  _vpHoldTimer=null;
+}
+function _vpPinMoveCancel(){
+  _vpHoldMoved=true;
+  clearTimeout(_vpHoldTimer);
+  _vpHoldTimer=null;
+}
+
+// ── Full-panel sync ───────────────────────────────────────────────
+
+function _vpSyncAll(){
+  if(!document.getElementById('view-panel')) return;
+  // Octaves (2/3)
+  if(typeof nodeOctaves!=='undefined'){
+    document.querySelectorAll('#view-panel .vp-oct-btn').forEach(function(b){
+      b.classList.toggle('on', parseInt(b.dataset.val,10)===nodeOctaves);
+    });
+  }
+  // Pitch bars (on/off)
+  if(typeof showPitchBars!=='undefined'){
+    document.querySelectorAll('#view-panel .vp-pb-btn').forEach(function(b){
+      b.classList.toggle('on', (b.dataset.val==='on')===!!showPitchBars);
+    });
+  }
+  // Tick label opener label
+  if(typeof tickLabelMode!=='undefined'){
+    const tb=document.getElementById('vp-tick-btn');
+    if(tb){
+      const lbl={scale:'in scale', always:'always', active:'active only', off:'off'}[tickLabelMode]||tickLabelMode;
+      tb.textContent=lbl;
+    }
+  }
+  // Node viz on/off
+  if(typeof nodeViz!=='undefined'){
+    const nb=document.querySelector('#view-panel .vp-nviz-btn');
+    if(nb){ nb.classList.toggle('on', !!nodeViz); nb.textContent=nodeViz?'on':'off'; }
+  }
+  // Wave viz on/off
+  if(typeof waveViz!=='undefined'){
+    const wb=document.querySelector('#view-panel .vp-wviz-btn');
+    if(wb){ wb.classList.toggle('on', !!waveViz); wb.textContent=waveViz?'on':'off'; }
+  }
+  // Tiny labels (stub state)
+  document.querySelectorAll('#view-panel .vp-tl-btn').forEach(function(b){
+    b.classList.toggle('on', (b.dataset.val==='on')===!!_pmTinyLabels);
+  });
+  // Capo on-string (stub state)
+  document.querySelectorAll('#view-panel .vp-os-btn').forEach(function(b){
+    b.classList.toggle('on', (b.dataset.val==='show')===!!_capoOnStrVisible);
+  });
+  // Sliders: paint thumb + val display from current engine state
+  const tracks=document.querySelectorAll('#view-panel .sg-track');
+  tracks.forEach(function(tr){
+    const thumb=tr.querySelector('.sg-thumb');
+    const key=tr.dataset.slider;
+    if(!thumb || !key) return;
+    const val=_vpCurrentVal(key);
+    const pct=_vpValToPct(key, val);
+    thumb.style.left=(pct*100).toFixed(2)+'%';
+    const group=tr.closest('.sg-group');
+    if(group){
+      const valEl=group.querySelector('.sg-head .val');
+      if(valEl) valEl.textContent=_vpFmt(key, val);
+    }
+  });
+  _vpSyncGatedSections();
+  _vpSyncZoomPinned();
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+
+function _vpInit(){
+  if(!document.getElementById('view-panel')) return;
+  document.querySelectorAll('#view-panel .sg-track').forEach(setupSgSlider);
+  // Pin-dot tap-and-hold wiring
+  const pinDot=document.getElementById('vp-zoom-pin');
+  if(pinDot){
+    pinDot.addEventListener('touchstart', _vpPinStartHold, {passive:true});
+    pinDot.addEventListener('touchmove',  _vpPinMoveCancel,{passive:true});
+    pinDot.addEventListener('touchend',   _vpPinEndHold);
+    pinDot.addEventListener('touchcancel',_vpPinEndHold);
+    pinDot.addEventListener('mousedown',  _vpPinStartHold);
+    pinDot.addEventListener('mouseup',    _vpPinEndHold);
+    pinDot.addEventListener('mouseleave', _vpPinEndHold);
+  }
+  // Outside-tap close for the tick popover (mousedown + touchstart patterns
+  // mirror the readme-picker and snap-target-popover close handlers).
+  document.addEventListener('mousedown', function(e){
+    const pop=document.getElementById('tick-popover');
+    const btn=document.getElementById('vp-tick-btn');
+    if(pop && pop.classList.contains('open') && !pop.contains(e.target) && e.target!==btn && (!btn || !btn.contains(e.target))){
+      pop.classList.remove('open');
+    }
+  });
+  document.addEventListener('touchstart', function(e){
+    const pop=document.getElementById('tick-popover');
+    const btn=document.getElementById('vp-tick-btn');
+    if(pop && pop.classList.contains('open') && !pop.contains(e.target) && e.target!==btn && (!btn || !btn.contains(e.target))){
+      pop.classList.remove('open');
+    }
+  }, {passive:true});
+  _vpSyncAll();
+}
+setTimeout(_vpInit, 0);
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 Phase 5 — pitchmap context helpers
@@ -9544,6 +10175,10 @@ function render(){
   // nut-offset change, unit toggle, applyDefaults, syncSlider clamping
   // (nut-mode len-slider cap), tension drag, etc. Fixes tests 22 + 12b.
   if(typeof _settingsPanelOpen!=='undefined' && _settingsPanelOpen && typeof _spSyncAll==='function') _spSyncAll();
+  // v7.6.4 Phase 4: same pattern for the view panel — when open, re-sync
+  // button states, slider thumbs, and gated sections (map-mode / capo-mode
+  // brighten or dim based on nodeView) on every render.
+  if(typeof _viewPanelOpen!=='undefined' && _viewPanelOpen && typeof _vpSyncAll==='function') _vpSyncAll();
 }
 
 // ── Key grid ──────────────────────────────────────────────────────
