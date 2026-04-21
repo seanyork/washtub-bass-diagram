@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.6.14</title>
+<title>Washtub Bass String Map · v7.6.15</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -238,10 +238,7 @@ input[type=range]{width:110px;cursor:pointer;}
 #cof-canvas{display:block;cursor:grab;}
 #cof-dot{display:none;}
 
-/* overflow panel (below bottom rail on desktop, slide-up on mobile) */
-#overflow-panel{display:none;position:absolute;bottom:var(--bottom-rail-height);left:0;right:0;z-index:15;background:#fff;border-top:0.5px solid rgba(128,128,128,0.18);padding:10px 12px;flex-direction:column;gap:8px;}
-@media(prefers-color-scheme:dark){#overflow-panel{background:#1e1e1e;}}
-#overflow-panel.visible{display:flex;}
+/* v7.6.15: #overflow-panel CSS retired along with the DOM element. */
 /* ── bottom rail control styles ── */
 .br-chip{font-size:9px;color:#533AB7;font-weight:500;background:rgba(83,58,183,0.07);border:0.5px solid rgba(83,58,183,0.25);border-radius:3px;padding:1px 5px;white-space:nowrap;line-height:1.4;}
 .br-chip-lbl{font-size:8px;color:#aaa;white-space:nowrap;}
@@ -1347,8 +1344,7 @@ input[type=range]{width:110px;cursor:pointer;}
     </div>
   </div>
 
-  <!-- overflow panel (wired in Steps 8 & 11) -->
-  <div id="overflow-panel"></div>
+  <!-- v7.6.15: #overflow-panel retired — functionality moved to settings + view panels -->
 
   <!-- scale + home pickers — direct children of app-shell so they overflow bottom rail -->
   <div id="scale-picker"></div>
@@ -1584,7 +1580,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.6.14';
+const VERSION='v7.6.15';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -4069,20 +4065,11 @@ function renderBRCtx(){
     if(!btn) return;
     btn.className='br-nvb'+(brNodeView===v?(v==='capo'?' br-nvb-cap-on':' br-nvb-on'):'');
   });
-  // Right panel button highlights
-  ['audio','phys','lgnd'].forEach(p=>{
-    const btn=document.getElementById('br-'+p);
-    if(btn) btn.className='br-apb'+(brRightPanel===p?' br-apb-on':'');
-  });
 
-  // If a right panel is active, it takes over all three rows
-  if(brRightPanel){
-    ctx.innerHTML=renderRightPanel(brRightPanel);
-    setTimeout(wireAllBRSliders,0);
-    setTimeout(_syncViewBtn,0);
-    return;
-  }
-  // Otherwise show node-view context
+  // v7.6.15: legacy right-panel (audio/phys/lgnd) takeover logic removed —
+  // those concerns are now split across the settings-panel (audio / physics)
+  // and view-panel (legend/display) overlays. Renders node-view context
+  // unconditionally.
   ctx.innerHTML=renderNodeViewCtx(brNodeView);
   setTimeout(wireAllBRSliders,0);
   setTimeout(_syncViewBtn,0);
@@ -4326,6 +4313,12 @@ function syncOvNutSlider(i){
 }
 
 function renderOverflowPanel(){
+  return; // v7.6.15: overflow panel retired. Function kept as a stub so the
+          // remaining live caller (mode-change path) and orphan onclick
+          // handlers in the legacy renderAudioPanel/renderPhysPanel output
+          // do not throw if they ever fire.
+}
+function _renderOverflowPanel_legacy_UNUSED(){
   const op=document.getElementById('overflow-panel');
   if(!op) return;
   if(brNodeView==='full' && !brRightPanel){
@@ -4438,6 +4431,10 @@ function _syncViewBtn(){
 }
 
 function toggleOverflow(){
+  return; // v7.6.15: overflow panel retired. Swipe handler on #bottom-rail
+          // still calls this but the call is now a no-op.
+}
+function _toggleOverflow_legacy_UNUSED(){
   overflowOpen=!overflowOpen;
   const op=document.getElementById('overflow-panel');
   if(!op) return;
@@ -4733,8 +4730,8 @@ setBRPanel = function(panel, btn){
 const _setNodeView_orig=setNodeView;
 setNodeView = function(view, btn){
   brNodeView=view;
-  brRightPanel=null; // node view switch clears right panel
-  closeOverflowPanel();
+  // v7.6.15: legacy brRightPanel=null and closeOverflowPanel() removed —
+  // the overflow panel and its right-panel state have been retired.
   _setNodeView_orig(view, btn);
   // Show/hide pitchmap overlay group
   const pmg=document.getElementById('pitchmap-overlay');
@@ -4764,7 +4761,6 @@ setNodeView = function(view, btn){
     if(autoTune && MODE_DEGREE[currentMode]!==undefined) setHomeNode(MODE_DEGREE[currentMode]);
   }
   renderBRCtx();
-  updateOverflowDesktop();
   _warmAudioCtx(); // #49/#57: re-prime audio pipeline after mode switch
   _maybeAutoTune(); // #70/#71: auto-tune on any mode entry if active
 };
@@ -4774,15 +4770,11 @@ const _render_step6=render;
 render = function(){
   _render_step6();
   // Refresh nut offset/speaking readouts if visible
-  if(brNodeView==='nut'&&!brRightPanel){
+  if(brNodeView==='nut'){
     const oEl=document.getElementById('br-nut-offset');
     const sEl=document.getElementById('br-nut-speaking');
     if(oEl) oEl.textContent=fmtLen(nutOffsetInches);
     if(sEl) sEl.textContent=fmtLen(effectiveSpeakingLength());
-  }
-  // Refresh phys length readout if visible
-  if(brRightPanel==='phys'){
-    renderBRCtx();
   }
   // Refresh note preview highlights (#52)
   refreshPreviewHL();
@@ -4792,16 +4784,12 @@ render = function(){
 const _setCapoNode_orig=setCapoNode;
 setCapoNode = function(idx){
   _setCapoNode_orig(idx);
-  if(brNodeView==='capo'&&!brRightPanel) renderBRCtx();
+  if(brNodeView==='capo') renderBRCtx();
 };
-
-// ── Override toggleOverflow for mobile slide-up ───────────────────
-// (Already defined above — mobile vs desktop handled in function)
 
 // ── Init bottom rail ──────────────────────────────────────────────
 function initBR(){
   renderBRCtx();
-  updateOverflowDesktop();
 }
 
 // ── End Steps 6–12 bottom rail wiring ════════════════════════════
