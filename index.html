@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.6.8</title>
+<title>Washtub Bass String Map · v7.6.9</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -291,7 +291,7 @@ input[type=range]{width:110px;cursor:pointer;}
 /* Play drawer — top:50px keeps it below the tone strip; v7.6 Phase 2: bottom
    anchor now follows rail height. Stack is rail + CoF visible peek (94px) +
    go-btn height (32px). Scrollable within this bounded area. */
-#play-drawer{position:absolute;left:56px;bottom:calc(var(--bottom-rail-height) + 94px + 32px);top:50px;z-index:14;width:110px;display:none;overflow-y:auto;background:#fff;border:0.5px solid rgba(83,58,183,0.2);border-bottom:none;border-radius:8px 8px 0 0;flex-direction:column;}
+#play-drawer{position:absolute;left:56px;bottom:calc(var(--bottom-rail-height) + 94px + 32px);top:50px;z-index:14;width:110px;display:none;overflow-y:auto;overflow-x:hidden;touch-action:pan-y;background:#fff;border:0.5px solid rgba(83,58,183,0.2);border-bottom:none;border-radius:8px 8px 0 0;flex-direction:column;}
 @media(prefers-color-scheme:dark){#play-drawer{background:#1e1e1e;}}
 #play-drawer::-webkit-scrollbar{width:3px;}
 #play-drawer::-webkit-scrollbar-thumb{background:rgba(128,128,128,0.25);border-radius:2px;}
@@ -450,9 +450,9 @@ input[type=range]{width:110px;cursor:pointer;}
    also delivers to the target button naturally via capture-phase listener).
    Version chip at top preserves the br-chip-lbl styling from its former
    bottom-rail home. No persistence: fresh load re-shows splash. */
-#splash{display:flex;flex-direction:column;position:absolute;top:0;right:0;bottom:0;width:156px;background:linear-gradient(160deg,rgba(83,58,183,0.08),rgba(15,110,86,0.05));border-left:0.5px dashed rgba(83,58,183,0.4);padding:12px 10px;gap:10px;z-index:20;overflow:auto;}
+#splash{display:flex;flex-direction:column;position:absolute;top:0;right:0;bottom:0;width:156px;background:#fff linear-gradient(160deg,rgba(83,58,183,0.08),rgba(15,110,86,0.05));border-left:0.5px dashed rgba(83,58,183,0.4);padding:12px 10px;gap:10px;z-index:20;overflow:auto;}
 #splash.dismissed{display:none;}
-@media(prefers-color-scheme:dark){#splash{background:linear-gradient(160deg,rgba(83,58,183,0.22),rgba(15,110,86,0.14));border-left-color:rgba(175,169,236,0.45);}}
+@media(prefers-color-scheme:dark){#splash{background:#1e1e1e linear-gradient(160deg,rgba(83,58,183,0.22),rgba(15,110,86,0.14));border-left-color:rgba(175,169,236,0.45);}}
 #splash .splash-ver{font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:#8A8882;line-height:1;padding-bottom:2px;}
 @media(prefers-color-scheme:dark){#splash .splash-ver{color:#aaa;}}
 #splash h4{margin:0;font-size:12px;color:#533AB7;font-weight:700;letter-spacing:0.02em;}
@@ -1547,7 +1547,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.6.8';
+const VERSION='v7.6.9';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
