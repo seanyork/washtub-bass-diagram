@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.6.4</title>
+<title>Washtub Bass String Map · v7.6.5</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -580,7 +580,7 @@ input[type=range]{width:110px;cursor:pointer;}
 @media(prefers-color-scheme:dark){#settings-panel .sp-foot{background:rgba(83,58,183,0.20);}#settings-panel .sp-foot .foot-btn{background:#1a1a1a;}#settings-panel .sp-foot .foot-btn.primary{background:#533AB7;color:#fff;}}
 
 /* ══════════════════════════════════════════════════════════════════
-   v7.6 UI REFRESH — PHASE 4 VIEW PANEL (Chat 2 v7.6.4)
+   v7.6 UI REFRESH — PHASE 4 VIEW PANEL (Chat 2 v7.6.5)
    #view-panel overlay. Flush top/bottom; 114px wide, right-anchored.
    Sections: zoom (2x2 grid + pin-dot), nodes (octaves/pitchbars/tick
    labels), node viz (on/off + amp + dur), wave viz (on/off + amp +
@@ -606,11 +606,12 @@ input[type=range]{width:110px;cursor:pointer;}
 
 /* Generic section (view panel) */
 #view-panel .sec{display:flex;flex-direction:column;gap:5px;}
-#view-panel .sec .sec-h{font-size:9px;font-weight:700;color:#1a1a1a;letter-spacing:0.08em;text-transform:uppercase;border-bottom:0.5px solid rgba(128,128,128,0.2);padding-bottom:3px;display:flex;justify-content:space-between;align-items:center;}
+#view-panel .sec .sec-h{font-size:9px;font-weight:700;color:#1a1a1a;letter-spacing:0.08em;text-transform:uppercase;border-bottom:0.5px solid rgba(128,128,128,0.2);padding-bottom:3px;display:flex;justify-content:space-between;align-items:center;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+#view-panel .sec .sec-h#vp-zoom-sec-h{cursor:pointer;touch-action:manipulation;}
 @media(prefers-color-scheme:dark){#view-panel .sec .sec-h{color:#e0e0e0;border-bottom-color:rgba(255,255,255,0.15);}}
 
 /* Pin-dot — tap-and-hold to pin zoom cluster into sidebar */
-#view-panel .pin-dot{width:14px;height:14px;border-radius:50%;border:1.2px solid #533AB7;background:#fff;display:inline-block;cursor:pointer;touch-action:manipulation;flex-shrink:0;}
+#view-panel .pin-dot{width:14px;height:14px;border-radius:50%;border:1.2px solid #533AB7;background:#fff;display:inline-block;cursor:pointer;touch-action:manipulation;flex-shrink:0;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
 #view-panel .pin-dot.pinned{background:#533AB7;}
 @media(prefers-color-scheme:dark){#view-panel .pin-dot{background:#1a1a1a;border-color:#AFA9EC;}#view-panel .pin-dot.pinned{background:#AFA9EC;}}
 
@@ -701,7 +702,7 @@ input[type=range]{width:110px;cursor:pointer;}
 
 /* Pinned zoom cluster in sidebar — shown only when _zoomPinned is true.
    Mirrors the view-panel's zoom section but compacted for sidebar width. */
-#zoom-pinned-cluster{display:none;flex-direction:column;padding:5px 4px;border-bottom:0.5px solid rgba(128,128,128,0.2);background:#fff;position:relative;}
+#zoom-pinned-cluster{display:none;flex-direction:column;padding:5px 4px;border-bottom:0.5px solid rgba(128,128,128,0.2);background:#fff;position:relative;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:pointer;touch-action:manipulation;}
 #zoom-pinned-cluster.visible{display:flex;}
 #zoom-pinned-cluster::before{content:'';position:absolute;top:4px;right:4px;width:7px;height:7px;background:#533AB7;border-radius:50%;}
 #zoom-pinned-cluster .pzc-lbl{font-size:7px;color:#533AB7;font-weight:700;letter-spacing:0.06em;margin-bottom:3px;}
@@ -1201,7 +1202,7 @@ input[type=range]{width:110px;cursor:pointer;}
     <div class="vp-body">
 
       <div class="sec">
-        <div class="sec-h"><span>zoom</span><span class="pin-dot" id="vp-zoom-pin" title="Tap &amp; hold to pin zoom cluster to sidebar"></span></div>
+        <div class="sec-h" id="vp-zoom-sec-h"><span>zoom</span><span class="pin-dot" id="vp-zoom-pin" title="Tap &amp; hold to pin zoom cluster to sidebar"></span></div>
         <div class="zoom-grid">
           <button class="zb" onclick="zoom(1.3)" title="zoom in">+</button>
           <button class="zb" onclick="zoom(1/1.3)" title="zoom out">&#8722;</button>
@@ -1553,7 +1554,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.6.4';
+const VERSION='v7.6.5';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -1597,6 +1598,10 @@ function _handleModeClick(mode){
   setNodeView(view, legacyBtn);
   _syncModeButtons();
   if(typeof renderBRCtx==='function') renderBRCtx();
+  // v7.6.5: explicitly resync view-panel gated sections on mode change.
+  // The render() tail hook should also cover this but is not firing
+  // reliably for capo-mode section — direct call eliminates the race.
+  if(typeof _vpSyncGatedSections==='function') _vpSyncGatedSections();
 }
 
 // Toggles settings panel open state. Panel DOM lives in #settings-panel
@@ -2048,7 +2053,7 @@ function _spInit(){
 setTimeout(_spInit, 0);
 
 // ══════════════════════════════════════════════════════════════════
-// v7.6 UI REFRESH — PHASE 4 VIEW PANEL WIRING (Chat 2 v7.6.4)
+// v7.6 UI REFRESH — PHASE 4 VIEW PANEL WIRING (Chat 2 v7.6.5)
 // Handlers for #view-panel. Toggles wire to existing engine vars
 // (nodeOctaves/showPitchBars/tickLabelMode/nodeViz/waveViz/vizNodeAmp/
 // vizNodeDur/vizWaveAmp/vizWaveDur) via _vpSet* / _vpToggle* wrappers.
@@ -2112,6 +2117,11 @@ function _vpToggleNodeViz(btn){
     btn.classList.toggle('on', !!nodeViz);
     btn.textContent=nodeViz?'on':'off';
   }
+  // v7.6.5: clear any currently-displayed viz immediately when turned off,
+  // so a pinned node's animation disappears without waiting for the next
+  // render cycle. clearViz() removes all viz-layer content (node + wave);
+  // whichever is still enabled will repaint on the next node interaction.
+  if(!nodeViz && typeof clearViz==='function') clearViz();
 }
 
 function _vpToggleWaveViz(btn){
@@ -2121,6 +2131,7 @@ function _vpToggleWaveViz(btn){
     btn.classList.toggle('on', !!waveViz);
     btn.textContent=waveViz?'on':'off';
   }
+  if(!waveViz && typeof clearViz==='function') clearViz();
 }
 
 function _vpSetTinyLabels(on, btn){
@@ -2372,17 +2383,27 @@ function _vpSyncAll(){
 function _vpInit(){
   if(!document.getElementById('view-panel')) return;
   document.querySelectorAll('#view-panel .sg-track').forEach(setupSgSlider);
-  // Pin-dot tap-and-hold wiring
-  const pinDot=document.getElementById('vp-zoom-pin');
-  if(pinDot){
-    pinDot.addEventListener('touchstart', _vpPinStartHold, {passive:true});
-    pinDot.addEventListener('touchmove',  _vpPinMoveCancel,{passive:true});
-    pinDot.addEventListener('touchend',   _vpPinEndHold);
-    pinDot.addEventListener('touchcancel',_vpPinEndHold);
-    pinDot.addEventListener('mousedown',  _vpPinStartHold);
-    pinDot.addEventListener('mouseup',    _vpPinEndHold);
-    pinDot.addEventListener('mouseleave', _vpPinEndHold);
-  }
+  // v7.6.5: Pin-dot + zoom sec-h row + sidebar cluster all share the same
+  // tap-and-hold (450ms) pin toggle handler. Binding the whole sec-h row
+  // (not just the dot) makes the hit area generous and avoids the iOS
+  // text-selection interaction that was firing before the hold registered.
+  // Sidebar cluster also receives the handler so users can unpin directly
+  // from the sidebar when the view panel is closed.
+  const holdTargets=[
+    document.getElementById('vp-zoom-pin'),
+    document.getElementById('vp-zoom-sec-h'),
+    document.getElementById('zoom-pinned-cluster')
+  ];
+  holdTargets.forEach(function(el){
+    if(!el) return;
+    el.addEventListener('touchstart', _vpPinStartHold, {passive:true});
+    el.addEventListener('touchmove',  _vpPinMoveCancel,{passive:true});
+    el.addEventListener('touchend',   _vpPinEndHold);
+    el.addEventListener('touchcancel',_vpPinEndHold);
+    el.addEventListener('mousedown',  _vpPinStartHold);
+    el.addEventListener('mouseup',    _vpPinEndHold);
+    el.addEventListener('mouseleave', _vpPinEndHold);
+  });
   // Outside-tap close for the tick popover (mousedown + touchstart patterns
   // mirror the readme-picker and snap-target-popover close handlers).
   document.addEventListener('mousedown', function(e){
@@ -3764,8 +3785,14 @@ function _sbDotFrac(_H, _dotY){
     const el=document.getElementById(id);
     if(el && el.classList.contains('visible')) capoH+=el.clientHeight;
   });
-  const flexTotal=_H-togH-hruleH-capoH;
-  const upperPx=Math.max(0,_dotY-togH-hruleH);
+  // v7.6.5: account for pinned zoom cluster height (visible only when
+  // _zoomPinned is true). Ensures ruler h-rule aligns with the node's
+  // string-position regardless of whether zoom is pinned to sidebar.
+  let zoomH=0;
+  const zc=document.getElementById('zoom-pinned-cluster');
+  if(zc && zc.classList.contains('visible')) zoomH+=zc.clientHeight;
+  const flexTotal=_H-togH-hruleH-capoH-zoomH;
+  const upperPx=Math.max(0,_dotY-togH-hruleH-zoomH);
   return flexTotal>0?upperPx/flexTotal:0.5;
 }
 
@@ -10175,7 +10202,7 @@ function render(){
   // nut-offset change, unit toggle, applyDefaults, syncSlider clamping
   // (nut-mode len-slider cap), tension drag, etc. Fixes tests 22 + 12b.
   if(typeof _settingsPanelOpen!=='undefined' && _settingsPanelOpen && typeof _spSyncAll==='function') _spSyncAll();
-  // v7.6.4 Phase 4: same pattern for the view panel — when open, re-sync
+  // v7.6.5 Phase 4: same pattern for the view panel — when open, re-sync
   // button states, slider thumbs, and gated sections (map-mode / capo-mode
   // brighten or dim based on nodeView) on every render.
   if(typeof _viewPanelOpen!=='undefined' && _viewPanelOpen && typeof _vpSyncAll==='function') _vpSyncAll();
