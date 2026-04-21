@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.6.5</title>
+<title>Washtub Bass String Map · v7.6.6</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -167,7 +167,7 @@ input[type=range]{width:110px;cursor:pointer;}
 .crt-opt.on .crt-seg-hi{color:#7A3A1D;}
 @media(prefers-color-scheme:dark){.crt-opt{color:#aaa;}}
 /* sidebar */
-#sidebar{width:72px;flex-shrink:0;border-left:0.5px solid rgba(128,128,128,0.15);background:#fff;display:flex;flex-direction:column;overflow:hidden;position:relative;touch-action:none;}
+#sidebar{width:72px;flex-shrink:0;border-left:0.5px solid rgba(128,128,128,0.15);background:#fff;display:flex;flex-direction:column;overflow:hidden;position:relative;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
 #sb-toggle{width:100%;height:22px;border:none;border-bottom:0.5px solid rgba(128,128,128,0.15);background:transparent;font-size:7.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#533AB7;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;gap:4px;}
 #sb-toggle.collapsed{color:#aaa;}
 #sidebar.collapsed>*:not(#sb-toggle){display:none !important;}
@@ -188,8 +188,8 @@ input[type=range]{width:110px;cursor:pointer;}
 #capo-label-toggle{display:none;flex-shrink:0;flex-direction:column;align-items:stretch;padding:4px 5px 5px;gap:2px;border-top:0.5px solid rgba(128,128,128,0.15);}
 #capo-label-toggle.visible{display:flex;}
 @media(prefers-color-scheme:dark){#sidebar{background:#1e1e1e;}}
-#sb-upper{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:4px 5px;min-height:0;}
-#sb-lower{display:flex;flex-direction:column;justify-content:flex-start;padding:4px 5px;min-height:0;}
+#sb-upper{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:4px 5px;min-height:0;position:relative;z-index:2;}
+#sb-lower{display:flex;flex-direction:column;justify-content:flex-start;padding:4px 5px;min-height:0;position:relative;z-index:2;}
 #sb-hrule{height:0.5px;background:rgba(128,128,128,0.28);margin:0 6px;flex-shrink:0;}
 .sb-len{font-size:13px;font-weight:700;color:#533AB7;line-height:1.15;}
 .sb-hz{font-size:13px;font-weight:700;color:#1a1a1a;line-height:1.15;}
@@ -1554,7 +1554,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.6.5';
+const VERSION='v7.6.6';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -2110,6 +2110,29 @@ function _vpSetPitchBars(on, btn){
   }
 }
 
+// v7.6.6: per-type viz clearing helper — removes only children whose
+// data-vz attribute matches the requested type. Preserves the other
+// type's viz when toggling just one of them off.
+function _clearVizType(type){
+  const vl=document.getElementById('viz-layer');
+  if(!vl) return;
+  const children=Array.from(vl.children);
+  children.forEach(function(c){ if(c.getAttribute('data-vz')===type) c.remove(); });
+}
+
+// v7.6.6: re-fires the last cached viz trigger so a pinned node's viz
+// reappears immediately when a viz type is toggled back on. Uses the
+// same _lastVizArgs / _lastCapoVizArgs the engine already caches for
+// refreshViz(). Non-capo and capo paths both handled.
+function _vpRetriggerViz(){
+  if(typeof _pinnedFrac==='undefined' || _pinnedFrac===null) return;
+  if(typeof _lastVizArgs!=='undefined' && _lastVizArgs && typeof triggerViz==='function'){
+    triggerViz(_lastVizArgs.frac, _lastVizArgs.harm, _lastVizArgs.svgY, _lastVizArgs.color);
+  } else if(typeof _lastCapoVizArgs!=='undefined' && _lastCapoVizArgs && typeof triggerCapoViz==='function'){
+    triggerCapoViz(_lastCapoVizArgs.svgY, _lastCapoVizArgs.nodeColor, _lastCapoVizArgs.segs);
+  }
+}
+
 function _vpToggleNodeViz(btn){
   if(typeof nodeViz==='undefined' || typeof toggleNodeViz!=='function') return;
   toggleNodeViz();
@@ -2117,11 +2140,11 @@ function _vpToggleNodeViz(btn){
     btn.classList.toggle('on', !!nodeViz);
     btn.textContent=nodeViz?'on':'off';
   }
-  // v7.6.5: clear any currently-displayed viz immediately when turned off,
-  // so a pinned node's animation disappears without waiting for the next
-  // render cycle. clearViz() removes all viz-layer content (node + wave);
-  // whichever is still enabled will repaint on the next node interaction.
-  if(!nodeViz && typeof clearViz==='function') clearViz();
+  // v7.6.6: clear only node-viz on off (leave wave-viz alone). On on,
+  // re-trigger if a node is pinned so the viz reappears immediately
+  // instead of waiting for the next interaction/zoom.
+  if(!nodeViz) _clearVizType('node');
+  else _vpRetriggerViz();
 }
 
 function _vpToggleWaveViz(btn){
@@ -2131,7 +2154,8 @@ function _vpToggleWaveViz(btn){
     btn.classList.toggle('on', !!waveViz);
     btn.textContent=waveViz?'on':'off';
   }
-  if(!waveViz && typeof clearViz==='function') clearViz();
+  if(!waveViz) _clearVizType('wave');
+  else _vpRetriggerViz();
 }
 
 function _vpSetTinyLabels(on, btn){
@@ -8346,6 +8370,7 @@ function _drawNodeViz(svgY, color){
   if(!vl) return;
   const scale=vizNodeAmp/18;
   const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('data-vz','node'); // v7.6.6: per-type clearing tag
   if(_pinnedFrac===null){
     g.style.animation=`vizFadeOut ${vizNodeDur}s ease-out forwards`;
   }
@@ -8394,6 +8419,7 @@ function _drawWaveViz(frac, harm, color){
   if(!vl||!harm||harm<1) return;
   const speakingTop=(nodeView==='nut')?nutEffY():NY;
   const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('data-vz','wave'); // v7.6.6: per-type clearing tag
   if(_pinnedFrac===null){
     g.style.animation=`vizFadeOut ${vizWaveDur}s ease-out forwards`;
   }
@@ -8409,6 +8435,7 @@ function _drawCapoWaveViz(segs){
   const vl=document.getElementById('viz-layer');
   if(!vl) return;
   const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('data-vz','wave'); // v7.6.6: per-type clearing tag
   if(_pinnedFrac===null){
     g.style.animation=`vizFadeOut ${vizWaveDur}s ease-out forwards`;
   }
@@ -8440,6 +8467,7 @@ function _drawTickSineGlyph(svgY, color){
   const vl=document.getElementById('viz-layer');
   if(!vl) return;
   const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('data-vz','wave'); // v7.6.6: per-type clearing tag (tied to waveViz flag)
   if(_pinnedFrac===null){
     g.style.animation='vizFadeOut '+vizWaveDur+'s ease-out forwards';
   }
