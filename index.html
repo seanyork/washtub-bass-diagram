@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.6.6</title>
+<title>Washtub Bass String Map · v7.6.7</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -195,6 +195,14 @@ input[type=range]{width:110px;cursor:pointer;}
 .sb-hz{font-size:13px;font-weight:700;color:#1a1a1a;line-height:1.15;}
 .sb-note{font-size:13px;font-weight:700;line-height:1.15;}
 .sb-idle{font-size:9px;color:#ccc;font-style:italic;padding:6px 5px;}
+/* v7.6.7: semi-opaque label backgrounds so ruler labels remain readable
+   when their position overlaps the pinned zoom cluster. The bg tracks the
+   sidebar's own bg (white light / dark gray dark) at 85% opacity so labels
+   look painted on the sidebar. Tiny border-radius softens the strip edge. */
+#sb-upper > *, #sb-lower > *{background:rgba(255,255,255,0.85);border-radius:2px;}
+@media(prefers-color-scheme:dark){
+  #sb-upper > *, #sb-lower > *{background:rgba(30,30,30,0.85);}
+}
 
 /* bottom rail */
 /* v7.6 Phase 2: rail restructured from 3-column (#br-nv + #br-ctx + #br-ap) to
@@ -1554,7 +1562,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.6.6';
+const VERSION='v7.6.7';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
