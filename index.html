@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.6.1</title>
+<title>Washtub Bass String Map · v7.6.2</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -1278,7 +1278,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.6.1';
+const VERSION='v7.6.2';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -9507,6 +9507,12 @@ function render(){
       g.appendChild(hitRect);
     }
   });
+  // v7.6.2 Phase 3 hotfix: resync the settings panel whenever engine state
+  // changes (which always calls render()). Guarded by _settingsPanelOpen so
+  // cost is paid only when the panel is visible. Covers mode-change,
+  // nut-offset change, unit toggle, applyDefaults, syncSlider clamping
+  // (nut-mode len-slider cap), tension drag, etc. Fixes tests 22 + 12b.
+  if(typeof _settingsPanelOpen!=='undefined' && _settingsPanelOpen && typeof _spSyncAll==='function') _spSyncAll();
 }
 
 // ── Key grid ──────────────────────────────────────────────────────
