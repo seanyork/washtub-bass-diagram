@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.6.7</title>
+<title>Washtub Bass String Map · v7.6.8</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -46,7 +46,6 @@ input[type=range]{width:110px;cursor:pointer;}
 @media(prefers-color-scheme:dark){#zoom-rail button{background:rgba(30,30,30,0.92);color:#ddd;}}
 #canvas-wrap{overflow:hidden;flex:1 1 0%;cursor:grab;user-select:none;position:relative;min-height:0;touch-action:none;}
 #canvas-wrap.dragging{cursor:grabbing;}
-#zoom-label{font-size:10px;color:#888;text-align:center;}
 .capo-snap-btn{height:22px;font-size:11px;background:transparent;border:0.5px solid rgba(200,130,26,0.35);border-radius:3px;color:#C8821A;cursor:pointer;padding:0 8px;white-space:nowrap;display:flex;align-items:center;}
 .capo-snap-btn:hover{border-color:#C8821A;}
 .capo-snap-btn.on{background:#C8821A;color:#fff;border-color:#C8821A;}
@@ -123,24 +122,24 @@ input[type=range]{width:110px;cursor:pointer;}
 .lr-chip-val{font-size:11px;font-weight:600;color:#533AB7;line-height:1.1;}
 .lr-chip-sub{font-size:7px;color:#533AB7;line-height:1;}
 .lr-sep{width:44px;height:0.5px;background:rgba(128,128,128,0.2);flex-shrink:0;}
-#lr-zoom-cluster{display:grid;grid-template-columns:1fr 1fr;gap:2px;width:44px;flex-shrink:0;}
-.lr-zb{min-width:0;width:100%;height:24px;border:0.5px solid rgba(128,128,128,0.25);border-radius:4px;font-size:13px;color:#555;display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;overflow:hidden;-webkit-appearance:none;appearance:none;}
-.lr-zb:hover{border-color:rgba(128,128,128,0.5);}
-@media(prefers-color-scheme:dark){.lr-zb{background:#333;color:#ddd;}}
-.lr-zb-pct{font-size:7.5px;font-weight:600;}
-.lr-zoom-pct{font-size:7px;color:#888;text-align:center;}
 .lr-tension-lbl{font-size:6.5px;color:#aaa;text-transform:uppercase;letter-spacing:0.04em;flex-shrink:0;}
 #lr-tension-track{flex:1 1 0%;min-height:40px;position:relative;width:28px;touch-action:none;}
 #ten-sl-v{display:none;}
 #lr-ten-track-inner{position:absolute;left:50%;top:4px;bottom:4px;transform:translateX(-50%);width:3px;background:rgba(128,128,128,0.25);border-radius:2px;cursor:pointer;}
 #lr-ten-fill{position:absolute;bottom:0;left:0;width:100%;background:#533AB7;border-radius:2px;opacity:0.5;}
 #lr-ten-thumb{position:absolute;left:50%;transform:translate(-50%,50%);width:16px;height:16px;background:#533AB7;border-radius:50%;border:2.5px solid #fff;box-shadow:0 0 0 1.5px #533AB7;cursor:ns-resize;touch-action:none;}
-#lr-fund{display:flex;flex-direction:column;align-items:center;gap:0;flex-shrink:0;padding-top:2px;width:100%;}
-.lr-fund-note{font-size:13px;font-weight:600;color:#533AB7;line-height:1.2;text-align:center;position:relative;width:100%;}
-.lr-fund-num{font-size:20px;font-weight:600;color:#533AB7;line-height:1;width:100%;text-align:center;overflow:hidden;}
-.lr-fund-hz{font-size:8px;color:#aaa;line-height:1.4;}
-.lr-fund-lbl{font-size:6.5px;color:#aaa;text-transform:uppercase;letter-spacing:0.04em;line-height:1.6;}
-.lr-ten-val{font-size:13px;font-weight:600;color:#533AB7;line-height:1.15;text-align:center;}
+/* v7.6.8: compact fund/tension card (matches prototype #fund-block).
+   Bordered 3-row layout: note (centered + hairline sep), Hz data row,
+   lbs data row. flex-shrink:0 so the card never collapses — tension
+   track takes the flex when vertical space is tight, guaranteeing the
+   fund/note area stays visible on any viewport. */
+#lr-fund{width:46px;background:#fff;border:0.5px solid rgba(128,128,128,0.3);border-radius:3px;padding:3px 4px;display:flex;flex-direction:column;gap:1px;line-height:1.1;flex-shrink:0;}
+@media(prefers-color-scheme:dark){#lr-fund{background:#1e1e1e;border-color:rgba(128,128,128,0.25);}}
+#lr-fund-note{text-align:center;font-size:11px;font-weight:700;color:#533AB7;font-family:'SF Mono',Menlo,Consolas,monospace;padding-bottom:1px;border-bottom:0.5px solid rgba(128,128,128,0.15);margin-bottom:1px;position:relative;}
+#lr-fund .lr-fund-row{display:flex;align-items:baseline;gap:2px;}
+#lr-fund .lr-fund-row .val{flex:1;text-align:right;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:9.5px;color:#1a1a1a;font-weight:600;}
+@media(prefers-color-scheme:dark){#lr-fund .lr-fund-row .val{color:#e0e0e0;}}
+#lr-fund .lr-fund-row .unit{font-size:7px;color:#aaa;letter-spacing:0.02em;min-width:14px;text-align:left;}
 
 /* canvas-wrap already has flex:1 from updated rule above */
 #canvas-wrap.dragging{cursor:grabbing;}
@@ -899,17 +898,6 @@ input[type=range]{width:110px;cursor:pointer;}
       <div id="tune-cand-cluster"></div>
 
       <div class="lr-sep"></div>
-
-      <!-- zoom: 2×2 grid, no ↔ button -->
-      <div id="zoom-label" class="lr-zoom-pct">100%</div>
-      <div id="lr-zoom-cluster">
-        <button class="lr-zb" onclick="zoom(1.3)" title="zoom in">+</button>
-        <button class="lr-zb" onclick="zoom(1/1.3)" title="zoom out">−</button>
-        <button class="lr-zb" onclick="fitV()" title="fit vertical"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="7" y1="1" x2="7" y2="13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><polyline points="4,4 7,1 10,4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="4,10 7,13 10,10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <button class="lr-zb lr-zb-pct" onclick="zoomTo1()" title="fit columns" style="font-size:8px;font-weight:600;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><polyline points="4,4 1,7 4,10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="10,4 13,7 10,10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      </div>
-
-      <div class="lr-sep"></div>
       <div id="lr-tension-track">
         <input type="range" id="ten-sl-v" min="10" max="150" step="1" value="50" style="display:none;">
         <div id="lr-ten-track-inner">
@@ -918,12 +906,9 @@ input[type=range]{width:110px;cursor:pointer;}
         </div>
       </div>
       <div id="lr-fund">
-        <div class="lr-fund-lbl">fund</div>
-        <div class="lr-fund-note" id="lr-fund-note">G2</div>
-        <div class="lr-fund-num" id="lr-fund-num">98</div>
-        <div class="lr-fund-hz">Hz</div>
-        <div class="lr-fund-lbl" style="margin-top:3px;">tension</div>
-        <div class="lr-ten-val" id="lr-ten-val">5.0 lbs</div>
+        <div id="lr-fund-note">G2</div>
+        <div class="lr-fund-row"><span class="val" id="lr-fund-num">98</span><span class="unit">Hz</span></div>
+        <div class="lr-fund-row"><span class="val" id="lr-ten-val">5.0</span><span class="unit">lbs</span></div>
       </div>
     </div>
 
@@ -1562,7 +1547,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.6.7';
+const VERSION='v7.6.8';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -2675,7 +2660,9 @@ function updateFundDisplay(){
     noteEl.innerHTML=noteName+sign;
   }
   if(numEl)  numEl.textContent=parseFloat(fund.toFixed(1));
-  if(tenEl)  tenEl.innerHTML=tensionLbs.toFixed(1)+'<br><span style="font-size:6.5px;color:#aaa;font-weight:400;line-height:1.2;">lbs</span>';
+  // v7.6.8: compact fund card layout has "lbs" unit in a separate static
+  // span sibling, so tenEl now just carries the number (no inline unit HTML).
+  if(tenEl)  tenEl.textContent=tensionLbs.toFixed(1);
 }
 
 // ── Left rail chip labels ─────────────────────────────────────────
@@ -10265,7 +10252,11 @@ function applyT(){
   if(!isFinite(tx)) tx=0;
   if(!isFinite(ty)) ty=0;
   inner.style.transform=`translate(${tx}px,${ty}px) scale(${sc})`;
-  document.getElementById('zoom-label').textContent=Math.round(sc*100)+'%';
+  // v7.6.8: #zoom-label was removed from the left rail in the cleanup;
+  // view-panel + sidebar-pinned cluster carry the zoom % readout now.
+  // Guarded so the write doesn't throw when the element is absent.
+  const zl=document.getElementById('zoom-label');
+  if(zl) zl.textContent=Math.round(sc*100)+'%';
 }
 function clamp(){
   const sw=1380*sc, sh=1440*sc, ww=canvas.clientWidth, wh=canvas.clientHeight;
