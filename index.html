@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.5.5</title>
+<title>Washtub Bass String Map · v7.6.0</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
 @media(prefers-color-scheme:dark){html{background:#111;}}
 body{margin:0;padding:0;font-family:system-ui,sans-serif;background:#1a1a1a;color:#1a1a1a;font-size:13px;overflow:hidden;overscroll-behavior:none;touch-action:none;display:flex;justify-content:center;}
 html{overflow:hidden;overscroll-behavior:none;}
-:root{--inkey:#1a1a1a;--inkey-fill:rgba(0,0,0,0.06);}
+:root{--inkey:#1a1a1a;--inkey-fill:rgba(0,0,0,0.06);--bottom-rail-height:96px;}
 @media(prefers-color-scheme:dark){body{background:#1a1a1a;color:#e0e0e0;}:root{--inkey:#d8d8d0;--inkey-fill:rgba(255,255,255,0.08);}}
 #ctrl-bar{background:rgba(128,128,128,0.07);border:0.5px solid rgba(128,128,128,0.2);border-radius:10px;padding:10px 14px;margin-bottom:10px;}
 .ctrl-sep{height:0.5px;background:rgba(128,128,128,0.2);margin:8px 0;}
@@ -197,14 +197,18 @@ input[type=range]{width:110px;cursor:pointer;}
 .sb-idle{font-size:9px;color:#ccc;font-style:italic;padding:6px 5px;}
 
 /* bottom rail */
-#bottom-rail{height:76px;flex-shrink:0;border-top:0.5px solid rgba(128,128,128,0.18);display:flex;background:rgb(250,250,250);position:relative;z-index:16;touch-action:none;padding-bottom:env(safe-area-inset-bottom,0px);}
+/* v7.6 Phase 2: rail restructured from 3-column (#br-nv + #br-ctx + #br-ap) to
+   2-row column (#br-top buttons + #br-ctx mode context). Total footprint =
+   --bottom-rail-height + iOS safe-area. Internal content area = the var value,
+   with #br-ctx absorbing safe-area padding at its bottom edge. */
+#bottom-rail{height:calc(var(--bottom-rail-height) + env(safe-area-inset-bottom,0px));flex-shrink:0;border-top:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column;background:rgb(250,250,250);position:relative;z-index:16;touch-action:none;}
 @media(prefers-color-scheme:dark){#bottom-rail{background:#252525;}}
 #br-nv{width:40px;border-right:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 3px;gap:2px;flex-shrink:0;}
 .br-nvb{width:32px;height:20px;font-size:9px;border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;color:#666;display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;}
 .br-nvb-on{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
 .br-nvb-cap-on{background:#C8821A;color:#fff;border-color:#C8821A;}
 @media(prefers-color-scheme:dark){.br-nvb{background:#333;color:#aaa;}}
-#br-ctx{flex:1 1 0%;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
+#br-ctx{flex:1 1 0%;display:flex;flex-direction:column;min-width:0;overflow:hidden;padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px));gap:5px;}
 .br-ctx-row{flex:1 1 0%;display:flex;align-items:center;padding:0 6px;gap:4px;border-bottom:0.5px solid rgba(128,128,128,0.1);}
 .br-ctx-row:last-child{border-bottom:none;}
 .br-ctx-idle{font-size:8.5px;color:#ccc;font-style:italic;}
@@ -221,7 +225,7 @@ input[type=range]{width:110px;cursor:pointer;}
 #cof-dot{display:none;}
 
 /* overflow panel (below bottom rail on desktop, slide-up on mobile) */
-#overflow-panel{display:none;position:absolute;bottom:76px;left:0;right:0;z-index:15;background:#fff;border-top:0.5px solid rgba(128,128,128,0.18);padding:10px 12px;flex-direction:column;gap:8px;}
+#overflow-panel{display:none;position:absolute;bottom:var(--bottom-rail-height);left:0;right:0;z-index:15;background:#fff;border-top:0.5px solid rgba(128,128,128,0.18);padding:10px 12px;flex-direction:column;gap:8px;}
 @media(prefers-color-scheme:dark){#overflow-panel{background:#1e1e1e;}}
 #overflow-panel.visible{display:flex;}
 /* ── bottom rail control styles ── */
@@ -258,22 +262,29 @@ input[type=range]{width:110px;cursor:pointer;}
 .ov-btn.danger{border-color:rgba(153,60,29,0.3);color:rgba(153,60,29,0.8);}
 /* ── CoF + picker overlays ── */
 /* ══ CoF wheel positioning — DO NOT CHANGE ══════════════════════════
-   cof-wrap MUST stay at left:0 bottom:0 (device left edge, behind left-rail).
+   cof-wrap MUST stay at left:0 (device left edge, behind left-rail).
    play-zone and play-drawer are at left:56px (right of left-rail).
    These two systems are SEPARATE. Never merge cof-wrap into play-zone.
-   The left-rail (z-index:15) intentionally sits on top of the CoF wheel. */
-#cof-wrap{position:absolute;left:0;bottom:0;width:170px;height:170px;z-index:14;pointer-events:auto;}
+   The left-rail (z-index:15) intentionally sits on top of the CoF wheel.
+   v7.6 Phase 2: `bottom` is tied to --bottom-rail-height so the wheel's
+   94px visible peek above the rail top stays constant as the rail grows
+   from 76 to 96. calc(X - 76px) is the canonical form: when var=76 the
+   bottom is 0 (original anchor); when var=96 the bottom is 20 (wheel
+   moves up 20px, matching the rail's 20px growth). */
+#cof-wrap{position:absolute;left:0;bottom:calc(var(--bottom-rail-height) - 76px);width:170px;height:170px;z-index:14;pointer-events:auto;}
 #cof-canvas{display:block;cursor:grab;}
 #cof-canvas.spinning{cursor:grabbing;}
 /* ── Play zone: play-btn-row only, sits above CoF ── */
 /* IMPORTANT: left:56px keeps this right of the left rail.
    CoF wheel (cof-wrap) stays at left:0 — do not merge these. */
-#play-zone{position:absolute;left:56px;bottom:170px;z-index:14;width:110px;display:none;flex-direction:column;}
+#play-zone{position:absolute;left:56px;bottom:calc(var(--bottom-rail-height) + 94px);z-index:14;width:110px;display:none;flex-direction:column;}
 #play-zone.compact{width:80px;}
 @media(prefers-color-scheme:dark){#play-zone{background:#1e1e1e;}}
 /* ── Play drawer: slides up above play row, scrollable, capped at top of canvas ── */
-/* Play drawer — top:50px keeps it below the tone strip; bottom:202px keeps it above play-btn-row (170 bottom rail + 32 go btn). Scrollable within this bounded area. */
-#play-drawer{position:absolute;left:56px;bottom:202px;top:50px;z-index:14;width:110px;display:none;overflow-y:auto;background:#fff;border:0.5px solid rgba(83,58,183,0.2);border-bottom:none;border-radius:8px 8px 0 0;flex-direction:column;}
+/* Play drawer — top:50px keeps it below the tone strip; v7.6 Phase 2: bottom
+   anchor now follows rail height. Stack is rail + CoF visible peek (94px) +
+   go-btn height (32px). Scrollable within this bounded area. */
+#play-drawer{position:absolute;left:56px;bottom:calc(var(--bottom-rail-height) + 94px + 32px);top:50px;z-index:14;width:110px;display:none;overflow-y:auto;background:#fff;border:0.5px solid rgba(83,58,183,0.2);border-bottom:none;border-radius:8px 8px 0 0;flex-direction:column;}
 @media(prefers-color-scheme:dark){#play-drawer{background:#1e1e1e;}}
 #play-drawer::-webkit-scrollbar{width:3px;}
 #play-drawer::-webkit-scrollbar-thumb{background:rgba(128,128,128,0.25);border-radius:2px;}
@@ -342,7 +353,7 @@ input[type=range]{width:110px;cursor:pointer;}
 .hp-item.on{color:#533AB7;font-weight:700;background:rgba(83,58,183,0.06);}
 @media(prefers-color-scheme:dark){.hp-item{color:#e0e0e0;}}
 /* ── README panel ── */
-#readme-panel{display:none;position:absolute;left:0;right:0;bottom:76px;z-index:20;background:#fff;border-top:0.5px solid rgba(128,128,128,0.2);box-shadow:0 -4px 20px rgba(0,0,0,0.08);flex-direction:column;max-height:70vh;}
+#readme-panel{display:none;position:absolute;left:0;right:0;bottom:var(--bottom-rail-height);z-index:20;background:#fff;border-top:0.5px solid rgba(128,128,128,0.2);box-shadow:0 -4px 20px rgba(0,0,0,0.08);flex-direction:column;max-height:70vh;}
 @media(prefers-color-scheme:dark){#readme-panel{background:#1e1e1e;}}
 #readme-panel.visible{display:flex;}
 #readme-panel-header{display:flex;align-items:center;padding:8px 12px;border-bottom:0.5px solid rgba(128,128,128,0.15);gap:8px;flex-shrink:0;}
@@ -379,6 +390,60 @@ input[type=range]{width:110px;cursor:pointer;}
   0%   { opacity: 1; }
   100% { opacity: 0; }
 }
+/* ══════════════════════════════════════════════════════════════════
+   v7.6 UI REFRESH — PHASE 1 SCAFFOLDING
+   These rules are inert in Phase 1 (no elements reference them).
+   Phases 2-6 populate #br-top, #snap-target-popover, #splash,
+   and the settings/view panels (Chat 2) that use these classes.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Gated sections — dimmed when their target mode isn't active. */
+.sec.gated{opacity:0.4;}
+
+/* Snap-target popover — opens upward from the SNAP TARGET button
+   in map-mode context (Phase 5). Teal palette to match map-mode color. */
+#snap-target-popover{position:fixed;z-index:30;border:1px solid #0F6E56;border-radius:5px;background:#fff;box-shadow:0 -4px 12px rgba(0,0,0,0.18);padding:3px;font-size:11px;display:none;min-width:180px;}
+#snap-target-popover.open{display:block;}
+#snap-target-popover .po-item{padding:9px 10px;border-radius:3px;color:#1a1a1a;display:flex;align-items:center;justify-content:space-between;gap:4px;cursor:pointer;}
+#snap-target-popover .po-item.on{background:#D6ECE4;color:#0F6E56;font-weight:600;}
+@media(prefers-color-scheme:dark){#snap-target-popover{background:#1e1e1e;}#snap-target-popover .po-item{color:#e0e0e0;}}
+
+/* Row-stack pattern — used in settings panel (Chat 2) for stacked
+   slider + label + editable readout. Matches prototype .row-stack. */
+.row-stack{display:flex;flex-direction:column;gap:4px;padding:4px 0;}
+.row-stack .top{display:flex;justify-content:space-between;align-items:center;}
+.row-stack .top .lbl{font-size:10px;color:#5F5E5A;}
+.row-stack .top .val{font-size:10px;color:#533AB7;font-weight:600;font-family:monospace;min-width:50px;text-align:right;}
+
+/* Editable field — type-to-edit in settings (Chat 2). Preserves kg/m etc.
+   as part of input value; parsing extracts numeric prefix. */
+.fld.editable{background:#fff;border:0.5px solid #533AB7;border-radius:3px;padding:3px 7px;font-size:10px;color:#1a1a1a;font-family:'SF Mono',Menlo,Consolas,monospace;text-align:right;outline:none;-webkit-appearance:none;appearance:none;user-select:text;-webkit-user-select:text;touch-action:auto;}
+.fld.editable:focus{border-color:#533AB7;background:#F4F1FC;}
+
+/* New bottom rail — Phase 2 real styles. Row of 7 buttons: mute, map, nodes,
+   nut, capo, settings, view. Mode buttons (map/nodes/nut/capo) take color from
+   their own mode; map = teal, capo = amber, nodes/nut = purple. Action buttons
+   (settings/view) use purple when open. */
+#br-top{display:flex;gap:2px;padding:4px;background:rgba(128,128,128,0.05);border-bottom:0.5px solid rgba(128,128,128,0.12);height:44px;flex-shrink:0;align-items:stretch;}
+@media(prefers-color-scheme:dark){#br-top{background:rgba(255,255,255,0.03);border-bottom-color:rgba(255,255,255,0.1);}}
+#br-top .mute-btn{width:32px;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#993C1D;font-size:14px;cursor:pointer;flex-shrink:0;}
+#br-top .mute-btn.muted{background:#FAECE7;border-color:#993C1D;}
+@media(prefers-color-scheme:dark){#br-top .mute-btn{background:#333;border-color:rgba(255,255,255,0.15);}#br-top .mute-btn.muted{background:rgba(153,60,29,0.25);}}
+#br-top .b{flex:1;min-width:0;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:#1a1a1a;font-weight:500;gap:1px;padding:2px;cursor:pointer;white-space:nowrap;}
+@media(prefers-color-scheme:dark){#br-top .b{background:#333;border-color:rgba(255,255,255,0.15);color:#e0e0e0;}}
+#br-top .b.mode.on{border-color:#533AB7;background:rgba(83,58,183,0.10);color:#533AB7;font-weight:700;}
+#br-top .b.mode.capo-on{border-color:#C8821A;background:rgba(200,130,26,0.12);color:#C8821A;font-weight:700;}
+#br-top .b.mode.pm-on{border-color:#0F6E56;background:rgba(15,110,86,0.10);color:#0F6E56;font-weight:700;}
+#br-top .b.act.on{border-color:#533AB7;background:rgba(83,58,183,0.10);color:#533AB7;font-weight:700;}
+#br-top .b .ic{font-size:12px;color:#533AB7;line-height:1;}
+#br-top .b.mode .ic{display:none;}
+
+/* Splash panel — Phase 6 populates. Hidden until then. */
+#splash{display:none;}
+
+/* Transitional orphans div — Phase 2 moves #br-nv and #br-ap here
+   while their contents find new homes. Hidden from view. */
+#transitional-orphans{display:none;}
 /* ══ end v4 APP SHELL CSS ═══════════════════════════════════════════ */
 </style>
 </head>
@@ -725,31 +790,19 @@ input[type=range]{width:110px;cursor:pointer;}
     style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:12;"></svg>
   </div><!-- end app-body -->
 
-  <!-- bottom rail (placeholder — wired in Steps 6–12) -->
+  <!-- bottom rail — v7.6 Phase 2 restructure: #br-top (7 buttons) + #br-ctx (2 rows, populated by Phase 5) -->
   <div id="bottom-rail">
-    <div id="br-nv">
-      <div class="br-nvb br-nvb-on" id="br-full"
-           onclick="setNodeView('full',document.getElementById('view-full'))">full</div>
-      <div class="br-nvb" id="br-nut"
-           onclick="setNodeView('nut',document.getElementById('view-nut'))">nut</div>
-      <div class="br-nvb" id="br-capo"
-           onclick="setNodeView('capo',document.getElementById('view-capo'))">capo</div>
-      <div class="br-nvb" id="br-pitchmap"
-           onclick="setNodeView('pitchmap',document.getElementById('view-pitchmap'))">map</div>
+    <div id="br-top">
+      <div class="mute-btn" id="br-mute-btn" onclick="toggleMute()" title="Mute/unmute">🔊</div>
+      <div class="b mode" data-mode="map"   id="br-mode-map"   onclick="_handleModeClick('map')">map</div>
+      <div class="b mode" data-mode="nodes" id="br-mode-nodes" onclick="_handleModeClick('nodes')">nodes</div>
+      <div class="b mode" data-mode="nut"   id="br-mode-nut"   onclick="_handleModeClick('nut')">nut</div>
+      <div class="b mode" data-mode="capo"  id="br-mode-capo"  onclick="_handleModeClick('capo')">capo</div>
+      <div class="b act"  id="br-settings-btn" onclick="_toggleSettingsPanel()"><span class="ic">&#9881;</span>settings</div>
+      <div class="b act"  id="br-view-btn"     onclick="_toggleViewPanel()"><span class="ic">&#10033;</span>view</div>
     </div>
     <div id="br-ctx">
-      <div class="br-ctx-row"><span class="br-ctx-idle">no view controls</span></div>
-      <div class="br-ctx-row"></div>
-      <div class="br-ctx-row">
-        <div class="br-more-bar"></div>
-        <div class="br-more-lbl" id="br-more-lbl" onclick="toggleOverflow()">my bass defaults ↑</div>
-        <div class="br-more-bar"></div>
-      </div>
-    </div>
-    <div id="br-ap">
-      <div class="br-apb" id="br-audio" onclick="setBRPanel('audio',this)">♪ audio</div>
-      <div class="br-apb" id="br-phys"  onclick="setBRPanel('phys',this)">⚙ phys</div>
-      <div class="br-apb" id="br-lgnd"  onclick="setBRPanel('lgnd',this)">⬡ lgnd</div>
+      <!-- Populated by renderBRCtx() in Phase 5 based on current mode -->
     </div>
   </div>
 
@@ -761,6 +814,10 @@ input[type=range]{width:110px;cursor:pointer;}
   <div id="home-picker"></div>
   <!-- readme section popover — anchored to bottom-rail -->
   <div id="readme-section-popover"></div>
+  <!-- snap-target popover (v7.6 Phase 1 scaffolding) — populated by Phase 5 map-mode context -->
+  <div id="snap-target-popover"></div>
+  <!-- transitional orphans (v7.6 Phase 1 scaffolding) — Phase 2 parks #br-nv and #br-ap here while controls are rehomed. Display:none via CSS. -->
+  <div id="transitional-orphans"></div>
 
   <!-- Play drawer: slides up above play row when open.
        Capped by top:0 so it never enters the tone strip.
@@ -893,7 +950,8 @@ input[type=range]{width:110px;cursor:pointer;}
   <!-- Degree picker popover — sibling to play-drawer, positioned dynamically -->
   <div id="play-deg-picker"></div>
 
-  <!-- Play zone: play-btn-row only, sits above CoF (bottom:170px).
+  <!-- Play zone: play-btn-row only, sits above CoF visible peek (94px above rail).
+       v7.6 Phase 2: bottom anchored to calc(var(--bottom-rail-height) + 94px).
        IMPORTANT: left:56px aligns to right of left rail.
        CoF wheel (cof-wrap) is a SEPARATE element at left:0 — never merge them. -->
   <div id="play-zone">
@@ -971,6 +1029,109 @@ const _isCoarsePointer=!!(window.matchMedia&&window.matchMedia('(pointer:coarse)
 // Disable fan overlay only in desktop iframes — mobile iframes (Claude mobile app) work fine.
 // Desktop Claude renderer crashes on layout reads (clientWidth) even in rAF.
 const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
+
+// Single source of truth for the version string.
+// Every tertiary build updates this one line.
+// Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
+const VERSION='v7.6.0';
+
+// ══════════════════════════════════════════════════════════════════
+// v7.6 UI REFRESH — PHASE 1 JS HELPERS
+// isNarrow() is used in Phase 2+ for panel-exclusivity rules at
+// narrow viewports (iOS Display Zoom "Larger Text" = 320px logical).
+// onViewportChange() is a stub in Phase 1; Phases 3+4 (Chat 2) wire
+// it to enforce settings/view panel exclusivity on resize/rotate.
+// ══════════════════════════════════════════════════════════════════
+function isNarrow(){ return window.innerWidth<380; }
+function onViewportChange(){
+  // Phase 1 stub — no-op. Chat 2 wires panel exclusivity + splash width.
+}
+
+// v7.6 Phase 2 feature flag. While true, legacy renderNodeViewCtx() returns ''
+// (keeping #br-ctx empty for the new 2-row layout). Phase 5 sets this to false
+// and rebuilds the function body with the new per-mode context generator.
+let _v76CtxLegacyDisabled=true;
+
+// v7.6 Phase 2 panel-open state. Settings and view panels are real DOM in
+// Chat 2 (Phases 3 and 4); in Chat 1 the buttons just toggle these flags and
+// their .on visual state. Each flag will drive .open on its panel later.
+let _viewPanelOpen=false;
+let _settingsPanelOpen=false;
+
+// ══════════════════════════════════════════════════════════════════
+// v7.6 Phase 2 — new bottom-rail button wiring
+// ══════════════════════════════════════════════════════════════════
+
+// The new #br-top buttons use short mode names (map/nodes/nut/capo) while
+// the legacy setNodeView() fn expects long names (pitchmap/full/nut/capo).
+// These maps translate between them. Phase 7 polish may consolidate later
+// per the plan's "rename bottom rail mode `full` -> `nodes`" step — but
+// in Chat 1 the JS-internal name stays `full` to preserve existing code.
+const _V76_MODE_TO_VIEW={map:'pitchmap',nodes:'full',nut:'nut',capo:'capo'};
+const _V76_VIEW_TO_MODE={pitchmap:'map',full:'nodes',nut:'nut',capo:'capo'};
+
+// Click handler for the 4 mode buttons in #br-top. Forwards to the legacy
+// setNodeView(), passing the hidden #view-* legacy button so setNodeView's
+// internal querySelectorAll/.on logic keeps working. Then syncs the new
+// buttons' visible state and rebuilds #br-ctx (Phase 5 populates).
+function _handleModeClick(mode){
+  const view=_V76_MODE_TO_VIEW[mode];
+  if(!view) return;
+  const legacyBtn=document.getElementById('view-'+view);
+  if(!legacyBtn) return;
+  setNodeView(view, legacyBtn);
+  _syncModeButtons();
+  if(typeof renderBRCtx==='function') renderBRCtx();
+}
+
+// Toggles settings panel open state. In Chat 1 the panel DOM does not yet
+// exist — this just flips the flag and visual state. Narrow-viewport
+// exclusivity rule: opening settings at <380px closes the view panel.
+function _toggleSettingsPanel(){
+  _settingsPanelOpen=!_settingsPanelOpen;
+  if(_settingsPanelOpen && isNarrow()) _viewPanelOpen=false;
+  _syncPanelBtns();
+}
+
+// Mirrors _toggleSettingsPanel for the view panel.
+function _toggleViewPanel(){
+  _viewPanelOpen=!_viewPanelOpen;
+  if(_viewPanelOpen && isNarrow()) _settingsPanelOpen=false;
+  _syncPanelBtns();
+}
+
+// Syncs the 4 mode buttons in #br-top to the current nodeView. Applies
+// mode-colored .on class (pm-on for map, capo-on for capo, plain .on for
+// nodes/nut) so the active button visually matches the mode's color.
+function _syncModeButtons(){
+  const currentMode=_V76_VIEW_TO_MODE[nodeView];
+  document.querySelectorAll('#br-top .b.mode').forEach(btn=>{
+    btn.classList.remove('on','capo-on','pm-on');
+    if(btn.dataset.mode===currentMode){
+      if(currentMode==='capo') btn.classList.add('capo-on');
+      else if(currentMode==='map') btn.classList.add('pm-on');
+      else btn.classList.add('on');
+    }
+  });
+}
+
+// Syncs the settings + view action buttons in #br-top to their open flags.
+function _syncPanelBtns(){
+  const st=document.getElementById('br-settings-btn');
+  const vw=document.getElementById('br-view-btn');
+  if(st) st.classList.toggle('on', _settingsPanelOpen);
+  if(vw) vw.classList.toggle('on', _viewPanelOpen);
+}
+
+// Syncs the mute button in #br-top to the current _muted state. Icon toggles
+// between speaker and muted-speaker. Called from toggleMute() so the button
+// updates even though renderBRCtx() no longer paints the mute into #br-ctx.
+function _syncMuteBtn(){
+  const mb=document.getElementById('br-mute-btn');
+  if(!mb) return;
+  mb.classList.toggle('muted', _muted);
+  mb.textContent=_muted?'\uD83D\uDD07':'\uD83D\uDD0A'; // speaker-muted / speaker
+}
 
 // ══════════════════════════════════════════════════════════════════════════════
 // ⚠️  PHYSICS & MUSIC THEORY CORE — DO NOT MODIFY DURING UI REDESIGN (v4.x)
@@ -2411,12 +2572,16 @@ function renderBRCtx(){
 
 // ── Node view context rows ────────────────────────────────────────
 function renderNodeViewCtx(view){
+  // v7.6 Phase 2 short-circuit — legacy per-mode br-ctx content is suppressed
+  // until Phase 5 rebuilds the new two-row context. #br-ctx renders empty
+  // during Phase 2/3/4 transitional state. Remove this line when Phase 5 lands.
+  if(typeof _v76CtxLegacyDisabled==='undefined' || _v76CtxLegacyDisabled) return '';
   if(view==='full'){
     const muteActive=_muted?' muted':'';
     const muteSvg=_muted
       ?`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h3l4-4v14l-4-4H3z" stroke="#b42828" stroke-width="1.3" stroke-linejoin="round"/><line x1="14" y1="7" x2="18" y2="13" stroke="#b42828" stroke-width="1.5" stroke-linecap="round"/><line x1="18" y1="7" x2="14" y2="13" stroke="#b42828" stroke-width="1.5" stroke-linecap="round"/></svg>`
       :`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h3l4-4v14l-4-4H3z" stroke="#533AB7" stroke-width="1.3" stroke-linejoin="round"/><path d="M14 6.5c1.5 1 2.5 2.2 2.5 3.5s-1 2.5-2.5 3.5" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/><path d="M15.5 4c2.5 1.5 4 3.5 4 6s-1.5 4.5-4 6" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/></svg>`;
-    return `<div class="br-ctx-row" style="flex:0 0 auto;padding:2px 6px;"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">Washtub v7.5.5</span></div>
+    return `<div class="br-ctx-row" style="flex:0 0 auto;padding:2px 6px;"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">Washtub ${VERSION}</span></div>
             <div class="br-ctx-row" style="gap:5px;align-items:center;padding:4px 6px;">
               <div class="br-action-btn${muteActive}" onclick="toggleMute()" title="${_muted?'Unmute':'Mute'}">
                 ${muteSvg}
@@ -9399,6 +9564,10 @@ function closeReadme(){
 function toggleMute(){
   _muted=!_muted;
   if(_muted) stopActive();
+  // v7.6 Phase 2: sync the new #br-top mute button. The renderBRCtx() call
+  // below is a no-op while _v76CtxLegacyDisabled is true (Phases 2-4) but
+  // is retained so mute-sync lands correctly once Phase 5 repopulates ctx.
+  _syncMuteBtn();
   if(brNodeView==='full') renderBRCtx();
 }
 
@@ -9587,6 +9756,16 @@ window.addEventListener('focus', _warmAudioCtx);
 setInterval(()=>{
   try{ const ctx=getCtx(); if(ctx&&ctx.state==='suspended') ctx.resume().catch(()=>{}); }catch(e){}
 },25000);
+
+// ══════════════════════════════════════════════════════════════════
+// v7.6 Phase 2 init — sync new #br-top buttons to current state.
+// Script runs at end of body so DOM is fully parsed. Placed here so it
+// fires after all declarations; safe even though nodeView was set up
+// top-of-app because these are pure read-and-paint helpers.
+// ══════════════════════════════════════════════════════════════════
+_syncModeButtons();
+_syncMuteBtn();
+_syncPanelBtns();
 </script>
 </body>
 </html>
