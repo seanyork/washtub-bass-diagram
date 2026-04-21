@@ -444,6 +444,35 @@ input[type=range]{width:110px;cursor:pointer;}
 /* Transitional orphans div — Phase 2 moves #br-nv and #br-ap here
    while their contents find new homes. Hidden from view. */
 #transitional-orphans{display:none;}
+
+/* ══════════════════════════════════════════════════════════════════
+   v7.6 UI REFRESH — PHASE 5 MODE-CONTEXT ROWS
+   Styles the per-mode content inside #br-ctx. Uses the .ctx-row class
+   to avoid colliding with legacy .br-ctx-row. Populated by the new
+   renderNodeViewCtx() per mode: map, nodes, nut, capo.
+   ══════════════════════════════════════════════════════════════════ */
+#br-ctx .ctx-row{display:flex;gap:4px;align-items:center;min-height:22px;flex-shrink:0;}
+#br-ctx .ctx-row .chip{padding:2px 7px;background:rgba(128,128,128,0.05);border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;font-size:10px;color:#1a1a1a;white-space:nowrap;line-height:1.3;}
+#br-ctx .ctx-row .chip.lbl{background:transparent;border:none;color:#8A8882;font-size:9px;padding:2px;letter-spacing:0.04em;text-transform:uppercase;}
+#br-ctx .ctx-row .cbtn{padding:3px 8px;background:#fff;border:0.5px solid #533AB7;border-radius:3px;font-size:10px;color:#533AB7;white-space:nowrap;cursor:pointer;line-height:1.3;}
+#br-ctx .ctx-row .cbtn.on{background:#533AB7;color:#fff;}
+#br-ctx .ctx-row .cbtn.amber{border-color:#C8821A;color:#C8821A;}
+#br-ctx .ctx-row .cbtn.amber.on{background:#C8821A;color:#fff;}
+#br-ctx .ctx-row .cbtn.teal{border-color:#0F6E56;color:#0F6E56;}
+#br-ctx .ctx-row .cbtn.teal.on{background:#0F6E56;color:#fff;}
+#br-ctx .ctx-row .chip.amber-chip{border-color:#C8821A;color:#C8821A;background:#F8E8D0;cursor:pointer;}
+#br-ctx .ctx-row .chip.teal-chip{border-color:#0F6E56;color:#0F6E56;background:#D6ECE4;cursor:pointer;}
+#br-ctx .ctx-row .vr{width:0.5px;background:rgba(128,128,128,0.2);align-self:stretch;margin:0 2px;flex-shrink:0;}
+#br-ctx .ctx-row .grow{flex:1 1 0%;font-size:9.5px;padding:3px 2px;text-align:center;min-width:0;}
+#br-ctx .ctx-row .idle{font-size:9.5px;color:#8A8882;font-style:italic;padding:3px 2px;letter-spacing:0.02em;}
+@media(prefers-color-scheme:dark){
+  #br-ctx .ctx-row .chip{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.15);color:#e0e0e0;}
+  #br-ctx .ctx-row .chip.lbl{color:#888;}
+  #br-ctx .ctx-row .cbtn{background:#333;}
+  #br-ctx .ctx-row .chip.amber-chip{background:rgba(200,130,26,0.2);}
+  #br-ctx .ctx-row .chip.teal-chip{background:rgba(15,110,86,0.2);}
+  #br-ctx .ctx-row .idle{color:#888;}
+}
 /* ══ end v4 APP SHELL CSS ═══════════════════════════════════════════ */
 </style>
 </head>
@@ -1047,11 +1076,6 @@ function onViewportChange(){
   // Phase 1 stub — no-op. Chat 2 wires panel exclusivity + splash width.
 }
 
-// v7.6 Phase 2 feature flag. While true, legacy renderNodeViewCtx() returns ''
-// (keeping #br-ctx empty for the new 2-row layout). Phase 5 sets this to false
-// and rebuilds the function body with the new per-mode context generator.
-let _v76CtxLegacyDisabled=true;
-
 // v7.6 Phase 2 panel-open state. Settings and view panels are real DOM in
 // Chat 2 (Phases 3 and 4); in Chat 1 the buttons just toggle these flags and
 // their .on visual state. Each flag will drive .open on its panel later.
@@ -1131,6 +1155,64 @@ function _syncMuteBtn(){
   if(!mb) return;
   mb.classList.toggle('muted', _muted);
   mb.textContent=_muted?'\uD83D\uDD07':'\uD83D\uDD0A'; // speaker-muted / speaker
+}
+
+// ══════════════════════════════════════════════════════════════════
+// v7.6 Phase 5 — pitchmap context helpers
+// Wired to buttons inside the new map-mode #br-ctx content. Each updates
+// state and re-renders ctx so the button's visible state matches.
+// ══════════════════════════════════════════════════════════════════
+
+// Cycles the pitchmap tune target between 'nearest' (X > any node) and
+// 'canonical' (X > fundamental). Single-button cycle replaces the legacy
+// two-button layout. Re-render restores cycle label with the new state.
+function _cyclePmTune(){
+  _pmTuneMode=(_pmTuneMode==='nearest')?'canonical':'nearest';
+  renderBRCtx();
+}
+
+// Toggles the ruler reference mode (home-nodes vs tonic-notes). If a node
+// is pinned, re-draws the ruler immediately so the reference lines follow
+// the new mode. Mirrors the legacy handler's in-place ruler redraw.
+function _toggleTonicRuler(){
+  _rulerRefMode=(_rulerRefMode==='home-nodes')?'tonic-notes':'home-nodes';
+  renderBRCtx();
+  if(_pinnedFrac!==null && _activeNode) drawRulerSVG(_activeNode);
+}
+
+// Opens (or toggles) the snap-target popover above its opener button.
+// Three options: X > any node, X > fundamental, any note > fundamental.
+// Contents built on open so the current key name (X) reflects homeKey.
+function _openSnapTargetPopover(e){
+  if(e && e.stopPropagation) e.stopPropagation();
+  const pop=document.getElementById('snap-target-popover');
+  const btn=document.getElementById('br-snap-target-btn');
+  if(!pop || !btn) return;
+  if(pop.classList.contains('open')){ pop.classList.remove('open'); return; }
+  const rect=btn.getBoundingClientRect();
+  pop.style.left=Math.max(4, rect.left)+'px';
+  pop.style.bottom=(window.innerHeight - rect.top + 4)+'px';
+  pop.style.top='auto';
+  const kn=NOTES[((homeKey%12)+12)%12];
+  const opts=[
+    {val:'nearest',   lbl:kn+' &gt; any node'},
+    {val:'tonic-nut', lbl:kn+' &gt; fundamental'},
+    {val:'note-nut',  lbl:'any note &gt; fundamental'}
+  ];
+  pop.innerHTML=opts.map(function(o){
+    const on=_pmSnapTarget===o.val;
+    return '<div class="po-item'+(on?' on':'')+
+           '" onclick="_selectSnapTarget(\''+o.val+'\')">'+o.lbl+(on?' &#10003;':'')+'</div>';
+  }).join('');
+  pop.classList.add('open');
+}
+
+// Snap-target popover selection — updates state, closes popover, re-renders.
+function _selectSnapTarget(v){
+  _pmSnapTarget=v;
+  const pop=document.getElementById('snap-target-popover');
+  if(pop) pop.classList.remove('open');
+  renderBRCtx();
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -2572,102 +2654,101 @@ function renderBRCtx(){
 
 // ── Node view context rows ────────────────────────────────────────
 function renderNodeViewCtx(view){
-  // v7.6 Phase 2 short-circuit — legacy per-mode br-ctx content is suppressed
-  // until Phase 5 rebuilds the new two-row context. #br-ctx renders empty
-  // during Phase 2/3/4 transitional state. Remove this line when Phase 5 lands.
-  if(typeof _v76CtxLegacyDisabled==='undefined' || _v76CtxLegacyDisabled) return '';
+  // v7.6 Phase 5: new per-mode context content. Each mode's content is
+  // bounded to 2 rows to fit inside the new #br-ctx flex area. 'full' is
+  // the legacy name for what the UI now calls 'nodes' (internal rename is
+  // a Phase 7 polish item; the JS name stays 'full' until then).
+
+  // Nodes mode — minimal idle status. No action items per plan.
+  // Old 'full' content (mute/tour/view/readme buttons) has been relocated:
+  // mute -> #br-top mute button; tour -> splash tour button (Phase 6);
+  // view -> #br-top view button; readme -> settings panel footer (Chat 2).
   if(view==='full'){
-    const muteActive=_muted?' muted':'';
-    const muteSvg=_muted
-      ?`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h3l4-4v14l-4-4H3z" stroke="#b42828" stroke-width="1.3" stroke-linejoin="round"/><line x1="14" y1="7" x2="18" y2="13" stroke="#b42828" stroke-width="1.5" stroke-linecap="round"/><line x1="18" y1="7" x2="14" y2="13" stroke="#b42828" stroke-width="1.5" stroke-linecap="round"/></svg>`
-      :`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h3l4-4v14l-4-4H3z" stroke="#533AB7" stroke-width="1.3" stroke-linejoin="round"/><path d="M14 6.5c1.5 1 2.5 2.2 2.5 3.5s-1 2.5-2.5 3.5" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/><path d="M15.5 4c2.5 1.5 4 3.5 4 6s-1.5 4.5-4 6" stroke="#533AB7" stroke-width="1.3" stroke-linecap="round"/></svg>`;
-    return `<div class="br-ctx-row" style="flex:0 0 auto;padding:2px 6px;"><span class="br-chip-lbl" style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">Washtub ${VERSION}</span></div>
-            <div class="br-ctx-row" style="gap:5px;align-items:center;padding:4px 6px;">
-              <div class="br-action-btn${muteActive}" onclick="toggleMute()" title="${_muted?'Unmute':'Mute'}">
-                ${muteSvg}
-                <div class="br-action-btn-lbl">${_muted?'muted':'mute'}</div>
-              </div>
-              <div class="br-action-btn" onclick="openTour()" title="Tour">
-                <svg width="20" height="20" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="26" cy="26" r="21" stroke="#533AB7" stroke-width="1.8"/><circle cx="26" cy="14" r="3" fill="#533AB7"/><rect x="22.5" y="20" width="7" height="18" rx="0.5" fill="#533AB7"/><rect x="19" y="20" width="7" height="2.5" rx="0.5" fill="#533AB7"/><rect x="19" y="35.5" width="14" height="2.5" rx="0.5" fill="#533AB7"/></svg>
-                <div class="br-action-btn-lbl">tour</div>
-              </div>
-              <div class="br-action-btn" id="br-view" onclick="toggleOverflow()" title="Display settings">
-                <svg width="20" height="20" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="26" cy="26" r="10" stroke="#533AB7" stroke-width="1.6"/><circle cx="26" cy="26" r="3.5" fill="#533AB7"/><path d="M26 8 L26 14 M26 38 L26 44 M8 26 L14 26 M38 26 L44 26 M13.5 13.5 L17.7 17.7 M34.3 34.3 L38.5 38.5 M38.5 13.5 L34.3 17.7 M17.7 34.3 L13.5 38.5" stroke="#533AB7" stroke-width="1.6" stroke-linecap="round"/></svg>
-                <div class="br-action-btn-lbl">view</div>
-              </div>
-              <div class="br-action-btn" id="br-readme-btn" onclick="openReadmePicker()" title="README">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="2" width="12" height="16" rx="2" stroke="#533AB7" stroke-width="1.3"/><line x1="7" y1="6.5" x2="13" y2="6.5" stroke="#533AB7" stroke-width="1.1" stroke-linecap="round"/><line x1="7" y1="9.5" x2="13" y2="9.5" stroke="#533AB7" stroke-width="1.1" stroke-linecap="round"/><line x1="7" y1="12.5" x2="10.5" y2="12.5" stroke="#533AB7" stroke-width="1.1" stroke-linecap="round"/></svg>
-                <div class="br-action-btn-lbl">readme</div>
-              </div>
-            </div>`;
+    return '<div class="ctx-row"><span class="idle">harmonic nodes</span></div>';
   }
+
   if(view==='nut'){
     const offset=fmtLen(nutOffsetInches);
     const speaking=fmtLen(effectiveSpeakingLength());
-    // Which preset matches current offset?
     const activeP=nutPresets.findIndex(p=>Math.abs(p-nutOffsetInches)<0.05);
-    const pbtns=[0,1,2].map(i=>`<div class="br-preset-btn${activeP===i?' on':''}"
-      onclick="applyNutPreset(${i});renderBRCtx()">nut ${i+1}</div>`).join('');
-    return `<div class="br-ctx-row">
-              <span class="br-chip-lbl">offset</span>
-              <span class="br-chip" id="br-nut-offset">${offset}</span>
-              <span class="br-chip-lbl">speaking</span>
-              <span class="br-chip" id="br-nut-speaking">${speaking}</span>
-            </div>
-            <div class="br-ctx-row" style="gap:3px;">${pbtns}</div>
-            <div class="br-ctx-row" onclick="toggleOverflow()" style="cursor:pointer;">
-              <div class="br-more-bar"></div>
-              <div class="br-more-lbl">nut presets ↑</div>
-              <div class="br-more-bar"></div>
-            </div>`;
+    const pbtns=[0,1,2].map(i=>
+      '<div class="cbtn grow'+(activeP===i?' on':'')+
+      '" onclick="applyNutPreset('+i+');renderBRCtx()">nut '+(i+1)+'</div>'
+    ).join('');
+    return '<div class="ctx-row">'
+         +   '<span class="chip lbl">offset</span>'
+         +   '<span class="chip" id="br-nut-offset">'+offset+'</span>'
+         +   '<span class="chip lbl">speaking</span>'
+         +   '<span class="chip" id="br-nut-speaking">'+speaking+'</span>'
+         + '</div>'
+         + '<div class="ctx-row" style="gap:3px;">'+pbtns+'</div>';
   }
+
   if(view==='capo'){
-    const cn=CAPO_NODES[capoNodeIdx];
     const uLen=fmtLen(capoUpperIn());
     const lLen=fmtLen(capoLowerIn());
-    const snapBtns=CAPO_NODES.map((cn,i)=>`<div class="br-snap-btn${i===capoNodeIdx?' on':''}"
-      onclick="setCapoNode(${i});renderBRCtx()">${cn.abbr}</div>`).join('');
     const arpOn=capoArp;
-    return `<div class="br-ctx-row" style="gap:3px;">
-              <div class="br-play-btn" onclick="playCapoUpper()">▲ ${uLen}</div>
-              <div class="br-play-btn" onclick="playCapoLower()">▼ ${lLen}</div>
-              <div class="br-play-btn" onclick="playCapoBoth()">▲▼ both</div>
-            </div>
-            <div style="flex:1 1 0%;display:flex;align-items:stretch;padding:3px 5px;gap:2px;border-top:0.5px solid rgba(128,128,128,0.1);">
-              ${snapBtns}
-            </div>
-            <div class="br-ctx-row" style="gap:4px;border-top:0.5px solid rgba(128,128,128,0.1);">
-              <span class="br-chip-lbl">arp</span>
-              <div class="br-poly-btn${!arpOn?' on':''}" onclick="toggleCapoArp(false);renderBRCtx()">off</div>
-              <div class="br-poly-btn${arpOn?' on':''}" onclick="toggleCapoArp(true);renderBRCtx()">on</div>
-            </div>`;
+    // Row 1: 3 play chips (upper/lower/both) + vr + arp label + arp toggle.
+    // Upper = amber tinted (capo segment), Lower = teal tinted (sub-fund segment),
+    // Both = amber. Glyphs via HTML entities: &#9650; up-tri, &#9660; down-tri.
+    const row1='<div class="ctx-row" style="gap:3px;">'
+             +   '<div class="chip amber-chip" onclick="playCapoUpper()">&#9650; '+uLen+'</div>'
+             +   '<div class="chip teal-chip" onclick="playCapoLower()">&#9660; '+lLen+'</div>'
+             +   '<div class="chip amber-chip" onclick="playCapoBoth()">&#9650;&#9660; both</div>'
+             +   '<span class="vr"></span>'
+             +   '<span class="chip lbl">arp</span>'
+             +   '<div class="cbtn amber'+(arpOn?' on':'')+
+             '" style="min-width:34px;text-align:center;" '
+             +     'onclick="toggleCapoArp('+(!arpOn)+');renderBRCtx()">'+(arpOn?'on':'off')+'</div>'
+             + '</div>';
+    // Row 2: 9 capo position buttons — equal-width flex grow.
+    const capoBtns=CAPO_NODES.map((cn,i)=>
+      '<div class="cbtn amber grow'+(i===capoNodeIdx?' on':'')+
+      '" onclick="setCapoNode('+i+');renderBRCtx()">'+cn.abbr+'</div>'
+    ).join('');
+    const row2='<div class="ctx-row" style="gap:2px;">'+capoBtns+'</div>';
+    return row1+row2;
   }
+
   if(view==='pitchmap'){
     const snapOn=_pmSnapOn;
     const tuneNearest=_pmTuneMode==='nearest';
-    const smallOn=_pmShowSmallLabels;
-    const stN=_pmSnapTarget==='nearest';
-    const stNN=_pmSnapTarget==='note-nut';
-    const stTN=_pmSnapTarget==='tonic-nut';
-    const dimmed=snapOn?'':'opacity:0.35;pointer-events:none;';
     const kn=NOTES[((homeKey%12)+12)%12];
-    return '<div class="br-ctx-row" style="gap:3px;">'
-      +'<span class="br-chip-lbl" style="white-space:nowrap;">tune:</span>'
-      +'<div class="br-poly-btn'+(tuneNearest?' on':'')+'" style="white-space:nowrap;" onclick="_pmTuneMode=\'nearest\';renderBRCtx()">'+kn+'&gt;any</div>'
-      +'<div class="br-poly-btn'+(!tuneNearest?' on':'')+'" style="white-space:nowrap;" onclick="_pmTuneMode=\'canonical\';renderBRCtx()">'+kn+'&gt;fund</div>'
-      +'</div>'
-      +'<div class="br-ctx-row" style="gap:3px;">'
-      +'<div class="br-poly-btn'+(snapOn?' on':'')+'" style="flex:0 0 auto;padding:0 6px;white-space:nowrap;" onclick="_pmSnapOn=!_pmSnapOn;renderBRCtx()">node snap</div>'
-      +'<div class="br-poly-btn'+(stN?' on':'')+'" style="'+dimmed+';white-space:nowrap;" onclick="_pmSnapTarget=\'nearest\';renderBRCtx()">'+kn+'&gt;any</div>'
-      +'<div class="br-poly-btn'+(stTN?' on':'')+'" style="'+dimmed+';white-space:nowrap;" onclick="_pmSnapTarget=\'tonic-nut\';renderBRCtx()">'+kn+'&gt;fund</div>'
-      +'<div class="br-poly-btn'+(stNN?' on':'')+'" style="'+dimmed+';white-space:nowrap;" onclick="_pmSnapTarget=\'note-nut\';renderBRCtx()">any&gt;fund</div>'
-      +'</div>'
-      +'<div class="br-ctx-row" style="gap:3px;">'
-      +'<div class="br-poly-btn'+(smallOn?' on':'')+'" style="flex:0 0 auto;padding:0 6px;" onclick="_pmShowSmallLabels=!_pmShowSmallLabels;_renderPitchMapOverlay();renderBRCtx()">show tiny labels</div>'
-      +'<div class="br-poly-btn'+(_pmDiatonicOnly?' on':'')+'" style="flex:0 0 auto;padding:0 6px;" onclick="_pmDiatonicOnly=!_pmDiatonicOnly;render();renderBRCtx()">diatonic only</div>'
-      +'<div class="br-poly-btn'+(_rulerRefMode==='tonic-notes'?' on':'')+'" style="flex:0 0 auto;padding:0 6px;" onclick="_rulerRefMode=(_rulerRefMode===\'home-nodes\'?\'tonic-notes\':\'home-nodes\');renderBRCtx();if(_pinnedFrac!==null&&_activeNode)drawRulerSVG(_activeNode)">tonic ruler</div>'
-      +'</div>';
+    // Tune cycle button: single toggle between 'nearest' (X > any) and
+    // 'canonical' (X > fund). Recycle glyph &#8635; via entity (ASCII-safe).
+    // min-width 78px keeps width stable across toggles.
+    const tuneLbl=kn+' &gt; '+(tuneNearest?'any':'fund')+' &#8635;';
+    // Snap-target full-word label for the popover opener.
+    const snapTgtLbl=_pmSnapTarget==='nearest'   ? (kn+' &gt; any node') :
+                     _pmSnapTarget==='tonic-nut' ? (kn+' &gt; fundamental') :
+                     _pmSnapTarget==='note-nut'  ? 'any note &gt; fundamental' :
+                     _pmSnapTarget;
+    const tgtBtnStyle=snapOn?'flex:1;min-width:0;text-align:left;'
+                            :'flex:1;min-width:0;text-align:left;opacity:0.35;pointer-events:none;';
+    const row1='<div class="ctx-row">'
+             +   '<span class="chip lbl">tune</span>'
+             +   '<div class="cbtn teal" onclick="_cyclePmTune()" '
+             +     'style="min-width:78px;text-align:center;">'+tuneLbl+'</div>'
+             +   '<span class="vr"></span>'
+             +   '<span class="chip lbl">view</span>'
+             +   '<div class="cbtn teal'+(_pmDiatonicOnly?' on':'')+
+             '" onclick="_pmDiatonicOnly=!_pmDiatonicOnly;render();renderBRCtx()">diatonic</div>'
+             +   '<div class="cbtn teal'+(_rulerRefMode==='tonic-notes'?' on':'')+
+             '" onclick="_toggleTonicRuler()">tonic ruler</div>'
+             + '</div>';
+    const row2='<div class="ctx-row">'
+             +   '<span class="chip lbl">snap</span>'
+             +   '<div class="cbtn teal'+(snapOn?' on':'')+
+             '" onclick="_pmSnapOn=!_pmSnapOn;renderBRCtx()" '
+             +     'style="min-width:34px;text-align:center;">'+(snapOn?'on':'off')+'</div>'
+             +   '<span class="chip lbl">snap target</span>'
+             +   '<div class="cbtn teal" id="br-snap-target-btn" '
+             +     'onclick="_openSnapTargetPopover(event)" '
+             +     'style="'+tgtBtnStyle+'">'+snapTgtLbl+' &#9662;</div>'
+             + '</div>';
+    return row1+row2;
   }
+
   return '';
 }
 
@@ -9564,9 +9645,10 @@ function closeReadme(){
 function toggleMute(){
   _muted=!_muted;
   if(_muted) stopActive();
-  // v7.6 Phase 2: sync the new #br-top mute button. The renderBRCtx() call
-  // below is a no-op while _v76CtxLegacyDisabled is true (Phases 2-4) but
-  // is retained so mute-sync lands correctly once Phase 5 repopulates ctx.
+  // v7.6 Phase 2/5: keep the new #br-top mute button in sync. renderBRCtx()
+  // below still fires to refresh the mode context (now populated by Phase 5)
+  // in case any mode wants to reflect mute state. Nodes mode doesn't; others
+  // are neutral. Left in place as a safety net for Chat 2 additions.
   _syncMuteBtn();
   if(brNodeView==='full') renderBRCtx();
 }
@@ -9632,6 +9714,19 @@ document.addEventListener('touchstart',e=>{
   const panel=document.getElementById('readme-panel');
   if(panel&&!panel.contains(e.target)) closeReadme();
 },{passive:true});
+
+// v7.6 Phase 5: close snap-target popover on outside tap/click. Same pattern
+// as readme picker. Two listeners (mousedown for desktop, touchstart for iOS)
+// so the popover dismisses whether user clicks or taps outside it.
+function _closeSnapTargetPopoverOnOutsideTap(target){
+  const pop=document.getElementById('snap-target-popover');
+  if(!pop || !pop.classList.contains('open')) return;
+  if(pop.contains(target)) return;
+  if(target && target.closest && target.closest('#br-snap-target-btn')) return;
+  pop.classList.remove('open');
+}
+document.addEventListener('mousedown',e=>_closeSnapTargetPopoverOnOutsideTap(e.target));
+document.addEventListener('touchstart',e=>_closeSnapTargetPopoverOnOutsideTap(e.target),{passive:true});
 
 
 // ── End README panel ───────────────────────────────────────────────
@@ -9762,10 +9857,15 @@ setInterval(()=>{
 // Script runs at end of body so DOM is fully parsed. Placed here so it
 // fires after all declarations; safe even though nodeView was set up
 // top-of-app because these are pure read-and-paint helpers.
+// v7.6 Phase 5 addendum — renderBRCtx() paints the initial mode's context
+// into #br-ctx. Without this the initial 'full'/'nodes' mode would show
+// an empty context area on first load until any state change triggers a
+// later renderBRCtx() call.
 // ══════════════════════════════════════════════════════════════════
 _syncModeButtons();
 _syncMuteBtn();
 _syncPanelBtns();
+try{ renderBRCtx(); }catch(e){ if(window._dbgErr) window._dbgErr('init renderBRCtx: '+(e&&e.message||e)); }
 </script>
 </body>
 </html>
