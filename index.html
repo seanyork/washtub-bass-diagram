@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.6.17</title>
+<title>Washtub Bass String Map · v7.6.18</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
 @media(prefers-color-scheme:dark){html{background:#111;}}
-body{margin:0;padding:0;font-family:system-ui,sans-serif;background:#1a1a1a;color:#1a1a1a;font-size:13px;overflow:hidden;overscroll-behavior:none;touch-action:none;display:flex;justify-content:center;}
+body{margin:0;padding:0;font-family:system-ui,sans-serif;background:rgb(250,250,250);color:#1a1a1a;font-size:13px;overflow:hidden;overscroll-behavior:none;touch-action:none;display:flex;justify-content:center;}
 html{overflow:hidden;overscroll-behavior:none;}
-:root{--inkey:#1a1a1a;--inkey-fill:rgba(0,0,0,0.06);--bottom-rail-height:calc(96px + max(16px, env(safe-area-inset-bottom, 0px)));}
+:root{--inkey:#1a1a1a;--inkey-fill:rgba(0,0,0,0.06);--bottom-rail-height:calc(96px + max(12px, env(safe-area-inset-bottom, 0px)));}
 @media(prefers-color-scheme:dark){body{background:#1a1a1a;color:#e0e0e0;}:root{--inkey:#d8d8d0;--inkey-fill:rgba(255,255,255,0.08);}}
 #ctrl-bar{background:rgba(128,128,128,0.07);border:0.5px solid rgba(128,128,128,0.2);border-radius:10px;padding:10px 14px;margin-bottom:10px;}
 .ctrl-sep{height:0.5px;background:rgba(128,128,128,0.2);margin:8px 0;}
@@ -217,14 +217,14 @@ input[type=range]{width:110px;cursor:pointer;}
    (cof-wrap, play-zone, play-drawer, readme-panel) track rail top exactly.
    Row order (v7.6.16): #br-ctx on top, #br-top (buttons) on bottom — buttons
    within the content area, safe-area reserved below as rail's padding. */
-#bottom-rail{height:var(--bottom-rail-height);padding-bottom:max(16px, env(safe-area-inset-bottom, 0px));flex-shrink:0;border-top:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column;background:rgb(250,250,250);position:relative;z-index:16;touch-action:none;}
+#bottom-rail{height:var(--bottom-rail-height);padding-bottom:max(12px, env(safe-area-inset-bottom, 0px));flex-shrink:0;border-top:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column;background:rgb(250,250,250);position:relative;z-index:16;touch-action:none;}
 @media(prefers-color-scheme:dark){#bottom-rail{background:#252525;}}
 #br-nv{width:40px;border-right:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 3px;gap:2px;flex-shrink:0;}
 .br-nvb{width:32px;height:20px;font-size:9px;border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;color:#666;display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;}
 .br-nvb-on{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
 .br-nvb-cap-on{background:#C8821A;color:#fff;border-color:#C8821A;}
 @media(prefers-color-scheme:dark){.br-nvb{background:#333;color:#aaa;}}
-#br-ctx{flex:1 1 0%;min-height:0;display:flex;flex-direction:column;min-width:0;overflow:hidden;padding:6px 8px 8px;gap:5px;}
+#br-ctx{flex:1 1 0%;min-height:0;display:flex;flex-direction:column;min-width:0;overflow:hidden;padding:3px 8px 3px;gap:5px;}
 .br-ctx-row{flex:1 1 0%;display:flex;align-items:center;padding:0 6px;gap:4px;border-bottom:0.5px solid rgba(128,128,128,0.1);}
 .br-ctx-row:last-child{border-bottom:none;}
 .br-ctx-idle{font-size:8.5px;color:#ccc;font-style:italic;}
@@ -448,7 +448,7 @@ input[type=range]{width:110px;cursor:pointer;}
    nut, capo, settings, view. Mode buttons (map/nodes/nut/capo) take color from
    their own mode; map = teal, capo = amber, nodes/nut = purple. Action buttons
    (settings/view) use purple when open. */
-#br-top{display:flex;gap:2px;padding:4px;background:rgba(128,128,128,0.05);border-top:0.5px solid rgba(128,128,128,0.12);height:44px;flex-shrink:0;align-items:stretch;}
+#br-top{display:flex;gap:2px;padding:3px;background:rgba(128,128,128,0.05);border-top:0.5px solid rgba(128,128,128,0.12);height:38px;flex-shrink:0;align-items:stretch;}
 @media(prefers-color-scheme:dark){#br-top{background:rgba(255,255,255,0.03);border-top-color:rgba(255,255,255,0.1);}}
 #br-top .mute-btn{width:32px;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#993C1D;font-size:14px;cursor:pointer;flex-shrink:0;}
 #br-top .mute-btn.muted{background:#FAECE7;border-color:#993C1D;}
@@ -1582,7 +1582,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.6.17';
+const VERSION='v7.6.18';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
