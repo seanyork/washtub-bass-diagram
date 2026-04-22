@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.7.3</title>
+<title>Washtub Bass String Map · v7.7.4</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -1602,7 +1602,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.7.3';
+const VERSION='v7.7.4';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -10833,7 +10833,13 @@ function _tourEnterSection(sectionIdx){
   _tourShowStep();
 }
 
-function _tourShowStep(){
+function _tourShowStep(direction){
+  // direction: +1 (default, forward) or -1 (backward). When a target
+  // resolves null we skip in the navigation direction rather than always
+  // forward -- so prev walks backward past missing targets instead of
+  // silently re-rendering the current step. Falling off either end
+  // returns to the section menu.
+  const dir = (direction === -1) ? -1 : 1;
   const sec=TOUR_CONTENT.sections[_tourState.sectionIdx];
   if(!sec){ _tourShowMenu(); return; }
   const step=sec.steps[_tourState.stepIdx];
@@ -10842,9 +10848,9 @@ function _tourShowStep(){
   const rect=_tourResolveTarget(step.target);
   if(!rect){
     if(window.console && console.warn) console.warn('[tour] target missing, skipping step:', step.id);
-    _tourState.stepIdx++;
-    if(_tourState.stepIdx >= sec.steps.length){ _tourShowMenu(); return; }
-    _tourShowStep();
+    _tourState.stepIdx += dir;
+    if(_tourState.stepIdx < 0 || _tourState.stepIdx >= sec.steps.length){ _tourShowMenu(); return; }
+    _tourShowStep(dir);
     return;
   }
   _tourSetSpotlight(rect);
@@ -10935,7 +10941,7 @@ function _tourNext(){
 function _tourPrev(){
   if(_tourState.stepIdx > 0){
     _tourState.stepIdx--;
-    _tourShowStep();
+    _tourShowStep(-1);
   }
 }
 
