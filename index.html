@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.6.19</title>
+<title>Washtub Bass String Map · v7.6.20</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -490,10 +490,10 @@ input[type=range]{width:110px;cursor:pointer;}
   #splash .sp-mode.here b::after{color:#AFA9EC;}
   #splash .sp-mode-blurb{color:#999;}
 }
-#splash .sp-tour-btn{margin-top:auto;background:#533AB7;color:#fff;padding:8px 6px;border-radius:4px;text-align:center;font-size:11px;font-weight:600;letter-spacing:0.02em;cursor:pointer;border:none;}
+#splash .sp-tour-btn{margin-top:auto;background:#533AB7;color:#fff;padding:8px 6px;border-radius:4px;text-align:center;cursor:pointer;border:none;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.2;}
+#splash .sp-tour-btn .tour-main{font-size:11px;font-weight:600;letter-spacing:0.02em;}
+#splash .sp-tour-btn .tour-sub{font-size:8.5px;font-weight:400;opacity:0.85;}
 #splash .sp-tour-btn:active{background:#3E2C8A;}
-#splash .sp-dismiss{font-size:8.5px;font-style:italic;color:#8A8882;text-align:center;line-height:1.2;}
-@media(prefers-color-scheme:dark){#splash .sp-dismiss{color:#888;}}
 
 /* v7.6 narrow-viewport tweaks — splash only in Chat 1. Phase 7 (Chat 2)
    broadens this block with mode-button tightening, mute shrink, panel
@@ -611,7 +611,9 @@ input[type=range]{width:110px;cursor:pointer;}
 /* Footer (tour + readme) */
 #settings-panel .sp-foot{flex-shrink:0;border-top:1px solid #533AB7;background:rgba(83,58,183,0.08);padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;}
 #settings-panel .sp-foot .foot-btn{flex:1;background:#fff;border:1px solid #533AB7;border-radius:5px;padding:9px 6px;text-align:center;font-size:11px;font-weight:600;color:#533AB7;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;}
-#settings-panel .sp-foot .foot-btn.primary{background:#533AB7;color:#fff;}
+#settings-panel .sp-foot .foot-btn.primary{background:#533AB7;color:#fff;flex-direction:column;gap:1px;padding:6px 6px;line-height:1.2;}
+#settings-panel .sp-foot .foot-btn.primary .tour-main{font-size:11px;font-weight:600;letter-spacing:0.02em;}
+#settings-panel .sp-foot .foot-btn.primary .tour-sub{font-size:8.5px;font-weight:400;opacity:0.85;}
 #settings-panel .sp-foot .foot-btn:active{opacity:0.75;}
 @media(prefers-color-scheme:dark){#settings-panel .sp-foot{background:rgba(83,58,183,0.20);}#settings-panel .sp-foot .foot-btn{background:#1a1a1a;}#settings-panel .sp-foot .foot-btn.primary{background:#533AB7;color:#fff;}}
 
@@ -1111,8 +1113,7 @@ input[type=range]{width:110px;cursor:pointer;}
       <div class="sp-mode"      data-sp-mode="nut"   onclick="_onSplashMode(event,'nut')"><b>nut</b><div class="sp-mode-blurb">Move the nut to experiment with string length.</div></div>
       <div class="sp-mode"      data-sp-mode="capo"  onclick="_onSplashMode(event,'capo')"><b>capo</b><div class="sp-mode-blurb">Use a capo to create two string segments tuned to a musical interval.</div></div>
     </div>
-    <button class="sp-tour-btn" id="splash-tour-btn" onclick="_onSplashTourBtn(event)">? take the tour</button>
-    <div class="sp-dismiss">tap anywhere &rarr;</div>
+    <button class="sp-tour-btn" id="splash-tour-btn" onclick="_onSplashTourBtn(event)"><span class="tour-main">take tour</span><span class="tour-sub">(coming soon)</span></button>
   </div>
 
   <!-- v7.6 Phase 3 settings panel — Playback Tones + Physics & Calibration.
@@ -1215,7 +1216,7 @@ input[type=range]{width:110px;cursor:pointer;}
       </div>
     </div>
     <div class="sp-foot">
-      <div class="foot-btn primary" id="sp-foot-tour" onclick="_spOpenTour()">? take the tour</div>
+      <div class="foot-btn primary" id="sp-foot-tour" onclick="_spOpenTour()"><span class="tour-main">take tour</span><span class="tour-sub">(coming soon)</span></div>
       <div class="foot-btn" id="sp-foot-readme" onclick="_spOpenReadme()">readme</div>
     </div>
   </div>
@@ -1586,7 +1587,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.6.19';
+const VERSION='v7.6.20';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -2638,11 +2639,21 @@ function _syncSplashHereMark(){
 
 // Install the capture-phase dismiss listener on #app-shell. Fires once
 // per app lifetime — _dismissSplash() is idempotent.
+// v7.6.20: skip dismissal when the touch target is a splash element that
+// has its own dismiss logic (tour button, mode rows). Rationale — on iOS
+// Safari, hiding the splash (display:none) during capture-phase touchstart
+// prevents iOS from delivering the synthesized click to the now-hidden
+// target, so the target's own onclick never fires. Letting the target
+// self-dismiss via its onclick keeps it visible through the full touch
+// sequence. Chrome desktop was forgiving of this timing; Safari is not.
 function _installSplashDismissListener(){
   const shell=document.getElementById('app-shell');
   if(!shell) return;
-  function handler(){
+  function handler(e){
     if(_splashDismissed) return;
+    if(e && e.target && e.target.closest){
+      if(e.target.closest('#splash-tour-btn, .sp-mode')) return;
+    }
     _dismissSplash();
   }
   shell.addEventListener('click', handler, true);
