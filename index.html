@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.7.2</title>
+<title>Washtub Bass String Map · v7.7.3</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -1602,7 +1602,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.7.2';
+const VERSION='v7.7.3';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -10614,10 +10614,14 @@ function closeReadmePicker(){
 //                     "(coming soon)" affordance. When true, those
 //                     "(coming soon)" sub-labels hide and the buttons
 //                     launch the tour.
-//   TOUR_DEV_MODE  -- engineering flag. true: adds a "flag" button to
-//                     each tooltip that copies an edit-this-step block
-//                     to the clipboard for batch editing later. Never
-//                     ship true.
+//   TOUR_DEV_MODE  -- engineering flag. Forces dev mode on. Normally
+//                     left false; append '#dev' to the URL to enable
+//                     dev mode at runtime without a rebuild (works on
+//                     mobile, persists through in-app navigation, and
+//                     flips live on hashchange). Dev mode adds a
+//                     "flag" button to each tooltip that copies an
+//                     edit-this-step block to the clipboard. Never
+//                     ship TOUR_DEV_MODE=true.
 //
 // Finding a step in source: step IDs are stable (e.g. '3.2'). Every
 // step object writes its id as: id: '3.2'
@@ -10629,6 +10633,14 @@ function closeReadmePicker(){
 
 const TOUR_ENABLED = true;
 const TOUR_DEV_MODE = false;
+
+// Dev mode is on if the constant is true OR the URL hash equals '#dev'.
+// The hash path lets you flip dev mode on mobile without a rebuild.
+// Checked at render time so hashchange flips it live.
+function _tourDevMode(){
+  if(TOUR_DEV_MODE) return true;
+  try{ return window.location.hash === '#dev'; }catch(e){ return false; }
+}
 
 // ── Content ───────────────────────────────────────────────────────
 // Edit freely. Engine reads only. Sections with built:false render in
@@ -10852,7 +10864,7 @@ function _tourSetTooltip(step, rect){
   const back=document.createElement('a'); back.className='tour-back-link'; back.textContent='sections'; back.id='tour-back-link';
   head.appendChild(back);
   const idSpan=document.createElement('span'); idSpan.className='tour-step-id'; idSpan.textContent=step.id; head.appendChild(idSpan);
-  if(TOUR_DEV_MODE){
+  if(_tourDevMode()){
     const flagBtn=document.createElement('button');
     flagBtn.className='tour-flag-btn'; flagBtn.id='tour-flag-btn'; flagBtn.textContent='flag'; flagBtn.title='copy edit info';
     head.appendChild(flagBtn);
@@ -10989,6 +11001,13 @@ function _tourInitButtons(){
   }
   // Re-layout on resize while a step is active (not menu)
   window.addEventListener('resize', function(){
+    if(_tourState.active && _tourState.sectionIdx>=0 && _tourState.stepIdx>=0){
+      _tourShowStep();
+    }
+  });
+  // Re-render current step on hashchange so '#dev' toggle flips the
+  // flag button live without needing prev/next.
+  window.addEventListener('hashchange', function(){
     if(_tourState.active && _tourState.sectionIdx>=0 && _tourState.stepIdx>=0){
       _tourShowStep();
     }
