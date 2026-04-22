@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.7.1</title>
+<title>Washtub Bass String Map · v7.7.2</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -688,6 +688,57 @@ input[type=range]{width:110px;cursor:pointer;}
   #tick-popover .po-item.on{background:rgba(175,169,236,0.2);color:#AFA9EC;}
 }
 
+/* ══ TOUR ══════════════════════════════════════════════════════════
+   Full-viewport overlay. Spotlight provides the screen-dimming via its
+   box-shadow; #tour-dim-catcher is transparent and only catches outside
+   taps to exit. Spotlight off-screen during the section menu. Tooltip
+   and menu have their own backgrounds and sit above the dim. z=150+.
+   ══════════════════════════════════════════════════════════════════ */
+#tour-overlay{display:none;position:fixed;inset:0;z-index:150;pointer-events:none;}
+#tour-overlay.active{display:block;}
+#tour-dim-catcher{position:absolute;inset:0;pointer-events:auto;background:transparent;}
+#tour-spotlight{position:fixed;pointer-events:none;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,0.5);outline:2px solid #AFA9EC;outline-offset:0;top:-9999px;left:-9999px;width:1px;height:1px;}
+#tour-tooltip{display:none;position:fixed;pointer-events:auto;background:#fff;border:1px solid #533AB7;border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,0.28);padding:12px 14px;max-width:340px;font-size:13px;color:#1a1a1a;}
+#tour-tooltip .tour-tip-head{display:flex;align-items:center;gap:8px;font-size:10px;color:#7a75a8;margin-bottom:6px;}
+#tour-tooltip .tour-back-link{cursor:pointer;color:#533AB7;text-decoration:underline;}
+#tour-tooltip .tour-step-id{margin-left:auto;font-family:monospace;opacity:0.7;}
+#tour-tooltip .tour-flag-btn{padding:2px 6px;border:0.5px solid #C8821A;border-radius:3px;background:#fff;color:#C8821A;font-size:10px;cursor:pointer;}
+#tour-tooltip .tour-tip-title{font-weight:600;font-size:14px;color:#533AB7;margin-bottom:6px;}
+#tour-tooltip .tour-tip-body{line-height:1.45;margin-bottom:10px;}
+#tour-tooltip .tour-tip-foot{display:flex;gap:6px;justify-content:flex-end;}
+#tour-tooltip .tour-nav-btn{padding:6px 14px;border:0.5px solid rgba(128,128,128,0.3);border-radius:4px;background:#fff;color:#1a1a1a;font-size:12px;cursor:pointer;}
+#tour-tooltip .tour-nav-btn.primary{background:#533AB7;color:#fff;border-color:#533AB7;}
+#tour-tooltip .tour-nav-btn:disabled{opacity:0.4;cursor:default;}
+#tour-menu{display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:auto;background:#fff;border:1px solid #533AB7;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,0.3);padding:16px 20px;max-width:380px;width:calc(100% - 32px);flex-direction:column;gap:6px;color:#1a1a1a;font-size:13px;}
+#tour-menu.visible{display:flex;}
+#tour-menu .tour-menu-head{font-weight:600;font-size:15px;color:#533AB7;margin-bottom:4px;}
+#tour-menu .tour-menu-sub-head{font-size:11px;color:#7a75a8;margin-bottom:8px;}
+#tour-menu .tour-menu-list{display:flex;flex-direction:column;gap:2px;}
+#tour-menu .tour-menu-row{display:flex;align-items:baseline;gap:6px;padding:8px 10px;border-radius:5px;cursor:pointer;color:#1a1a1a;}
+#tour-menu .tour-menu-row:hover{background:rgba(83,58,183,0.08);}
+#tour-menu .tour-menu-row.not-built{cursor:default;color:#999;}
+#tour-menu .tour-menu-row.not-built:hover{background:transparent;}
+#tour-menu .tour-menu-num{font-family:monospace;font-size:11px;color:#7a75a8;min-width:22px;}
+#tour-menu .tour-menu-lbl{font-weight:500;flex:1;}
+#tour-menu .tour-menu-sub{font-size:10px;color:#bbb;font-style:italic;}
+#tour-menu .tour-menu-foot{display:flex;justify-content:flex-end;margin-top:10px;}
+#tour-menu .tour-menu-exit{padding:6px 12px;border:0.5px solid rgba(128,128,128,0.3);border-radius:4px;background:#fff;color:#1a1a1a;font-size:12px;cursor:pointer;}
+#tour-flag-toast{display:none;position:fixed;left:50%;bottom:120px;transform:translateX(-50%);z-index:153;background:rgba(83,58,183,0.92);color:#fff;padding:6px 14px;border-radius:4px;font-size:12px;pointer-events:none;}
+@media(prefers-color-scheme:dark){
+  #tour-tooltip{background:#1e1e1e;color:#e0e0e0;border-color:#AFA9EC;}
+  #tour-tooltip .tour-tip-title{color:#AFA9EC;}
+  #tour-tooltip .tour-back-link{color:#AFA9EC;}
+  #tour-tooltip .tour-nav-btn{background:#2a2a2a;color:#e0e0e0;border-color:rgba(200,200,200,0.3);}
+  #tour-tooltip .tour-nav-btn.primary{background:#AFA9EC;color:#1a1a1a;border-color:#AFA9EC;}
+  #tour-menu{background:#1e1e1e;color:#e0e0e0;border-color:#AFA9EC;}
+  #tour-menu .tour-menu-head{color:#AFA9EC;}
+  #tour-menu .tour-menu-row{color:#e0e0e0;}
+  #tour-menu .tour-menu-row:hover{background:rgba(175,169,236,0.15);}
+  #tour-menu .tour-menu-row.not-built{color:#666;}
+  #tour-menu .tour-menu-exit{background:#2a2a2a;color:#e0e0e0;border-color:rgba(200,200,200,0.3);}
+  #tour-spotlight{outline-color:#AFA9EC;}
+}
+
 /* Pinned zoom cluster in sidebar — shown only when _zoomPinned is true.
    Mirrors the view-panel's zoom section but compacted for sidebar width. */
 #zoom-pinned-cluster{display:none;flex-direction:column;padding:5px 4px;border-bottom:0.5px solid rgba(128,128,128,0.2);background:#fff;position:relative;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:pointer;touch-action:manipulation;}
@@ -1317,6 +1368,24 @@ input[type=range]{width:110px;cursor:pointer;}
     <div class="po-item" data-val="off"    onclick="_vpSelectTickLabel('off')">off</div>
   </div>
 
+  <!-- Tour overlay — full-viewport. Spotlight provides dim via box-shadow;
+       dim-catcher is transparent, only catches outside taps. Tooltip and
+       menu are independent children with their own backgrounds. -->
+  <div id="tour-overlay">
+    <div id="tour-dim-catcher"></div>
+    <div id="tour-spotlight"></div>
+    <div id="tour-tooltip"></div>
+    <div id="tour-menu">
+      <div class="tour-menu-head">take a tour</div>
+      <div class="tour-menu-sub-head">pick a section to walk through</div>
+      <div class="tour-menu-list"></div>
+      <div class="tour-menu-foot">
+        <button class="tour-menu-exit" id="tour-menu-exit-btn">exit tour</button>
+      </div>
+    </div>
+  </div>
+  <div id="tour-flag-toast"></div>
+
   <!-- Play drawer: slides up above play row when open.
        Capped by top:0 so it never enters the tone strip.
        Sidebar auto-collapses on open; tx shifts right by PLAY_DRAWER_W. -->
@@ -1533,7 +1602,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.7.1';
+const VERSION='v7.7.2';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -10537,10 +10606,398 @@ function closeReadmePicker(){
   _readmePickerOpen=false;
 }
 
-// ── Tour (stub) ───────────────────────────────────────────────────
-function openTour(){
-  // Tour not yet implemented — placeholder
+// ══════════════════════════════════════════════════════════════════
+// TOUR -- begin. Content editable. Engine never hardcodes step text.
+// Flags:
+//   TOUR_ENABLED   -- ship flag. false: openTour() no-ops, the splash
+//                     and settings-footer buttons keep their existing
+//                     "(coming soon)" affordance. When true, those
+//                     "(coming soon)" sub-labels hide and the buttons
+//                     launch the tour.
+//   TOUR_DEV_MODE  -- engineering flag. true: adds a "flag" button to
+//                     each tooltip that copies an edit-this-step block
+//                     to the clipboard for batch editing later. Never
+//                     ship true.
+//
+// Finding a step in source: step IDs are stable (e.g. '3.2'). Every
+// step object writes its id as: id: '3.2'
+// (single space after colon, single quotes). That exact pattern is
+// unique in the file. The dev-mode clipboard payload includes a
+// "Search:" line containing exactly that string so triple-click in
+// the pasted text selects the needle to paste into find.
+// ══════════════════════════════════════════════════════════════════
+
+const TOUR_ENABLED = true;
+const TOUR_DEV_MODE = false;
+
+// ── Content ───────────────────────────────────────────────────────
+// Edit freely. Engine reads only. Sections with built:false render in
+// the menu as "(not yet built)" and are inert.
+const TOUR_CONTENT = {
+  sections: [
+    // Section 1 -- not yet built
+    { key:'instrument', label:'The Instrument', built:false, steps:[] },
+
+    // Section 2 -- not yet built
+    { key:'string_map', label:'The String Map', built:false, steps:[] },
+
+    // Section 3 -- Modes and the Bottom Rail  (POC, v7.7.2)
+    { key:'modes_rail', label:'Modes and the Bottom Rail', built:true, steps:[
+      // step 3.1
+      { id: '3.1',
+        title: 'The bottom rail',
+        body: "The bottom rail is your main control hub. The upper area (context) shows controls for the current mode. The lower row of buttons switches modes and opens the settings and view panels. The leftmost button is mute; the rightmost two are settings and view.",
+        target: { kind:'id', id:'bottom-rail' },
+        onEnter: null, onExit: null },
+
+      // step 3.2
+      { id: '3.2',
+        title: 'Four ways to look at the string',
+        body: "Four mode buttons switch how the string is visualized: map (pitch map), nodes (the default rich view), nut (adjustable speaking length), and capo (two-segment playback). Each mode has its own context controls above. We'll walk through each mode in its own section.",
+        target: { kind:'group', ids:['br-mode-map','br-mode-nodes','br-mode-nut','br-mode-capo'] },
+        onEnter: null, onExit: null },
+
+      // step 3.3
+      { id: '3.3',
+        title: 'Mute',
+        body: "The mute button silences all audio -- tap-to-play tones, tension-drag tone, playback sequences, everything. Useful if you want to explore the map quietly or if you're practicing without disturbing others.",
+        target: { kind:'id', id:'br-mute-btn' },
+        onEnter: null, onExit: null },
+
+      // step 3.4
+      { id: '3.4',
+        title: 'Settings and view',
+        body: "The settings panel holds audio and physics editing: waveform, duration, volume, string length, tension, density, saved defaults. The view panel holds display toggles: zoom, which nodes to show, visualization on/off, the legend, and mode-specific display options. Settings is for editing; view is for looking.",
+        target: { kind:'group', ids:['br-settings-btn','br-view-btn'] },
+        onEnter: null, onExit: null },
+    ]},
+
+    // Section 4 -- not yet built
+    { key:'musical_ctx', label:'Musical Context', built:false, steps:[] },
+    // Section 5 -- not yet built
+    { key:'playback', label:'Playback', built:false, steps:[] },
+    // Section 6 -- not yet built
+    { key:'settings_panel', label:'Settings Panel', built:false, steps:[] },
+    // Section 7 -- not yet built
+    { key:'view_panel', label:'View Panel', built:false, steps:[] },
+    // Section 8 -- not yet built
+    { key:'nut_mode', label:'Nut Mode', built:false, steps:[] },
+    // Section 9 -- not yet built
+    { key:'capo_mode', label:'Capo Mode', built:false, steps:[] },
+    // Section 10 -- not yet built
+    { key:'pitchmap', label:'Pitch Map Mode', built:false, steps:[] },
+  ]
+};
+
+// ── Callback registry ─────────────────────────────────────────────
+// Steps reference callbacks by string name. Missing callback: warn +
+// continue, don't crash. Add new hooks here as later sections need them.
+const TOUR_CALLBACKS = {
+  fullViewFit: function(){
+    try{ if(typeof zoomFit==='function') zoomFit(); }catch(e){}
+    try{ if(typeof setNodeView==='function'){ const b=document.getElementById('view-full'); setNodeView('full', b); } }catch(e){}
+  },
+  zoomFit: function(){ try{ if(typeof zoomFit==='function') zoomFit(); }catch(e){} },
+};
+
+// ── Engine ────────────────────────────────────────────────────────
+let _tourState = { active:false, sectionIdx:-1, stepIdx:-1 };
+
+function _tourResolveTarget(target){
+  if(!target || !target.kind) return null;
+  if(target.kind==='id'){
+    const el=document.getElementById(target.id);
+    if(!el) return null;
+    const r=el.getBoundingClientRect();
+    if(r.width===0 && r.height===0) return null;
+    return { top:r.top, left:r.left, width:r.width, height:r.height };
+  }
+  if(target.kind==='group'){
+    if(!target.ids || !target.ids.length) return null;
+    let minT=Infinity, minL=Infinity, maxR=-Infinity, maxB=-Infinity, any=false;
+    for(let i=0;i<target.ids.length;i++){
+      const el=document.getElementById(target.ids[i]);
+      if(!el) continue;
+      const r=el.getBoundingClientRect();
+      if(r.width===0 && r.height===0) continue;
+      any=true;
+      if(r.top<minT) minT=r.top;
+      if(r.left<minL) minL=r.left;
+      if(r.right>maxR) maxR=r.right;
+      if(r.bottom>maxB) maxB=r.bottom;
+    }
+    if(!any) return null;
+    return { top:minT, left:minL, width:maxR-minL, height:maxB-minT };
+  }
+  if(target.kind==='canvas'){
+    const el=document.getElementById('canvas-wrap');
+    if(!el) return null;
+    const r=el.getBoundingClientRect();
+    return { top:r.top, left:r.left, width:r.width, height:r.height };
+  }
+  return null;
 }
+
+function _tourRunCallback(name){
+  if(!name) return;
+  const fn=TOUR_CALLBACKS[name];
+  if(typeof fn!=='function'){
+    if(window.console && console.warn) console.warn('[tour] missing callback:', name);
+    return;
+  }
+  try{ fn(); }catch(e){ if(window.console && console.warn) console.warn('[tour] callback error:', name, e); }
+}
+
+function _tourShowOverlay(){
+  const ov=document.getElementById('tour-overlay');
+  if(ov) ov.classList.add('active');
+}
+function _tourHideOverlay(){
+  const ov=document.getElementById('tour-overlay');
+  if(ov) ov.classList.remove('active');
+}
+
+function _tourSetSpotlight(rect){
+  const ring=document.getElementById('tour-spotlight');
+  if(!ring) return;
+  if(!rect){
+    // Off-screen: box-shadow still dims the visible viewport.
+    ring.style.top='-9999px'; ring.style.left='-9999px';
+    ring.style.width='1px'; ring.style.height='1px';
+    return;
+  }
+  const pad=6;
+  ring.style.top=(rect.top-pad)+'px';
+  ring.style.left=(rect.left-pad)+'px';
+  ring.style.width=(rect.width+pad*2)+'px';
+  ring.style.height=(rect.height+pad*2)+'px';
+}
+
+function _tourShowMenu(){
+  _tourState.active=true;
+  _tourState.sectionIdx=-1;
+  _tourState.stepIdx=-1;
+  _tourShowOverlay();
+  _tourSetSpotlight(null);
+  const tip=document.getElementById('tour-tooltip');
+  if(tip) tip.style.display='none';
+  const menu=document.getElementById('tour-menu');
+  if(!menu) return;
+  const list=menu.querySelector('.tour-menu-list');
+  if(list){
+    list.innerHTML='';
+    TOUR_CONTENT.sections.forEach(function(sec, idx){
+      const row=document.createElement('div');
+      row.className='tour-menu-row'+(sec.built ? '' : ' not-built');
+      const num=document.createElement('span');
+      num.className='tour-menu-num'; num.textContent=(idx+1)+'.';
+      const lbl=document.createElement('span');
+      lbl.className='tour-menu-lbl'; lbl.textContent=sec.label;
+      row.appendChild(num); row.appendChild(lbl);
+      if(!sec.built){
+        const sub=document.createElement('span');
+        sub.className='tour-menu-sub'; sub.textContent='not yet built';
+        row.appendChild(sub);
+      } else {
+        row.addEventListener('click', function(){ _tourEnterSection(idx); });
+      }
+      list.appendChild(row);
+    });
+  }
+  const exitBtn=document.getElementById('tour-menu-exit-btn');
+  if(exitBtn){
+    exitBtn.onclick=_tourExit;
+  }
+  menu.classList.add('visible');
+}
+
+function _tourEnterSection(sectionIdx){
+  const sec=TOUR_CONTENT.sections[sectionIdx];
+  if(!sec || !sec.built || !sec.steps || !sec.steps.length) return;
+  _tourState.sectionIdx=sectionIdx;
+  _tourState.stepIdx=0;
+  const menu=document.getElementById('tour-menu');
+  if(menu) menu.classList.remove('visible');
+  _tourShowStep();
+}
+
+function _tourShowStep(){
+  const sec=TOUR_CONTENT.sections[_tourState.sectionIdx];
+  if(!sec){ _tourShowMenu(); return; }
+  const step=sec.steps[_tourState.stepIdx];
+  if(!step){ _tourShowMenu(); return; }
+  _tourRunCallback(step.onEnter);
+  const rect=_tourResolveTarget(step.target);
+  if(!rect){
+    if(window.console && console.warn) console.warn('[tour] target missing, skipping step:', step.id);
+    _tourState.stepIdx++;
+    if(_tourState.stepIdx >= sec.steps.length){ _tourShowMenu(); return; }
+    _tourShowStep();
+    return;
+  }
+  _tourSetSpotlight(rect);
+  _tourSetTooltip(step, rect);
+}
+
+function _tourSetTooltip(step, rect){
+  const tip=document.getElementById('tour-tooltip');
+  if(!tip) return;
+  tip.style.display='block';
+  const sec=TOUR_CONTENT.sections[_tourState.sectionIdx];
+  const isLast=_tourState.stepIdx >= sec.steps.length-1;
+  const isFirst=_tourState.stepIdx <= 0;
+  // Build markup with DOM API to avoid HTML-escaping burden on content.
+  tip.innerHTML='';
+  const head=document.createElement('div'); head.className='tour-tip-head';
+  const back=document.createElement('a'); back.className='tour-back-link'; back.textContent='sections'; back.id='tour-back-link';
+  head.appendChild(back);
+  const idSpan=document.createElement('span'); idSpan.className='tour-step-id'; idSpan.textContent=step.id; head.appendChild(idSpan);
+  if(TOUR_DEV_MODE){
+    const flagBtn=document.createElement('button');
+    flagBtn.className='tour-flag-btn'; flagBtn.id='tour-flag-btn'; flagBtn.textContent='flag'; flagBtn.title='copy edit info';
+    head.appendChild(flagBtn);
+  }
+  tip.appendChild(head);
+  const title=document.createElement('div'); title.className='tour-tip-title'; title.textContent=step.title||''; tip.appendChild(title);
+  const body=document.createElement('div'); body.className='tour-tip-body'; body.textContent=step.body||''; tip.appendChild(body);
+  const foot=document.createElement('div'); foot.className='tour-tip-foot';
+  const prev=document.createElement('button'); prev.className='tour-nav-btn'; prev.id='tour-prev-btn'; prev.textContent='prev'; if(isFirst) prev.disabled=true;
+  foot.appendChild(prev);
+  const nextOrDone=document.createElement('button'); nextOrDone.className='tour-nav-btn primary';
+  if(isLast){ nextOrDone.id='tour-done-btn'; nextOrDone.textContent='done'; }
+  else      { nextOrDone.id='tour-next-btn'; nextOrDone.textContent='next'; }
+  foot.appendChild(nextOrDone);
+  tip.appendChild(foot);
+  // Wire
+  back.addEventListener('click', _tourShowMenu);
+  if(!isFirst) prev.addEventListener('click', _tourPrev);
+  if(isLast) nextOrDone.addEventListener('click', _tourShowMenu);
+  else       nextOrDone.addEventListener('click', _tourNext);
+  const fb=document.getElementById('tour-flag-btn');
+  if(fb) fb.addEventListener('click', function(ev){ if(ev && ev.stopPropagation) ev.stopPropagation(); _tourFlagStep(step); });
+  _tourPositionTooltip(tip, rect);
+}
+
+function _tourPositionTooltip(tip, rect){
+  // Reset sizing to measure natural box
+  tip.style.left='-9999px'; tip.style.top='0px'; tip.style.right=''; tip.style.width=''; tip.style.maxWidth='340px';
+  const vw=window.innerWidth, vh=window.innerHeight;
+  const rail=document.getElementById('bottom-rail');
+  const railH = rail ? rail.getBoundingClientRect().height : 96;
+  if(vw < 600){
+    // Mobile / narrow: full-width, pinned above bottom rail
+    tip.style.maxWidth='';
+    tip.style.left='8px';
+    tip.style.right='8px';
+    tip.style.width='auto';
+    const tipH=tip.getBoundingClientRect().height;
+    tip.style.top=Math.max(8, vh - railH - tipH - 10)+'px';
+    return;
+  }
+  const tipR=tip.getBoundingClientRect();
+  const pad=10;
+  // Prefer below target
+  let top = rect.top + rect.height + pad;
+  let left = rect.left;
+  if(top + tipR.height > vh - 8){
+    top = rect.top - tipR.height - pad; // flip above
+    if(top < 8) top = 8;
+  }
+  if(left + tipR.width > vw - 8) left = vw - tipR.width - 8;
+  if(left < 8) left = 8;
+  tip.style.top=top+'px';
+  tip.style.left=left+'px';
+}
+
+function _tourNext(){
+  const sec=TOUR_CONTENT.sections[_tourState.sectionIdx];
+  if(!sec) return;
+  if(_tourState.stepIdx < sec.steps.length-1){
+    _tourState.stepIdx++;
+    _tourShowStep();
+  } else {
+    _tourShowMenu();
+  }
+}
+
+function _tourPrev(){
+  if(_tourState.stepIdx > 0){
+    _tourState.stepIdx--;
+    _tourShowStep();
+  }
+}
+
+function _tourExit(){
+  _tourState.active=false;
+  _tourState.sectionIdx=-1;
+  _tourState.stepIdx=-1;
+  const menu=document.getElementById('tour-menu');
+  if(menu) menu.classList.remove('visible');
+  const tip=document.getElementById('tour-tooltip');
+  if(tip) tip.style.display='none';
+  _tourHideOverlay();
+}
+
+function _tourFlagStep(step){
+  const payload = 'TOUR_EDIT '+step.id+'\nSearch:\nid: \''+step.id+'\'\nTitle: '+(step.title||'')+'\nBody:\n'+(step.body||'');
+  const toast=function(msg){
+    const t=document.getElementById('tour-flag-toast');
+    if(!t) return;
+    t.textContent=msg;
+    t.style.display='block';
+    setTimeout(function(){ t.style.display='none'; }, 1400);
+  };
+  if(navigator && navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(payload).then(function(){ toast('copied'); }, function(){ toast('copy failed'); });
+  } else {
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=payload; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      toast('copied');
+    }catch(e){ toast('copy failed'); }
+  }
+}
+
+function _tourKeyHandler(e){
+  if(!_tourState.active) return;
+  if(e.key==='Escape' || e.keyCode===27){ _tourExit(); }
+}
+function _tourOutsideTap(e){
+  if(!_tourState.active) return;
+  // Only fire when the target IS the dim-catcher itself.
+  if(e.target && e.target.id==='tour-dim-catcher') _tourExit();
+}
+
+function openTour(){
+  if(!TOUR_ENABLED) return;
+  _tourShowMenu();
+}
+
+function _tourInitButtons(){
+  // When tour is enabled, hide the "(coming soon)" sub-labels on the two
+  // entry points. When disabled, leave them -- and openTour() no-ops above.
+  if(TOUR_ENABLED){
+    const subs=document.querySelectorAll('#splash-tour-btn .tour-sub, #sp-foot-tour .tour-sub');
+    subs.forEach(function(s){ s.style.display='none'; });
+  }
+  document.addEventListener('keydown', _tourKeyHandler);
+  const dim=document.getElementById('tour-dim-catcher');
+  if(dim){
+    dim.addEventListener('click', _tourOutsideTap);
+    dim.addEventListener('touchstart', _tourOutsideTap, {passive:true});
+  }
+  // Re-layout on resize while a step is active (not menu)
+  window.addEventListener('resize', function(){
+    if(_tourState.active && _tourState.sectionIdx>=0 && _tourState.stepIdx>=0){
+      _tourShowStep();
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TOUR -- end
+// ══════════════════════════════════════════════════════════════════
 
 // Close readme picker on outside tap/click.
 // v7.6.21 (#151): selector updated from the retired #br-readme-btn (overflow
@@ -10721,6 +11178,7 @@ try{ renderBRCtx(); }catch(e){ if(window._dbgErr) window._dbgErr('init renderBRC
 _syncSplashVer();
 _syncSplashHereMark();
 _installSplashDismissListener();
+_tourInitButtons();
 </script>
 </body>
 </html>
