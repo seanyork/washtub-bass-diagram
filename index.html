@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.6.20</title>
+<title>Washtub Bass String Map · v7.6.21</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -1356,7 +1356,7 @@ input[type=range]{width:110px;cursor:pointer;}
   <!-- scale + home pickers — direct children of app-shell so they overflow bottom rail -->
   <div id="scale-picker"></div>
   <div id="home-picker"></div>
-  <!-- readme section popover — anchored to bottom-rail -->
+  <!-- readme section popover — anchored to settings-panel footer readme btn (v7.6.21) -->
   <div id="readme-section-popover"></div>
   <!-- snap-target popover (v7.6 Phase 1 scaffolding) — populated by Phase 5 map-mode context -->
   <div id="snap-target-popover"></div>
@@ -1587,7 +1587,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.6.20';
+const VERSION='v7.6.21';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -2036,7 +2036,9 @@ function _spOpenTour(){
   if(typeof openTour==='function') openTour();
 }
 function _spOpenReadme(){
-  _closeSettingsPanel();
+  // v7.6.21 (#151): settings panel stays open while the readme picker opens
+  // anchored to the readme button in the settings footer. Picking a section
+  // closes settings and opens the full readme panel — see openReadme().
   if(typeof openReadmePicker==='function') openReadmePicker();
   else if(typeof openReadme==='function') openReadme('overview');
 }
@@ -11090,6 +11092,11 @@ function openReadme(section){
   const body=document.getElementById('readme-panel-body');
   const title=document.getElementById('readme-panel-title');
   if(!panel||!body) return;
+  // v7.6.21 (#151): close settings panel when the full readme opens so the
+  // reader gets clean visual focus. Closing readme returns the user to the
+  // main app view (not back into settings) — matches the natural "I was
+  // reading docs, now I'm done" mental model.
+  if(typeof _closeSettingsPanel==='function') _closeSettingsPanel();
   title.textContent=README_TITLES[section]||'README';
   // Render full doc once, cache it, wire scroll listener
   if(!_readmeRendered){
@@ -11133,13 +11140,30 @@ function openReadmePicker(){
   const pop=document.getElementById('readme-section-popover');
   if(!pop) return;
   if(_readmePickerOpen){ closeReadmePicker(); return; }
-  // Position relative to bottom-rail
-  const br=document.getElementById('bottom-rail');
+  // v7.6.21 (#151): position relative to #sp-foot-readme button in the
+  // settings panel footer. Popover's right edge aligns with the button's
+  // right edge; its bottom sits 4px above the button's top. This replaces
+  // the prior bottom-rail anchoring used when the readme button lived in
+  // the retired overflow panel. Falls back to bottom-rail position if the
+  // settings button isn't present (shouldn't happen in current UI).
+  const btn=document.getElementById('sp-foot-readme');
   const shell=document.getElementById('app-shell');
-  if(br&&shell){
-    const brs=br.getBoundingClientRect(), ss=shell.getBoundingClientRect();
-    pop.style.bottom=(ss.bottom-brs.top)+'px';
-    pop.style.left='56px';
+  if(btn && shell){
+    const br=btn.getBoundingClientRect();
+    const ss=shell.getBoundingClientRect();
+    pop.style.bottom=(ss.bottom - br.top + 4)+'px';
+    pop.style.right=(ss.right - br.right)+'px';
+    pop.style.left='auto';
+    pop.style.top='auto';
+  } else {
+    const brEl=document.getElementById('bottom-rail');
+    if(brEl && shell){
+      const brs=brEl.getBoundingClientRect(), ss=shell.getBoundingClientRect();
+      pop.style.bottom=(ss.bottom-brs.top)+'px';
+      pop.style.left='56px';
+      pop.style.right='auto';
+      pop.style.top='auto';
+    }
   }
   const sections=[
     {key:'instrument', label:'The Washtub Bass',
@@ -11170,16 +11194,20 @@ function openTour(){
   // Tour not yet implemented — placeholder
 }
 
-// Close readme picker on outside tap/click
+// Close readme picker on outside tap/click.
+// v7.6.21 (#151): selector updated from the retired #br-readme-btn (overflow
+// panel days) to #sp-foot-readme in the settings panel footer. Without this,
+// tapping the same readme button that opened the popover would close it via
+// the outside handler before the onclick handler could toggle it.
 document.addEventListener('mousedown',e=>{
   if(!_readmePickerOpen) return;
   const pop=document.getElementById('readme-section-popover');
-  if(pop&&!pop.contains(e.target)&&!e.target.closest('#br-readme-btn')) closeReadmePicker();
+  if(pop&&!pop.contains(e.target)&&!e.target.closest('#sp-foot-readme')) closeReadmePicker();
 });
 document.addEventListener('touchstart',e=>{
   if(!_readmePickerOpen) return;
   const pop=document.getElementById('readme-section-popover');
-  if(pop&&!pop.contains(e.target)&&!e.target.closest('#br-readme-btn')) closeReadmePicker();
+  if(pop&&!pop.contains(e.target)&&!e.target.closest('#sp-foot-readme')) closeReadmePicker();
 },{passive:true});
 
 // Close readme on outside tap
