@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.6.18</title>
+<title>Washtub Bass String Map · v7.6.19</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -477,15 +477,18 @@ input[type=range]{width:110px;cursor:pointer;}
 #splash p{margin:0;font-size:10px;color:#1a1a1a;line-height:1.35;}
 @media(prefers-color-scheme:dark){#splash p{color:#e0e0e0;}}
 #splash .sp-mode-list{display:flex;flex-direction:column;gap:3px;}
-#splash .sp-mode{font-size:9px;color:#5F5E5A;padding:3px 6px;border-radius:3px;background:rgba(255,255,255,0.65);border:0.5px solid rgba(83,58,183,0.2);line-height:1.25;}
+#splash .sp-mode{font-size:9px;color:#5F5E5A;padding:3px 6px;border-radius:3px;background:rgba(255,255,255,0.65);border:0.5px solid rgba(83,58,183,0.2);line-height:1.25;cursor:pointer;transition:background 0.1s;}
+#splash .sp-mode:active{background:rgba(83,58,183,0.18);}
 #splash .sp-mode b{color:#533AB7;font-weight:700;}
 #splash .sp-mode.here{border-color:#533AB7;background:rgba(83,58,183,0.10);}
 #splash .sp-mode.here b::after{content:' — you\'re here';font-weight:500;color:#533AB7;}
+#splash .sp-mode-blurb{display:block;font-size:8.5px;font-weight:400;color:#6A6862;line-height:1.3;margin-top:2px;}
 @media(prefers-color-scheme:dark){
   #splash .sp-mode{background:rgba(255,255,255,0.06);color:#ccc;border-color:rgba(175,169,236,0.25);}
   #splash .sp-mode b{color:#AFA9EC;}
   #splash .sp-mode.here{background:rgba(83,58,183,0.22);border-color:#AFA9EC;}
   #splash .sp-mode.here b::after{color:#AFA9EC;}
+  #splash .sp-mode-blurb{color:#999;}
 }
 #splash .sp-tour-btn{margin-top:auto;background:#533AB7;color:#fff;padding:8px 6px;border-radius:4px;text-align:center;font-size:11px;font-weight:600;letter-spacing:0.02em;cursor:pointer;border:none;}
 #splash .sp-tour-btn:active{background:#3E2C8A;}
@@ -500,6 +503,7 @@ input[type=range]{width:110px;cursor:pointer;}
   #splash h4{font-size:11px;}
   #splash p{font-size:9.5px;}
   #splash .sp-mode{font-size:8.5px;}
+  #splash .sp-mode-blurb{font-size:8px;}
 }
 
 /* Transitional orphans div — Phase 2 moves #br-nv and #br-ap here
@@ -1100,12 +1104,12 @@ input[type=range]{width:110px;cursor:pointer;}
   <div id="splash">
     <div class="splash-ver" id="splash-ver">Washtub v7.6.0</div>
     <h4>Welcome</h4>
-    <p>Tap anywhere to start. Pull the pole to change tension &mdash; the string's pitch changes and notes slide along it.</p>
+    <p>Explore theory and technique of washtub bass.</p>
     <div class="sp-mode-list">
-      <div class="sp-mode here" data-sp-mode="map"><b>map</b></div>
-      <div class="sp-mode" data-sp-mode="nodes"><b>nodes</b></div>
-      <div class="sp-mode" data-sp-mode="nut"><b>nut</b></div>
-      <div class="sp-mode" data-sp-mode="capo"><b>capo</b></div>
+      <div class="sp-mode here" data-sp-mode="map"   onclick="_onSplashMode(event,'map')"><b>map</b><div class="sp-mode-blurb">Left tension slider moves notes on string. Tap to play.</div></div>
+      <div class="sp-mode"      data-sp-mode="nodes" onclick="_onSplashMode(event,'nodes')"><b>nodes</b><div class="sp-mode-blurb">Explore resonant string nodes based on the harmonic series.</div></div>
+      <div class="sp-mode"      data-sp-mode="nut"   onclick="_onSplashMode(event,'nut')"><b>nut</b><div class="sp-mode-blurb">Move the nut to experiment with string length.</div></div>
+      <div class="sp-mode"      data-sp-mode="capo"  onclick="_onSplashMode(event,'capo')"><b>capo</b><div class="sp-mode-blurb">Use a capo to create two string segments tuned to a musical interval.</div></div>
     </div>
     <button class="sp-tour-btn" id="splash-tour-btn" onclick="_onSplashTourBtn(event)">? take the tour</button>
     <div class="sp-dismiss">tap anywhere &rarr;</div>
@@ -1582,7 +1586,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.6.18';
+const VERSION='v7.6.19';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -2600,6 +2604,17 @@ function _onSplashTourBtn(e){
   if(e && e.stopPropagation) e.stopPropagation();
   _dismissSplash();
   if(typeof openTour==='function') openTour();
+}
+
+// Splash mode row tap (v7.6.19): dismiss splash + activate the tapped mode.
+// Same event-flow pattern as _onSplashTourBtn — stopPropagation prevents the
+// shell capture-phase listener from double-firing _dismissSplash() (idempotent
+// anyway but keeps the flow clean). _handleModeClick() drives the normal
+// mode-switch pipeline.
+function _onSplashMode(e, mode){
+  if(e && e.stopPropagation) e.stopPropagation();
+  _dismissSplash();
+  if(typeof _handleModeClick==='function') _handleModeClick(mode);
 }
 
 // Sync splash version chip from the VERSION constant so every tertiary
