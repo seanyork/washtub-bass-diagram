@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.6.21</title>
+<title>Washtub Bass String Map · v7.6.22</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -219,60 +219,13 @@ input[type=range]{width:110px;cursor:pointer;}
    within the content area, safe-area reserved below as rail's padding. */
 #bottom-rail{height:var(--bottom-rail-height);padding-bottom:max(12px, env(safe-area-inset-bottom, 0px));flex-shrink:0;border-top:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column;background:rgb(250,250,250);position:relative;z-index:16;touch-action:none;}
 @media(prefers-color-scheme:dark){#bottom-rail{background:#252525;}}
-#br-nv{width:40px;border-right:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 3px;gap:2px;flex-shrink:0;}
-.br-nvb{width:32px;height:20px;font-size:9px;border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;color:#666;display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;}
-.br-nvb-on{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
-.br-nvb-cap-on{background:#C8821A;color:#fff;border-color:#C8821A;}
-@media(prefers-color-scheme:dark){.br-nvb{background:#333;color:#aaa;}}
 #br-ctx{flex:1 1 0%;min-height:0;display:flex;flex-direction:column;min-width:0;overflow:hidden;padding:3px 8px 3px;gap:5px;}
-.br-ctx-row{flex:1 1 0%;display:flex;align-items:center;padding:0 6px;gap:4px;border-bottom:0.5px solid rgba(128,128,128,0.1);}
-.br-ctx-row:last-child{border-bottom:none;}
-.br-ctx-idle{font-size:8.5px;color:#ccc;font-style:italic;}
-.br-more-bar{flex:1 1 0%;height:1.5px;background:rgba(128,128,128,0.15);border-radius:1px;}
-.br-more-lbl{font-size:8px;color:#bbb;white-space:nowrap;}
-#br-ap{width:44px;flex-shrink:0;border-left:0.5px solid rgba(128,128,128,0.18);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px max(6px,env(safe-area-inset-right,0px)) 4px 3px;gap:2px;}
-.br-apb{width:36px;height:18px;font-size:7.5px;border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;color:#555;display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;}
-.br-apb-on{background:#533AB7;color:#fff;border-color:#533AB7;}
-@media(prefers-color-scheme:dark){.br-apb{background:#333;color:#aaa;}}
 
 /* CoF */
 #cof-wrap{position:absolute;left:0;bottom:0;width:160px;height:160px;z-index:14;}
 #cof-canvas{display:block;cursor:grab;}
 #cof-dot{display:none;}
 
-/* v7.6.15: #overflow-panel CSS retired along with the DOM element. */
-/* ── bottom rail control styles ── */
-.br-chip{font-size:9px;color:#533AB7;font-weight:500;background:rgba(83,58,183,0.07);border:0.5px solid rgba(83,58,183,0.25);border-radius:3px;padding:1px 5px;white-space:nowrap;line-height:1.4;}
-.br-chip-lbl{font-size:8px;color:#aaa;white-space:nowrap;}
-.br-btn{height:18px;padding:0 6px;font-size:8.5px;border:0.5px solid rgba(128,128,128,0.3);border-radius:3px;color:#555;background:#fff;white-space:nowrap;display:inline-flex;align-items:center;cursor:pointer;}
-.br-btn.on{background:#533AB7;color:#fff;border-color:#533AB7;}
-.br-preset-btn{height:20px;padding:0 5px;font-size:8.5px;border:0.5px solid rgba(83,58,183,0.3);border-radius:3px;color:#533AB7;background:rgba(83,58,183,0.06);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:1;}
-.br-preset-btn.on{background:rgba(83,58,183,0.18);font-weight:600;}
-.br-play-btn{flex:1;height:20px;font-size:9px;font-weight:500;border:0.5px solid rgba(200,130,26,0.4);border-radius:3px;color:#C8821A;background:rgba(200,130,26,0.08);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;white-space:nowrap;gap:2px;}
-.br-snap-btn{height:18px;padding:0 4px;font-size:8px;border:0.5px solid rgba(200,130,26,0.3);border-radius:3px;color:#C8821A;background:#fff;white-space:nowrap;display:inline-flex;align-items:center;cursor:pointer;}
-.br-snap-btn.on{background:#C8821A;color:#fff;border-color:#C8821A;}
-.br-wav-btn{height:18px;padding:0 6px;font-size:8.5px;border:0.5px solid rgba(128,128,128,0.3);border-radius:3px;color:#555;background:#fff;white-space:nowrap;display:inline-flex;align-items:center;cursor:pointer;}
-.br-wav-btn.on{background:#533AB7;color:#fff;border-color:#533AB7;}
-.br-poly-btn{height:18px;padding:0 7px;font-size:8.5px;border:0.5px solid rgba(128,128,128,0.3);border-radius:3px;color:#555;background:#fff;display:inline-flex;align-items:center;cursor:pointer;}
-.br-poly-btn.on{background:#533AB7;color:#fff;border-color:#533AB7;}
-.br-sl-wrap{display:flex;align-items:center;gap:3px;flex:1;min-width:0;}
-.br-sl-lbl{font-size:7.5px;color:#aaa;white-space:nowrap;}
-.br-sl-track{flex:1;height:3px;background:rgba(83,58,183,0.2);border-radius:2px;position:relative;cursor:pointer;}
-.br-sl-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:9px;height:9px;border-radius:50%;background:#533AB7;border:1.5px solid #fff;box-shadow:0 0 0 1px #533AB7;pointer-events:none;}
-.br-sl-val{font-size:7.5px;color:#533AB7;font-weight:500;white-space:nowrap;min-width:24px;text-align:right;}
-.lgnd-grid{display:grid;grid-template-columns:1fr 1fr;width:100%;height:100%;}
-.lgnd-cell{display:flex;align-items:center;gap:3px;padding:2px 5px;}
-.lgnd-cell.br{border-right:0.5px solid rgba(128,128,128,0.08);}
-.lgnd-cell.bb{border-bottom:0.5px solid rgba(128,128,128,0.08);}
-.lgnd-txt{font-size:8px;color:#555;white-space:nowrap;line-height:1.2;}
-.ov-title{font-size:9px;color:#aaa;text-transform:uppercase;letter-spacing:0.05em;font-weight:500;}
-.ov-sep{height:0.5px;background:rgba(128,128,128,0.15);}
-.ov-row{display:flex;align-items:center;gap:5px;}
-.ov-lbl{font-size:10px;color:#888;white-space:nowrap;min-width:46px;}
-.ov-field{height:22px;border:0.5px solid rgba(128,128,128,0.3);border-radius:3px;font-size:10px;font-weight:500;color:#533AB7;background:rgba(83,58,183,0.04);padding:0 5px;width:62px;flex-shrink:0;}
-.ov-btn{height:22px;padding:0 8px;font-size:9px;border:0.5px solid rgba(128,128,128,0.3);border-radius:3px;color:#555;background:#fff;white-space:nowrap;display:inline-flex;align-items:center;cursor:pointer;}
-.ov-btn.on{background:#533AB7;color:#fff;border-color:#533AB7;}
-.ov-btn.danger{border-color:rgba(153,60,29,0.3);color:rgba(153,60,29,0.8);}
 /* ── CoF + picker overlays ── */
 /* ══ CoF wheel positioning — DO NOT CHANGE ══════════════════════════
    cof-wrap MUST stay at left:0 (device left edge, behind left-rail).
@@ -506,15 +459,10 @@ input[type=range]{width:110px;cursor:pointer;}
   #splash .sp-mode-blurb{font-size:8px;}
 }
 
-/* Transitional orphans div — Phase 2 moves #br-nv and #br-ap here
-   while their contents find new homes. Hidden from view. */
-#transitional-orphans{display:none;}
-
 /* ══════════════════════════════════════════════════════════════════
    v7.6 UI REFRESH — PHASE 5 MODE-CONTEXT ROWS
-   Styles the per-mode content inside #br-ctx. Uses the .ctx-row class
-   to avoid colliding with legacy .br-ctx-row. Populated by the new
-   renderNodeViewCtx() per mode: map, nodes, nut, capo.
+   Styles the per-mode content inside #br-ctx. Uses the .ctx-row class.
+   Populated by the new renderNodeViewCtx() per mode: map, nodes, nut, capo.
    ══════════════════════════════════════════════════════════════════ */
 #br-ctx .ctx-row{display:flex;gap:4px;align-items:center;min-height:22px;flex-shrink:0;}
 #br-ctx .ctx-row .chip{padding:2px 7px;background:rgba(128,128,128,0.05);border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;font-size:10px;color:#1a1a1a;white-space:nowrap;line-height:1.3;}
@@ -1368,8 +1316,6 @@ input[type=range]{width:110px;cursor:pointer;}
     <div class="po-item" data-val="active" onclick="_vpSelectTickLabel('active')">active only</div>
     <div class="po-item" data-val="off"    onclick="_vpSelectTickLabel('off')">off</div>
   </div>
-  <!-- transitional orphans (v7.6 Phase 1 scaffolding) — Phase 2 parks #br-nv and #br-ap here while controls are rehomed. Display:none via CSS. -->
-  <div id="transitional-orphans"></div>
 
   <!-- Play drawer: slides up above play row when open.
        Capped by top:0 so it never enters the tone strip.
@@ -1587,7 +1533,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.6.21';
+const VERSION='v7.6.22';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -2907,8 +2853,6 @@ setMode = function(mode,btn){
 function toggleCoF(){} // replaced in Step 13 block below
 function openScalePicker(){} // replaced in Step 14 block below
 function openHomePicker(){} // replaced in Step 14 block below
-function setBRPanel(panel,btn){} // replaced in Step 6 block above (re-declared below)
-function toggleOverflow(){} // replaced in Step 8/11 block above
 
 // ── End Step 3 left rail wiring ═══════════════════════════════════
 
@@ -4012,14 +3956,13 @@ setTimeout(()=>{
 
 // ── v4 BOTTOM RAIL STATE MACHINE (Steps 6–12) ═════════════════════
 
-// State: which node-view and which right panel are active
+// State: which node-view is active. brRightPanel + overflowOpen retired
+// in v7.6.15 along with the overflow panel; cleanup completed in v7.6.22.
 let brNodeView = 'pitchmap';   // 'full' | 'nut' | 'capo' | 'pitchmap' — v7.6.14: map default
-let brRightPanel = null;   // null | 'audio' | 'phys' | 'lgnd'
 let showPitchBars = false; // show/hide pitch bars + secondary info columns
 let tickLabelMode = 'scale'; // 'always' | 'scale' | 'active' | 'off'
 const _TICK_LABEL_MODES = ['always','scale','active','off'];
 function cycleTickLabelMode(){ tickLabelMode=_TICK_LABEL_MODES[(_TICK_LABEL_MODES.indexOf(tickLabelMode)+1)%_TICK_LABEL_MODES.length]; render(); renderBRCtx(); }
-let overflowOpen = false;
 let autoTune = true;       // auto-tune string on key or mode change
 let toneSpacing = 0;       // seconds between sequential tones (before/after playback)
 
@@ -4057,52 +4000,18 @@ function toggleAutoTune(){
 // ── isMobile helper ───────────────────────────────────────────────
 function isMobile(){ return window.matchMedia('(max-width:600px)').matches; }
 
-// ── Mini slider helper ────────────────────────────────────────────
-// Creates a draggable mini slider div synced to a hidden range input.
-// onchange(0–1 normalized value) is called on drag.
-function makeMiniSlider(pct, onchange){
-  const wrap=document.createElement('div');
-  wrap.className='br-sl-track';
-  const thumb=document.createElement('div');
-  thumb.className='br-sl-thumb';
-  thumb.style.left=(pct*100)+'%';
-  wrap.appendChild(thumb);
-  let dragging=false;
-  wrap.addEventListener('mousedown',e=>{
-    dragging=true; e.preventDefault();
-    const move=ev=>{
-      if(!dragging) return;
-      const r=wrap.getBoundingClientRect();
-      const v=Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width));
-      thumb.style.left=(v*100)+'%';
-      onchange(v);
-    };
-    const up=()=>{dragging=false;window.removeEventListener('mousemove',move);window.removeEventListener('mouseup',up);};
-    window.addEventListener('mousemove',move);
-    window.addEventListener('mouseup',up);
-  });
-  return wrap;
-}
-
 // ── Render bottom rail center zone ───────────────────────────────
 function renderBRCtx(){
   const ctx=document.getElementById('br-ctx');
   if(!ctx) return;
 
-  // Node-view button highlights
-  ['full','nut','capo','pitchmap'].forEach(v=>{
-    const btn=document.getElementById('br-'+v);
-    if(!btn) return;
-    btn.className='br-nvb'+(brNodeView===v?(v==='capo'?' br-nvb-cap-on':' br-nvb-on'):'');
-  });
-
   // v7.6.15: legacy right-panel (audio/phys/lgnd) takeover logic removed —
   // those concerns are now split across the settings-panel (audio / physics)
   // and view-panel (legend/display) overlays. Renders node-view context
-  // unconditionally.
+  // unconditionally. v7.6.22: wireAllBRSliders removed — new panels wire
+  // their own sliders directly. Legacy br-nvb button-highlight forEach
+  // also removed (ids never existed in the v7.6 DOM).
   ctx.innerHTML=renderNodeViewCtx(brNodeView);
-  setTimeout(wireAllBRSliders,0);
-  setTimeout(_syncViewBtn,0);
 }
 
 // ── Node view context rows ────────────────────────────────────────
@@ -4212,556 +4121,12 @@ function togglePitchBars(){
   renderBRCtx();
 }
 
-function renderRightPanel(panel){
-  if(panel==='audio') return renderAudioPanel();
-  if(panel==='phys')  return renderPhysPanel();
-  if(panel==='lgnd')  return renderLgndPanel();
-  return '';
-}
-
-function renderAudioPanel(){
-  const wavs=['sine','warm','string'];
-  const wavLabels=['sin','warm','str'];
-  const wbtns=wavs.map((w,i)=>`<div class="br-wav-btn${waveform===w?' on':''}"
-    onclick="setWaveform('${w}',document.querySelectorAll('#legacy-controls #wav-${w}')[0]);renderBRCtx()">${wavLabels[i]}</div>`).join('');
-  const polyon=`<div class="br-poly-btn${polyOn?' on':''}" onclick="setPoly(true,this);renderBRCtx()">on</div>`;
-  const polyoff=`<div class="br-poly-btn${!polyOn?' on':''}" onclick="setPoly(false,this);renderBRCtx()">off</div>`;
-  const durPct=(toneDuration-0.2)/(4-0.2);
-  const spcPct=toneSpacing/1.0;
-  return `<div class="br-ctx-row" style="gap:3px;">
-            <span class="br-chip-lbl">wave</span>${wbtns}
-            <div style="width:0.5px;background:rgba(128,128,128,0.2);align-self:stretch;"></div>
-            <span class="br-chip-lbl">poly</span>${polyon}${polyoff}
-          </div>
-          <div class="br-ctx-row" id="br-dur-row">
-            <div class="br-sl-wrap">
-              <span class="br-sl-lbl">dur</span>
-              <div class="br-sl-track" id="br-dur-track">
-                <div class="br-sl-thumb" style="left:${(durPct*100).toFixed(1)}%"></div>
-              </div>
-              <span class="br-sl-val" id="br-dur-val">${toneDuration.toFixed(1)}s</span>
-            </div>
-            <div style="width:0.5px;background:rgba(128,128,128,0.15);align-self:stretch;margin:0 2px;"></div>
-            <div class="br-sl-wrap">
-              <span class="br-sl-lbl">spc</span>
-              <div class="br-sl-track" id="br-spc-track">
-                <div class="br-sl-thumb" style="left:${(spcPct*100).toFixed(1)}%"></div>
-              </div>
-              <span class="br-sl-val" id="br-spc-val">${toneSpacing.toFixed(2)}s</span>
-            </div>
-          </div>
-          <div class="br-ctx-row" id="br-vol-row">
-            <div class="br-sl-wrap">
-              <span class="br-sl-lbl">vol</span>
-              <div class="br-sl-track" id="br-vol-track">
-                <div class="br-sl-thumb" style="left:${(volume*100).toFixed(1)}%"></div>
-              </div>
-              <span class="br-sl-val" id="br-vol-val">${Math.round(volume*100)}%</span>
-            </div>
-          </div>
-          <div class="br-ctx-row" style="gap:3px;padding:0;">
-            <div class="ov-btn" style="flex:1;text-align:center;font-size:9px;letter-spacing:0.04em;text-transform:uppercase;"
-              onclick="toggleOverflow();renderBRCtx()">visualization ${overflowOpen?'▴':'▾'}</div>
-          </div>`;
-}
-
-function renderPhysPanel(){
-  const lenVal=fmtLen(nodeView==='nut'?effectiveSpeakingLength():stringInches);
-  const densVal=muKgM.toFixed(6);
-  const inOn=useInches, cmOn=!useInches;
-  const tlLabel={'always':'always','scale':'in scale','active':'active','off':'off'}[tickLabelMode]||tickLabelMode;
-  return `<div class="br-ctx-row" style="gap:3px;">
-            <span class="br-chip-lbl">length</span>
-            <span class="br-chip">${lenVal}</span>
-            <div class="br-btn${inOn?' on':''}" onclick="setUnits('in',document.getElementById('unit-in'));renderBRCtx()">in</div>
-            <div class="br-btn${cmOn?' on':''}" onclick="setUnits('cm',document.getElementById('unit-cm'));renderBRCtx()">cm</div>
-            <div style="width:0.5px;background:rgba(128,128,128,0.2);align-self:stretch;margin:0 2px;"></div>
-            <div class="br-btn${showPitchBars?' on':''}" onclick="togglePitchBars()" title="show/hide pitch bars and detail columns">pitch bars</div>
-          </div>
-          <div class="br-ctx-row" style="gap:3px;">
-            <span class="br-chip-lbl">density</span>
-            <span class="br-chip">${densVal}</span>
-            <span class="br-chip-lbl" style="font-size:7.5px;">kg/m</span>
-            <div style="width:0.5px;background:rgba(128,128,128,0.2);align-self:stretch;margin:0 2px;"></div>
-            <span class="br-chip-lbl">ticks</span>
-            <div class="br-btn" style="flex:1;text-align:center;" onclick="cycleTickLabelMode()">${tlLabel}</div>
-          </div>
-          <div class="br-ctx-row" onclick="toggleOverflow()" style="cursor:pointer;">
-            <div class="br-more-bar"></div>
-            <div class="br-more-lbl">my bass defaults ↑</div>
-            <div class="br-more-bar"></div>
-          </div>`;
-}
-
-function renderLgndPanel(){
-  // Legend: 2×2 grid spanning all three rows
-  const svgInKey=`<svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="none" stroke="#1a1a1a" stroke-width="1.2"/></svg>
-    <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="rgba(0,0,0,0.06)" stroke="#1a1a1a" stroke-width="1.5"/><circle cx="7" cy="7" r="2.5" fill="#1a1a1a"/></svg>`;
-  const svgChrom=`<svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="none" stroke="#D85A30" stroke-width="1.2"/></svg>
-    <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="#FAECE7" stroke="#993C1D" stroke-width="1.5"/><circle cx="7" cy="7" r="2.5" fill="#993C1D"/></svg>`;
-  const svgHome=`<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="none" stroke="${HOME_COL}" stroke-width="1.5" opacity="0.45"/><circle cx="8" cy="8" r="4.5" fill="${HOME_COL_LIGHT}" stroke="${HOME_COL}" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="${HOME_COL}"/></svg>`;
-  const svgBetween=`<svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="none" stroke="#B4B2A9" stroke-width="1.2" stroke-dasharray="2 1.5"/></svg>`;
-  const svgOffNode=`<svg width="36" height="10" viewBox="0 0 36 10"><line x1="0" y1="5" x2="20" y2="5" stroke="currentColor" stroke-width="1.5" opacity="0.65"/><rect x="20" y="1" width="16" height="8" rx="2" fill="rgba(128,128,128,0.12)"/><text x="28" y="8" text-anchor="middle" font-size="7" font-weight="600" fill="#0F6E56">2</text></svg>`;
-  return `<div style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
-    <div style="display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden;">
-      <div class="lgnd-cell br bb">${svgInKey}<span class="lgnd-txt">in key</span></div>
-      <div class="lgnd-cell bb">${svgChrom}<span class="lgnd-txt">chromatic</span></div>
-      <div class="lgnd-cell br">${svgHome}<span class="lgnd-txt">home node</span></div>
-      <div class="lgnd-cell">${svgBetween}<span class="lgnd-txt">between named pitches</span></div>
-    </div>
-    <div style="display:flex;align-items:center;gap:4px;padding:0 5px;flex:0 0 25px;border-top:0.5px solid rgba(128,128,128,0.1);">${svgOffNode}<span class="lgnd-txt">in-key, off-node</span></div>
-  </div>`;
-}
-
-// ── Overflow panel ────────────────────────────────────────────────
-// ── Overlay sync helpers ──────────────────────────────────────────
-// Move a slider thumb given an element ID and a 0–1 fraction
-function setThumb(id, pct){
-  const t=document.getElementById(id);
-  if(t) { const th=t.querySelector('.br-sl-thumb'); if(th) th.style.left=(Math.max(0,Math.min(1,pct))*100).toFixed(1)+'%'; }
-}
-// Sync all three phys overlay fields + thumbs from current def-* values
-function syncOvPhysFields(){
-  const lenRaw=parseFloat(document.getElementById('def-len').value);
-  const tenRaw=parseFloat(document.getElementById('def-ten').value);
-  const muRaw =parseFloat(document.getElementById('def-mu').value);
-  const lenIn =useInches ? lenRaw : lenRaw/2.54;
-  const tenLbs=tenRaw;
-  const muVal =muRaw;
-  const lf=document.getElementById('def-len-ov'); if(lf) lf.value=document.getElementById('def-len').value;
-  const tf=document.getElementById('def-ten-ov'); if(tf) tf.value=document.getElementById('def-ten').value;
-  const mf=document.getElementById('def-mu-ov');  if(mf) mf.value=document.getElementById('def-mu').value;
-  setThumb('ov-len-sl', (lenIn-24)/(200-24));
-  setThumb('ov-ten-sl', (tenLbs-1)/(15-1));
-  setThumb('ov-mu-sl',  Math.log(muVal/0.0001)/Math.log(0.005/0.0001));
-}
-// Sync one nut preset slider thumb from nutPresets[i]
-function syncOvNutSlider(i){
-  setThumb(`ov-nut-sl-${i}`, nutPresets[i]/Math.max(1,stringInches));
-  const f=document.getElementById(`nut-pre-ov-${i}`);
-  if(f) f.value=fmtLen(nutPresets[i]);
-}
-
-function renderOverflowPanel(){
-  return; // v7.6.15: overflow panel retired. Function kept as a stub so the
-          // remaining live caller (mode-change path) and orphan onclick
-          // handlers in the legacy renderAudioPanel/renderPhysPanel output
-          // do not throw if they ever fire.
-}
-function _renderOverflowPanel_legacy_UNUSED(){
-  const op=document.getElementById('overflow-panel');
-  if(!op) return;
-  if(brNodeView==='full' && !brRightPanel){
-    op.innerHTML=`
-      <div class="ov-title">display</div>
-      <div class="ov-row">
-        <span class="ov-lbl">node octaves</span>
-        <div style="display:flex;gap:3px;">
-          <div class="ov-btn${nodeOctaves===2?' on':''}" onclick="setNodeOctaves(2)">2</div>
-          <div class="ov-btn${nodeOctaves===3?' on':''}" onclick="setNodeOctaves(3)">3</div>
-        </div>
-      </div>`;
-  } else if(brNodeView==='nut' && !brRightPanel){
-    op.innerHTML=`
-      <div class="ov-title">nut presets</div>
-      ${[0,1,2].map(i=>`
-      <div class="ov-row">
-        <span class="ov-lbl">nut ${i+1}</span>
-        <input class="ov-field" id="nut-pre-ov-${i}" value="${fmtLen(nutPresets[i])}"
-          onchange="setNutPreset(${i},this.value);document.getElementById('nut-pre-${i}').value=this.value;syncOvNutSlider(${i})"
-          onkeydown="if(event.key==='Enter')this.blur()">
-        <div class="br-sl-track" id="ov-nut-sl-${i}" style="flex:1;">
-          <div class="br-sl-thumb" style="left:${(nutPresets[i]/Math.max(1,stringInches)*100).toFixed(1)}%"></div>
-        </div>
-        <div class="ov-btn" onclick="setNutPreset(${i},document.getElementById('nut-pre-ov-${i}').value);syncOvNutSlider(${i});renderBRCtx()">save</div>
-        <div class="ov-btn" onclick="applyNutPreset(${i});renderBRCtx()">apply</div>
-      </div>`).join('')}
-      <div class="ov-sep"></div>
-      <div class="ov-row" style="justify-content:flex-end;">
-        <div class="ov-btn danger" onclick="applyNutOffset(0);render();renderBRCtx()">reset to defaults</div>
-      </div>`;
-  } else if(brRightPanel==='phys'){
-    const tensionPct=(tensionLbs-1)/(15-1);
-    const lenPct=(stringInches-24)/(200-24);
-    const muPct=Math.log(muKgM/0.0001)/Math.log(0.005/0.0001);
-    op.innerHTML=`
-      <div class="ov-title">my bass defaults</div>
-      <div class="ov-row" style="gap:4px;flex-wrap:wrap;">
-        <div class="ov-btn" onclick="resetDefaults();syncOvPhysFields()">reset</div>
-        <div class="ov-btn" onclick="applyDefaults();renderBRCtx();updateOverflowDesktop()">apply</div>
-        <div class="ov-btn" onclick="useCurrentSettings();syncOvPhysFields()">set current as default</div>
-      </div>
-      <div class="ov-sep"></div>
-      <div class="ov-row">
-        <span class="ov-lbl">length</span>
-        <input class="ov-field" id="def-len-ov" value="${document.getElementById('def-len').value}"
-          oninput="document.getElementById('def-len').value=this.value;setThumb('ov-len-sl',(parseFloat(this.value)${useInches?'':'/2.54'}-24)/(200-24))"
-          onchange="document.getElementById('def-len').value=this.value;setThumb('ov-len-sl',(parseFloat(this.value)${useInches?'':'/2.54'}-24)/(200-24))"
-          onkeydown="if(event.key==='Enter')this.blur()">
-        <div class="br-sl-track" id="ov-len-sl" style="flex:1;"><div class="br-sl-thumb" style="left:${(lenPct*100).toFixed(1)}%"></div></div>
-        <span style="font-size:9px;color:#aaa;white-space:nowrap;">${useInches?'in':'cm'}</span>
-      </div>
-      <div class="ov-row">
-        <span class="ov-lbl">tension</span>
-        <input class="ov-field" id="def-ten-ov" value="${document.getElementById('def-ten').value}"
-          oninput="document.getElementById('def-ten').value=this.value;setThumb('ov-ten-sl',(parseFloat(this.value)-1)/(15-1))"
-          onchange="document.getElementById('def-ten').value=this.value;setThumb('ov-ten-sl',(parseFloat(this.value)-1)/(15-1))"
-          onkeydown="if(event.key==='Enter')this.blur()">
-        <div class="br-sl-track" id="ov-ten-sl" style="flex:1;"><div class="br-sl-thumb" style="left:${(tensionPct*100).toFixed(1)}%"></div></div>
-        <span style="font-size:9px;color:#aaa;white-space:nowrap;">lbs</span>
-      </div>
-      <div class="ov-row">
-        <span class="ov-lbl">density</span>
-        <input class="ov-field" id="def-mu-ov" value="${document.getElementById('def-mu').value}"
-          oninput="document.getElementById('def-mu').value=this.value;setThumb('ov-mu-sl',Math.log(parseFloat(this.value)/0.0001)/Math.log(0.005/0.0001))"
-          onchange="document.getElementById('def-mu').value=this.value;setThumb('ov-mu-sl',Math.log(parseFloat(this.value)/0.0001)/Math.log(0.005/0.0001))"
-          onkeydown="if(event.key==='Enter')this.blur()">
-        <div class="br-sl-track" id="ov-mu-sl" style="flex:1;"><div class="br-sl-thumb" style="left:${(muPct*100).toFixed(1)}%"></div></div>
-        <span style="font-size:9px;color:#aaa;white-space:nowrap;">kg/m</span>
-      </div>`;
-  } else if(brRightPanel==='audio'){
-    const AMP_MIN=5,AMP_MAX=60,DUR_MIN=0.1,DUR_MAX=4.0;
-    const nAmpPct=((vizNodeAmp-AMP_MIN)/(AMP_MAX-AMP_MIN)*100).toFixed(1);
-    const nDurPct=((vizNodeDur-DUR_MIN)/(DUR_MAX-DUR_MIN)*100).toFixed(1);
-    const wAmpPct=((vizWaveAmp-AMP_MIN)/(AMP_MAX-AMP_MIN)*100).toFixed(1);
-    const wDurPct=((vizWaveDur-DUR_MIN)/(DUR_MAX-DUR_MIN)*100).toFixed(1);
-    op.innerHTML=`
-      <div class="ov-title">visualization</div>
-      <div class="ov-row">
-        <span class="ov-lbl" style="color:#1D9E75;">node</span>
-        <div class="ov-btn${nodeViz?' on':''}" style="min-width:32px;text-align:center;" onclick="toggleNodeViz();renderOverflowPanel();renderBRCtx()">${nodeViz?'on':'off'}</div>
-        <span class="ov-lbl" style="min-width:28px;">amp</span>
-        <div class="br-sl-track" id="ov-namp-track" style="flex:1;"><div class="br-sl-thumb" style="left:${nAmpPct}%"></div></div>
-        <span class="br-sl-val" id="ov-namp-val" style="min-width:22px;">${vizNodeAmp.toFixed(0)}</span>
-        <span class="ov-lbl" style="min-width:24px;">dur</span>
-        <div class="br-sl-track" id="ov-ndur-track" style="flex:1;"><div class="br-sl-thumb" style="left:${nDurPct}%"></div></div>
-        <span class="br-sl-val" id="ov-ndur-val" style="min-width:28px;">${vizNodeDur.toFixed(1)}s</span>
-      </div>
-      <div class="ov-sep"></div>
-      <div class="ov-row">
-        <span class="ov-lbl" style="color:#C8821A;">wave</span>
-        <div class="ov-btn${waveViz?' on':''}" style="min-width:32px;text-align:center;" onclick="toggleWaveViz();renderOverflowPanel();renderBRCtx()">${waveViz?'on':'off'}</div>
-        <span class="ov-lbl" style="min-width:28px;">amp</span>
-        <div class="br-sl-track" id="ov-wamp-track" style="flex:1;"><div class="br-sl-thumb" style="left:${wAmpPct}%"></div></div>
-        <span class="br-sl-val" id="ov-wamp-val" style="min-width:22px;">${vizWaveAmp.toFixed(0)}</span>
-        <span class="ov-lbl" style="min-width:24px;">dur</span>
-        <div class="br-sl-track" id="ov-wdur-track" style="flex:1;"><div class="br-sl-thumb" style="left:${wDurPct}%"></div></div>
-        <span class="br-sl-val" id="ov-wdur-val" style="min-width:28px;">${vizWaveDur.toFixed(1)}s</span>
-      </div>`;
-  } else {
-    op.innerHTML='';
-  }
-}
-
-function _syncViewBtn(){
-  const b=document.getElementById('br-view');
-  if(!b) return;
-  if(overflowOpen){ b.style.borderColor='#533AB7'; b.style.background='rgba(83,58,183,0.08)'; }
-  else { b.style.borderColor=''; b.style.background=''; }
-}
-
-function toggleOverflow(){
-  return; // v7.6.15: overflow panel retired. Swipe handler on #bottom-rail
-          // still calls this but the call is now a no-op.
-}
-function _toggleOverflow_legacy_UNUSED(){
-  overflowOpen=!overflowOpen;
-  const op=document.getElementById('overflow-panel');
-  if(!op) return;
-  if(overflowOpen){
-    renderOverflowPanel();
-    op.classList.add('visible');
-    setTimeout(wireAllBRSliders,0);
-  } else {
-    op.classList.remove('visible');
-    op.innerHTML='';
-  }
-  _syncViewBtn();
-}
-
-// On desktop, auto-close overflow when overflowOpen is false — never auto-open.
-// Overflow opens only via explicit user action (toggleOverflow / swipe).
-function updateOverflowDesktop(){
-  if(isMobile()) return;
-  const op=document.getElementById('overflow-panel');
-  if(!op) return;
-  if(!overflowOpen){
-    op.classList.remove('visible');
-    op.innerHTML='';
-  }
-}
-
-// Closes overflow on any platform — use when rail state changes
-function closeOverflowPanel(){
-  overflowOpen=false;
-  const op=document.getElementById('overflow-panel');
-  if(op){ op.classList.remove('visible'); op.innerHTML=''; }
-  _syncViewBtn();
-}
-
-// ── Wire duration/volume mini sliders after render ─────────────────
-// ── Unified mini-slider wiring ────────────────────────────────────
-// Called via setTimeout after every renderBRCtx() and renderOverflowPanel().
-// Handles all three slider families: audio dur/vol, nut preset offsets,
-// phys defaults length/tension/density.
-function wireAllBRSliders(){
-
-  // Generic wiring: given a track el, min, max, callback(value)
-  function wireTrack(track, min, max, cb){
-    if(!track || track._wired) return;
-    track._wired=true;
-    const thumb=track.querySelector('.br-sl-thumb');
-    if(!thumb) return;
-    let drag=false;
-    track.addEventListener('mousedown',e=>{
-      drag=true; e.preventDefault();
-      const move=ev=>{
-        if(!drag) return;
-        const r=track.getBoundingClientRect();
-        const pct=Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width));
-        thumb.style.left=(pct*100).toFixed(1)+'%';
-        cb(min+pct*(max-min), pct);
-      };
-      const up=()=>{drag=false;window.removeEventListener('mousemove',move);window.removeEventListener('mouseup',up);};
-      window.addEventListener('mousemove',move);
-      window.addEventListener('mouseup',up);
-    });
-    // touch support
-    track.addEventListener('touchstart',e=>{
-      e.preventDefault();
-      drag=true;
-      const move=ev=>{
-        ev.preventDefault();
-        if(!drag) return;
-        const r=track.getBoundingClientRect();
-        const pct=Math.max(0,Math.min(1,(ev.touches[0].clientX-r.left)/r.width));
-        thumb.style.left=(pct*100).toFixed(1)+'%';
-        cb(min+pct*(max-min), pct);
-      };
-      const up=()=>{drag=false;track.removeEventListener('touchmove',move);track.removeEventListener('touchend',up);};
-      track.addEventListener('touchmove',move,{passive:false});
-      track.addEventListener('touchend',up,{passive:true});
-    },{passive:false});
-  }
-
-  // ── Audio: dur ────────────────────────────────────────────────
-  wireTrack(document.getElementById('br-dur-track'), 0.2, 4, (val)=>{
-    const valEl=document.getElementById('br-dur-val');
-    if(valEl) valEl.textContent=val.toFixed(1)+'s';
-    syncSlider('dur', val);
-  });
-
-  // ── Audio: spacing — wired with pointer capture for reliability ──
-  (function wireSpcSlider(){
-    const track=document.getElementById('br-spc-track');
-    if(!track||track._wired) return;
-    track._wired=true;
-    const SPC_MAX=1.0;
-    function update(clientX){
-      const r=track.getBoundingClientRect();
-      if(r.width<1) return;
-      const pct=Math.max(0,Math.min(1,(clientX-r.left)/r.width));
-      toneSpacing=Math.max(0,Math.min(SPC_MAX,pct*SPC_MAX));
-      const thumb=track.querySelector('.br-sl-thumb');
-      if(thumb) thumb.style.left=(pct*100).toFixed(1)+'%';
-      const val=document.getElementById('br-spc-val');
-      if(val) val.textContent=toneSpacing.toFixed(2)+'s';
-    }
-    let _dragging=false;
-    track.addEventListener('pointerdown',e=>{
-      e.preventDefault();
-      track.setPointerCapture(e.pointerId);
-      _dragging=true;
-      update(e.clientX);
-    });
-    track.addEventListener('pointermove',e=>{
-      if(!_dragging) return;
-      update(e.clientX);
-    });
-    track.addEventListener('pointerup',e=>{
-      _dragging=false;
-      track.releasePointerCapture(e.pointerId);
-    });
-    track.addEventListener('pointercancel',e=>{
-      _dragging=false;
-    });
-  })();
-
-  // ── Viz: node amp ─────────────────────────────────────────────
-  (function wireNAmpSlider(){
-    const track=document.getElementById('ov-namp-track');
-    if(!track||track._wired) return;
-    track._wired=true;
-    const AMP_MIN=5, AMP_MAX=60;
-    function update(clientX){
-      const r=track.getBoundingClientRect();
-      if(r.width<1) return;
-      const pct=Math.max(0,Math.min(1,(clientX-r.left)/r.width));
-      vizNodeAmp=Math.round(AMP_MIN+pct*(AMP_MAX-AMP_MIN));
-      const thumb=track.querySelector('.br-sl-thumb');
-      if(thumb) thumb.style.left=(pct*100).toFixed(1)+'%';
-      const val=document.getElementById('ov-namp-val');
-      if(val) val.textContent=vizNodeAmp.toFixed(0);
-    }
-    let _d=false;
-    track.addEventListener('pointerdown',e=>{e.preventDefault();track.setPointerCapture(e.pointerId);_d=true;update(e.clientX);});
-    track.addEventListener('pointermove',e=>{if(!_d)return;update(e.clientX);});
-    track.addEventListener('pointerup',e=>{_d=false;track.releasePointerCapture(e.pointerId);});
-    track.addEventListener('pointercancel',()=>{_d=false;});
-  })();
-
-  // ── Viz: node dur ─────────────────────────────────────────────
-  (function wireNDurSlider(){
-    const track=document.getElementById('ov-ndur-track');
-    if(!track||track._wired) return;
-    track._wired=true;
-    const DUR_MIN=0.1, DUR_MAX=4.0;
-    function update(clientX){
-      const r=track.getBoundingClientRect();
-      if(r.width<1) return;
-      const pct=Math.max(0,Math.min(1,(clientX-r.left)/r.width));
-      vizNodeDur=Math.max(DUR_MIN,Math.min(DUR_MAX,DUR_MIN+pct*(DUR_MAX-DUR_MIN)));
-      const thumb=track.querySelector('.br-sl-thumb');
-      if(thumb) thumb.style.left=(pct*100).toFixed(1)+'%';
-      const val=document.getElementById('ov-ndur-val');
-      if(val) val.textContent=vizNodeDur.toFixed(1)+'s';
-    }
-    let _d=false;
-    track.addEventListener('pointerdown',e=>{e.preventDefault();track.setPointerCapture(e.pointerId);_d=true;update(e.clientX);});
-    track.addEventListener('pointermove',e=>{if(!_d)return;update(e.clientX);});
-    track.addEventListener('pointerup',e=>{_d=false;track.releasePointerCapture(e.pointerId);});
-    track.addEventListener('pointercancel',()=>{_d=false;});
-  })();
-
-  // ── Viz: wave amp ─────────────────────────────────────────────
-  (function wireWAmpSlider(){
-    const track=document.getElementById('ov-wamp-track');
-    if(!track||track._wired) return;
-    track._wired=true;
-    const AMP_MIN=5, AMP_MAX=60;
-    function update(clientX){
-      const r=track.getBoundingClientRect();
-      if(r.width<1) return;
-      const pct=Math.max(0,Math.min(1,(clientX-r.left)/r.width));
-      vizWaveAmp=Math.round(AMP_MIN+pct*(AMP_MAX-AMP_MIN));
-      const thumb=track.querySelector('.br-sl-thumb');
-      if(thumb) thumb.style.left=(pct*100).toFixed(1)+'%';
-      const val=document.getElementById('ov-wamp-val');
-      if(val) val.textContent=vizWaveAmp.toFixed(0);
-    }
-    let _d=false;
-    track.addEventListener('pointerdown',e=>{e.preventDefault();track.setPointerCapture(e.pointerId);_d=true;update(e.clientX);});
-    track.addEventListener('pointermove',e=>{if(!_d)return;update(e.clientX);});
-    track.addEventListener('pointerup',e=>{_d=false;track.releasePointerCapture(e.pointerId);});
-    track.addEventListener('pointercancel',()=>{_d=false;});
-  })();
-
-  // ── Viz: wave dur ─────────────────────────────────────────────
-  (function wireWDurSlider(){
-    const track=document.getElementById('ov-wdur-track');
-    if(!track||track._wired) return;
-    track._wired=true;
-    const DUR_MIN=0.1, DUR_MAX=4.0;
-    function update(clientX){
-      const r=track.getBoundingClientRect();
-      if(r.width<1) return;
-      const pct=Math.max(0,Math.min(1,(clientX-r.left)/r.width));
-      vizWaveDur=Math.max(DUR_MIN,Math.min(DUR_MAX,DUR_MIN+pct*(DUR_MAX-DUR_MIN)));
-      const thumb=track.querySelector('.br-sl-thumb');
-      if(thumb) thumb.style.left=(pct*100).toFixed(1)+'%';
-      const val=document.getElementById('ov-wdur-val');
-      if(val) val.textContent=vizWaveDur.toFixed(1)+'s';
-    }
-    let _d=false;
-    track.addEventListener('pointerdown',e=>{e.preventDefault();track.setPointerCapture(e.pointerId);_d=true;update(e.clientX);});
-    track.addEventListener('pointermove',e=>{if(!_d)return;update(e.clientX);});
-    track.addEventListener('pointerup',e=>{_d=false;track.releasePointerCapture(e.pointerId);});
-    track.addEventListener('pointercancel',()=>{_d=false;});
-  })();
-
-  // ── Audio: vol ────────────────────────────────────────────────
-  wireTrack(document.getElementById('br-vol-track'), 0, 100, (val)=>{
-    const valEl=document.getElementById('br-vol-val');
-    if(valEl) valEl.textContent=Math.round(val)+'%';
-    syncSlider('vol', val);
-  });
-
-  // ── Overflow: nut preset sliders ──────────────────────────────
-  [0,1,2].forEach(i=>{
-    const track=document.getElementById(`ov-nut-sl-${i}`);
-    wireTrack(track, 0, stringInches, (val)=>{
-      nutPresets[i]=Math.max(0,Math.min(stringInches*0.85,val));
-      const field=document.getElementById(`nut-pre-ov-${i}`);
-      if(field) field.value=fmtLen(nutPresets[i]);
-      // also sync legacy field
-      const leg=document.getElementById(`nut-pre-${i}`);
-      if(leg) leg.value=fmtLen(nutPresets[i]);
-    });
-  });
-
-  // ── Overflow: phys defaults sliders ──────────────────────────
-  wireTrack(document.getElementById('ov-len-sl'), 24, 200, (val)=>{
-    const v=useInches?val.toFixed(1)+'"':(val*2.54).toFixed(1)+' cm';
-    const f=document.getElementById('def-len-ov');
-    if(f){f.value=v; document.getElementById('def-len').value=v;}
-  });
-  wireTrack(document.getElementById('ov-ten-sl'), 1, 15, (val)=>{
-    const v=val.toFixed(1)+' lbs';
-    const f=document.getElementById('def-ten-ov');
-    if(f){f.value=v; document.getElementById('def-ten').value=v;}
-  });
-  // density: log scale — handled by IIFE below, no wireTrack call here
-  // mu uses log scale — re-wire manually
-  (()=>{
-    const track=document.getElementById('ov-mu-sl');
-    if(!track || track._wired) return;
-    track._wired=true;
-    const thumb=track.querySelector('.br-sl-thumb');
-    if(!thumb) return;
-    let drag=false;
-    const doMove=(clientX)=>{
-      const r=track.getBoundingClientRect();
-      const pct=Math.max(0,Math.min(1,(clientX-r.left)/r.width));
-      const val=0.0001*Math.pow(0.005/0.0001,pct);
-      thumb.style.left=(pct*100).toFixed(1)+'%';
-      const v=val.toFixed(6);
-      const f=document.getElementById('def-mu-ov');
-      if(f){f.value=v; document.getElementById('def-mu').value=v;}
-    };
-    track.addEventListener('mousedown',e=>{
-      drag=true; e.preventDefault();
-      const move=ev=>{if(drag) doMove(ev.clientX);};
-      const up=()=>{drag=false;window.removeEventListener('mousemove',move);window.removeEventListener('mouseup',up);};
-      window.addEventListener('mousemove',move);
-      window.addEventListener('mouseup',up);
-    });
-    track.addEventListener('touchstart',e=>{
-      e.preventDefault();
-      const move=ev=>{ev.preventDefault();doMove(ev.touches[0].clientX);};
-      const up=()=>{track.removeEventListener('touchmove',move);track.removeEventListener('touchend',up);};
-      track.addEventListener('touchmove',move,{passive:false});
-      track.addEventListener('touchend',up,{passive:true});
-    },{passive:false});
-  })();
-}
-
-// ── setBRPanel — right panel toggle ──────────────────────────────
-setBRPanel = function(panel, btn){
-  // Close any open overflow before switching panel state
-  closeOverflowPanel();
-  brRightPanel = (brRightPanel===panel) ? null : panel;
-  overflowOpen=false;
-  renderBRCtx();
-  setTimeout(wireAllBRSliders,0);
-  updateOverflowDesktop();
-};
 
 // ── Patch setNodeView to also update BR state ─────────────────────
 const _setNodeView_orig=setNodeView;
 setNodeView = function(view, btn){
   brNodeView=view;
-  // v7.6.15: legacy brRightPanel=null and closeOverflowPanel() removed —
-  // the overflow panel and its right-panel state have been retired.
+  // v7.6.22: overflow panel + right-panel state retired; setBRPanel removed.
   _setNodeView_orig(view, btn);
   // Show/hide pitchmap overlay group
   const pmg=document.getElementById('pitchmap-overlay');
@@ -9359,7 +8724,6 @@ function setNodeOctaves(n){
   clearViz();
   _syncRegisterBtns();
   render();
-  renderOverflowPanel();
 }
 
 // ── Layout constants ──────────────────────────────────────────────
@@ -10512,30 +9876,6 @@ canvas.addEventListener('touchend',e=>{
 });
 
 // ── Overflow drag gesture ─────────────────────────────────────────
-// The "more ↑" row opens the overflow on tap OR on upward swipe ≥20px.
-// Works alongside the existing onclick on the row element.
-(function wireOverflowDrag(){
-  let _odStartY=0, _odMoved=false;
-  document.getElementById('bottom-rail').addEventListener('touchstart',e=>{
-    const row=e.target.closest('.br-ctx-row');
-    if(!row) return;
-    const lbl=row.querySelector('.br-more-lbl');
-    if(!lbl) return;
-    _odStartY=e.touches[0].clientY; _odMoved=false;
-  },{passive:true});
-  document.getElementById('bottom-rail').addEventListener('touchmove',e=>{
-    e.preventDefault();
-    const dy=_odStartY-e.touches[0].clientY;
-    if(dy>20&&!overflowOpen&&!_odMoved){
-      _odMoved=true;
-      toggleOverflow();
-    } else if(dy<-20&&overflowOpen&&!_odMoved){
-      _odMoved=true;
-      toggleOverflow();
-    }
-  },{passive:false});
-})();
-
 // ── iOS Safari scroll prevention ─────────────────────────────────
 // Handled via CSS touch-action:none on #canvas-wrap instead of
 // a non-passive document touchmove listener, which can crash
