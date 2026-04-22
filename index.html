@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.6.22</title>
+<title>Washtub Bass String Map · v7.7.1</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -1473,8 +1473,8 @@ input[type=range]{width:110px;cursor:pointer;}
        Do NOT move inside play-zone or offset with left-rail width.
        The left rail (z-index:15) sits on top of it intentionally. -->
   <div id="cof-wrap" style="display:none;">
-    <canvas id="cof-canvas" width="160" height="160"></canvas>
-    <svg id="cof-inner-dim" style="position:absolute;top:0;left:0;width:160px;height:160px;pointer-events:none;display:none;" xmlns="http://www.w3.org/2000/svg">
+    <canvas id="cof-canvas" width="170" height="170"></canvas>
+    <svg id="cof-inner-dim" style="position:absolute;top:0;left:0;width:170px;height:170px;pointer-events:none;display:none;" xmlns="http://www.w3.org/2000/svg">
       <circle cx="85" cy="85" r="34" fill="rgba(255,255,255,0.45)"/>
     </svg>
     <div id="cof-dot"></div>
@@ -1533,7 +1533,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.6.22';
+const VERSION='v7.7.1';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -2079,8 +2079,8 @@ setTimeout(_spInit, 0);
 // selection. Gated sections (map/capo) dim by opacity only.
 // v7.6.11: "tiny labels" buttons now drive the engine's existing
 // _pmShowSmallLabels flag (defined at ~line 4872, defaults true).
-// _capoOnStrVisible remains a stub — capo on-string render integration
-// deferred to a later pass.
+// v7.7.1: _capoOnStrVisible wired into updateCapoLayer — toggles
+// #capo-ticks and #capo-label-hits display, preserving drag marker.
 // ══════════════════════════════════════════════════════════════════
 
 let _zoomPinned=false;
@@ -2187,9 +2187,8 @@ function _vpSetCapoOnStr(on, btn){
   document.querySelectorAll('#view-panel .vp-os-btn').forEach(function(b){b.classList.remove('on');});
   if(btn && btn.classList) btn.classList.add('on');
   _capoOnStrVisible=!!on;
-  // Render hook for capo layer to respect new visibility. updateCapoLayer
-  // is called from render() and will consult _capoOnStrVisible once the
-  // integration lands. For now this just sets the flag + triggers render.
+  // updateCapoLayer() consults _capoOnStrVisible and toggles display on
+  // #capo-ticks + #capo-label-hits. Drag marker + sub-nodes stay visible.
   if(typeof render==='function') render();
 }
 
@@ -7266,6 +7265,15 @@ function updateCapoLayer(){
   const layer=document.getElementById('capo-layer');
   if(nodeView!=='capo'){layer.setAttribute('display','none');return;}
   layer.setAttribute('display','');
+
+  // Honor view-panel show/hide for on-string interval buttons (ticks + callout
+  // labels + tap targets). Drag marker, sub-nodes, zones, and annotations
+  // remain visible so the capo stays draggable and the segment nodes still show.
+  const onStr = (typeof _capoOnStrVisible==='undefined') ? true : !!_capoOnStrVisible;
+  const ticksLayer = document.getElementById('capo-ticks');
+  const hitsLayer  = document.getElementById('capo-label-hits');
+  if(ticksLayer) ticksLayer.setAttribute('display', onStr ? '' : 'none');
+  if(hitsLayer)  hitsLayer.setAttribute('display',  onStr ? '' : 'none');
 
   const fund=fundFreq();
   const speakingIn=effectiveSpeakingLength();
