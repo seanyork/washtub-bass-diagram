@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.7.6</title>
+<title>Washtub Bass String Map · v7.7.7</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -1602,7 +1602,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.7.6';
+const VERSION='v7.7.7';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -10760,9 +10760,12 @@ const TOUR_CALLBACKS = {
 
 // ── Engine ────────────────────────────────────────────────────────
 let _tourState = { active:false, sectionIdx:-1, stepIdx:-1 };
+let _tourLastDiag = null; // diagnostics for last resolved target (dev mode only)
 
 function _tourResolveTarget(target){
   if(!target || !target.kind) return null;
+  // Reset diagnostics; only populated for svgPoint targets below.
+  _tourLastDiag = null;
   // Compute the raw rect for the given kind, then apply optional padX/padY
   // symmetrically (same amount added to each side). padX/padY can be used on
   // any kind to make thin or point targets visible under the spotlight.
@@ -10810,12 +10813,28 @@ function _tourResolveTarget(target){
         const r = (typeof target.r==='number') ? target.r : 16;
         const p1 = svg.createSVGPoint(); p1.x = target.svgX - r; p1.y = target.svgY - r;
         const p2 = svg.createSVGPoint(); p2.x = target.svgX + r; p2.y = target.svgY + r;
+        const pC = svg.createSVGPoint(); pC.x = target.svgX;     pC.y = target.svgY;
         const s1 = p1.matrixTransform(ctm);
         const s2 = p2.matrixTransform(ctm);
+        const sC = pC.matrixTransform(ctm);
         const top = Math.min(s1.y, s2.y);
         const left = Math.min(s1.x, s2.x);
         const width = Math.abs(s2.x - s1.x);
         const height = Math.abs(s2.y - s1.y);
+        // Capture dev diagnostics regardless of whether rect resolves
+        if(_tourDevMode()){
+          const svgBB = svg.getBoundingClientRect();
+          _tourLastDiag = {
+            kind: 'svgPoint',
+            svgX: target.svgX, svgY: target.svgY, r: r,
+            ctm: { a:ctm.a, b:ctm.b, c:ctm.c, d:ctm.d, e:ctm.e, f:ctm.f },
+            svgBBox: { left:svgBB.left, top:svgBB.top, width:svgBB.width, height:svgBB.height },
+            viewport: { w:window.innerWidth, h:window.innerHeight, dpr:window.devicePixelRatio||1 },
+            scroll: { x:window.scrollX||0, y:window.scrollY||0 },
+            screenCenter: { x:sC.x, y:sC.y },
+            screenRect: { top:top, left:left, width:width, height:height }
+          };
+        }
         if(width > 0 && height > 0){
           rect = { top, left, width, height };
         }
@@ -10869,12 +10888,39 @@ function _tourSetSpotlight(rect){
   ring.style.height=(rect.height+pad*2)+'px';
 }
 
+// Dev-mode crosshair: renders at the svgPoint center so we can see where
+// getScreenCTM thinks the target lives, independent of spotlight padding
+// or tooltip occlusion. Hidden when no svgPoint diag is available or
+// when dev mode is off.
+function _tourPaintCrosshair(){
+  let ch=document.getElementById('tour-crosshair');
+  const show = _tourDevMode() && _tourLastDiag && _tourLastDiag.kind==='svgPoint';
+  if(!show){
+    if(ch) ch.style.display='none';
+    return;
+  }
+  if(!ch){
+    ch=document.createElement('div');
+    ch.id='tour-crosshair';
+    ch.style.cssText='position:fixed;pointer-events:none;z-index:152;width:40px;height:40px;margin-left:-20px;margin-top:-20px;';
+    ch.innerHTML='<div style="position:absolute;left:19px;top:0;width:2px;height:40px;background:#ff3b30;"></div>'+
+                 '<div style="position:absolute;top:19px;left:0;height:2px;width:40px;background:#ff3b30;"></div>'+
+                 '<div style="position:absolute;left:14px;top:14px;width:12px;height:12px;border:2px solid #ff3b30;border-radius:50%;background:rgba(255,59,48,0.15);"></div>';
+    const ov=document.getElementById('tour-overlay');
+    if(ov) ov.appendChild(ch); else document.body.appendChild(ch);
+  }
+  ch.style.left=_tourLastDiag.screenCenter.x+'px';
+  ch.style.top=_tourLastDiag.screenCenter.y+'px';
+  ch.style.display='block';
+}
+
 function _tourShowMenu(){
   _tourState.active=true;
   _tourState.sectionIdx=-1;
   _tourState.stepIdx=-1;
   _tourShowOverlay();
   _tourSetSpotlight(null);
+  _tourLastDiag=null; _tourPaintCrosshair();
   const tip=document.getElementById('tour-tooltip');
   if(tip) tip.style.display='none';
   const menu=document.getElementById('tour-menu');
@@ -10938,6 +10984,7 @@ function _tourShowStep(direction){
     return;
   }
   _tourSetSpotlight(rect);
+  _tourPaintCrosshair();
   _tourSetTooltip(step, rect);
 }
 
@@ -11084,6 +11131,9 @@ function _tourExit(){
   _tourState.active=false;
   _tourState.sectionIdx=-1;
   _tourState.stepIdx=-1;
+  _tourLastDiag=null;
+  const ch=document.getElementById('tour-crosshair');
+  if(ch) ch.style.display='none';
   const menu=document.getElementById('tour-menu');
   if(menu) menu.classList.remove('visible');
   const tip=document.getElementById('tour-tooltip');
@@ -11092,7 +11142,19 @@ function _tourExit(){
 }
 
 function _tourFlagStep(step){
-  const payload = 'TOUR_EDIT '+step.id+'\nSearch:\nid: \''+step.id+'\'\nTitle: '+(step.title||'')+'\nBody:\n'+(step.body||'');
+  let payload = 'TOUR_EDIT '+step.id+'\nSearch:\nid: \''+step.id+'\'\nTitle: '+(step.title||'')+'\nBody:\n'+(step.body||'');
+  if(_tourLastDiag && _tourLastDiag.kind==='svgPoint'){
+    const d=_tourLastDiag;
+    const fx=function(n){ return (typeof n==='number') ? n.toFixed(3) : String(n); };
+    payload += '\n\nDiag (svgPoint):'+
+      '\n  svgTarget:   ('+d.svgX+','+d.svgY+') r='+d.r+
+      '\n  screenCenter:('+fx(d.screenCenter.x)+','+fx(d.screenCenter.y)+')'+
+      '\n  screenRect:  top='+fx(d.screenRect.top)+' left='+fx(d.screenRect.left)+' w='+fx(d.screenRect.width)+' h='+fx(d.screenRect.height)+
+      '\n  ctm:         a='+fx(d.ctm.a)+' b='+fx(d.ctm.b)+' c='+fx(d.ctm.c)+' d='+fx(d.ctm.d)+' e='+fx(d.ctm.e)+' f='+fx(d.ctm.f)+
+      '\n  svgBBox:     left='+fx(d.svgBBox.left)+' top='+fx(d.svgBBox.top)+' w='+fx(d.svgBBox.width)+' h='+fx(d.svgBBox.height)+
+      '\n  viewport:    '+d.viewport.w+'x'+d.viewport.h+' dpr='+d.viewport.dpr+
+      '\n  scroll:      x='+d.scroll.x+' y='+d.scroll.y;
+  }
   const toast=function(msg){
     const t=document.getElementById('tour-flag-toast');
     if(!t) return;
