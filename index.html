@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.7.11</title>
+<title>Washtub Bass String Map · v7.7.12</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -705,6 +705,9 @@ input[type=range]{width:110px;cursor:pointer;}
 #tour-tooltip .tour-flag-btn{padding:2px 6px;border:0.5px solid #C8821A;border-radius:3px;background:#fff;color:#C8821A;font-size:10px;cursor:pointer;}
 #tour-tooltip .tour-tip-title{font-weight:600;font-size:14px;color:#533AB7;margin-bottom:6px;}
 #tour-tooltip .tour-tip-body{line-height:1.45;margin-bottom:10px;}
+#tour-tooltip .tour-tip-action{margin:-4px 0 10px;display:flex;justify-content:flex-start;}
+#tour-tooltip .tour-action-btn{padding:6px 12px;border:0.5px solid #533AB7;border-radius:4px;background:#F0EEF9;color:#533AB7;font-size:12px;cursor:pointer;font-weight:600;}
+#tour-tooltip .tour-action-btn:active{background:#E0DCF5;}
 #tour-tooltip .tour-tip-foot{display:flex;gap:6px;justify-content:flex-end;}
 #tour-tooltip .tour-nav-btn{padding:6px 14px;border:0.5px solid rgba(128,128,128,0.3);border-radius:4px;background:#fff;color:#1a1a1a;font-size:12px;cursor:pointer;}
 #tour-tooltip .tour-nav-btn.primary{background:#533AB7;color:#fff;border-color:#533AB7;}
@@ -730,6 +733,7 @@ input[type=range]{width:110px;cursor:pointer;}
   #tour-tooltip .tour-back-link{color:#AFA9EC;}
   #tour-tooltip .tour-nav-btn{background:#2a2a2a;color:#e0e0e0;border-color:rgba(200,200,200,0.3);}
   #tour-tooltip .tour-nav-btn.primary{background:#AFA9EC;color:#1a1a1a;border-color:#AFA9EC;}
+  #tour-tooltip .tour-action-btn{background:rgba(175,169,236,0.15);color:#AFA9EC;border-color:#AFA9EC;}
   #tour-menu{background:#1e1e1e;color:#e0e0e0;border-color:#AFA9EC;}
   #tour-menu .tour-menu-head{color:#AFA9EC;}
   #tour-menu .tour-menu-row{color:#e0e0e0;}
@@ -1602,7 +1606,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.7.11';
+const VERSION='v7.7.12';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -10833,7 +10837,8 @@ const TOUR_CONTENT = {
         title: 'Pinning',
         body: "Tap any node to pin it -- it stays highlighted even after your finger moves away. Tap the pinned node again to unpin. With start-at-pin selected, playback begins from the pinned node.",
         target: { kind:'canvas' },
-        onEnter: 'zoomFit', onExit: null },
+        onEnter: 'zoomFit', onExit: null,
+        action: { label:'Play 1-3-5 arp', callback:'playDemoGIonianArp' } },
     ]},
     // Section 6 -- Settings Panel  (v7.7.11)
     { key:'settings_panel', label:'Settings Panel', built:true, steps:[
@@ -11091,6 +11096,75 @@ const TOUR_CALLBACKS = {
       }
     }catch(e){}
   },
+  // v7.7.12: close counterparts. Idempotent -- closing an already-closed
+  // panel does nothing. Useful in onEnter chains to clean up state before
+  // the new step's primary panel opens.
+  closeCoF: function(){
+    try{
+      if(typeof cofVisible!=='undefined' && cofVisible){
+        if(typeof toggleCoF==='function') toggleCoF();
+      }
+    }catch(e){}
+  },
+  closePlayTray: function(){
+    try{
+      if(typeof _playPanelOpen!=='undefined' && _playPanelOpen){
+        if(typeof togglePlayPanel==='function') togglePlayPanel();
+      }
+    }catch(e){}
+  },
+  closeSettingsPanel: function(){
+    try{
+      if(typeof _settingsPanelOpen!=='undefined' && _settingsPanelOpen){
+        if(typeof _closeSettingsPanel==='function') _closeSettingsPanel();
+      }
+    }catch(e){}
+  },
+  closeViewPanel: function(){
+    try{
+      if(typeof _viewPanelOpen!=='undefined' && _viewPanelOpen){
+        if(typeof _closeViewPanel==='function') _closeViewPanel();
+      }
+    }catch(e){}
+  },
+  // v7.7.12: pin a specific node fraction. Used to populate the tone
+  // strip pedagogically (e.g. in step 2.4). Accepts {frac:Number}.
+  // No-op if already pinned at that frac, so safe to call repeatedly.
+  pinFrac: function(args){
+    try{
+      if(!args || typeof args.frac !== 'number') return;
+      const f = args.frac;
+      if(typeof _pinnedFrac !== 'undefined' && _pinnedFrac === f) return;
+      if(typeof _togglePin === 'function') _togglePin(f, false);
+    }catch(e){}
+  },
+  unpinAll: function(){
+    try{
+      if(typeof _clearPin === 'function') _clearPin();
+    }catch(e){}
+  },
+  // v7.7.12: one-shot demo playback. Exercises the action-button
+  // mechanism. Configures the play state to arpeggiated chord voiced
+  // 1-3-5 ascending, then fires the existing playSequence() pipeline.
+  // Home key / mode are not touched -- the default is G Ionian; if the
+  // user has changed it the arpeggio plays in their selection.
+  playDemoGIonianArp: function(){
+    try{
+      if(typeof setPlayChordStyle === 'function') setPlayChordStyle('arpeg');
+      if(typeof setPlayDir === 'function') setPlayDir('up');
+      if(typeof playVoiceSet !== 'undefined'){
+        playVoiceSet = {1:true, 3:true, 5:true, 7:false, 9:false, 11:false, 13:false};
+        // Paint voice button on-states so visible state matches the set
+        const btnMap={13:'pdv-13th',11:'pdv-11th',9:'pdv-9th',7:'pdv-7th',5:'pdv-5',3:'pdv-3',1:'pdv-1'};
+        Object.keys(btnMap).forEach(function(k){
+          const b=document.getElementById(btnMap[k]);
+          if(b) b.classList.toggle('on', !!playVoiceSet[parseInt(k)]);
+        });
+      }
+      if(typeof updatePlayBtn === 'function') updatePlayBtn();
+      if(typeof playSequence === 'function') playSequence();
+    }catch(e){}
+  },
   // Named zoom-to-region callbacks. Add more by copying the pattern.
   // svgCenterY + svgHeightVisible are in SVG coordinate units
   // (canvas viewBox 0 0 1380 1440). Nut sits at y~78, tub at y~1350,
@@ -11115,6 +11189,11 @@ function _tourResolveTarget(target){
   if(target.kind==='id'){
     const el=document.getElementById(target.id);
     if(el){
+      // Bring target into view if it sits inside a scrollable container
+      // (play drawer, settings/view panel bodies). block:nearest is a
+      // no-op when already visible, so this doesn't jump anything
+      // unnecessarily. Done before measuring so the rect is final.
+      try{ if(typeof el.scrollIntoView==='function') el.scrollIntoView({block:'nearest', inline:'nearest'}); }catch(e){}
       const r=el.getBoundingClientRect();
       if(r.width!==0 || r.height!==0){
         rect = { top:r.top, left:r.left, width:r.width, height:r.height };
@@ -11122,6 +11201,14 @@ function _tourResolveTarget(target){
     }
   } else if(target.kind==='group'){
     if(target.ids && target.ids.length){
+      // First pass: scroll each element into view so all measurements
+      // happen in the final layout.
+      for(let i=0;i<target.ids.length;i++){
+        const el=document.getElementById(target.ids[i]);
+        if(el){
+          try{ if(typeof el.scrollIntoView==='function') el.scrollIntoView({block:'nearest', inline:'nearest'}); }catch(e){}
+        }
+      }
       let minT=Infinity, minL=Infinity, maxR=-Infinity, maxB=-Infinity, any=false;
       for(let i=0;i<target.ids.length;i++){
         const el=document.getElementById(target.ids[i]);
@@ -11226,14 +11313,51 @@ function _tourResolveTarget(target){
   return rect;
 }
 
-function _tourRunCallback(name){
-  if(!name) return;
+function _tourRunCallback(spec){
+  // Accepts: null/undefined (no-op), a string (callback name), an object
+  // {name, args} (callback with payload), or an array of any of the above.
+  // Array entries run in order; each is wrapped in try/catch so one failure
+  // doesn't halt the chain.
+  if(!spec) return;
+  if(Array.isArray(spec)){
+    for(let i=0;i<spec.length;i++) _tourRunCallback(spec[i]);
+    return;
+  }
+  let name, args;
+  if(typeof spec === 'string'){ name=spec; args=null; }
+  else if(typeof spec === 'object' && spec && typeof spec.name === 'string'){
+    name = spec.name;
+    args = (spec.args !== undefined) ? spec.args : null;
+  } else {
+    return;
+  }
   const fn=TOUR_CALLBACKS[name];
   if(typeof fn!=='function'){
     if(window.console && console.warn) console.warn('[tour] missing callback:', name);
     return;
   }
-  try{ fn(); }catch(e){ if(window.console && console.warn) console.warn('[tour] callback error:', name, e); }
+  try{ fn(args); }catch(e){ if(window.console && console.warn) console.warn('[tour] callback error:', name, e); }
+}
+
+// Run the current step's onExit if a step is active. Called before any
+// navigation that leaves the current step (next, prev, back-to-menu, exit).
+function _tourRunStepExit(){
+  if(!_tourState.active) return;
+  if(_tourState.sectionIdx<0 || _tourState.stepIdx<0) return;
+  const sec=TOUR_CONTENT.sections[_tourState.sectionIdx];
+  if(!sec) return;
+  const step=sec.steps[_tourState.stepIdx];
+  if(!step) return;
+  _tourRunCallback(step.onExit);
+}
+
+// Find the next built section after the given index, or -1 if none.
+function _tourNextBuiltSection(startIdx){
+  for(let i=startIdx+1;i<TOUR_CONTENT.sections.length;i++){
+    const s=TOUR_CONTENT.sections[i];
+    if(s && s.built && s.steps && s.steps.length) return i;
+  }
+  return -1;
 }
 
 function _tourShowOverlay(){
@@ -11368,6 +11492,8 @@ function _tourSetTooltip(step, rect){
   const sec=TOUR_CONTENT.sections[_tourState.sectionIdx];
   const isLast=_tourState.stepIdx >= sec.steps.length-1;
   const isFirst=_tourState.stepIdx <= 0;
+  const nextSecIdx = isLast ? _tourNextBuiltSection(_tourState.sectionIdx) : -1;
+  const hasUpNext = isLast && nextSecIdx >= 0;
   // Build markup with DOM API to avoid HTML-escaping burden on content.
   tip.innerHTML='';
   const head=document.createElement('div'); head.className='tour-tip-head';
@@ -11382,21 +11508,71 @@ function _tourSetTooltip(step, rect){
   tip.appendChild(head);
   const title=document.createElement('div'); title.className='tour-tip-title'; title.textContent=step.title||''; tip.appendChild(title);
   const body=document.createElement('div'); body.className='tour-tip-body'; body.textContent=step.body||''; tip.appendChild(body);
+  // Optional action button between body and footer. Step may declare:
+  //   action: { label: 'Play', callback: 'playDemoGIonianArp' }
+  // Callback name resolves against TOUR_CALLBACKS. No autoplay -- the
+  // user taps the button. Does not advance the tour; stays on this step.
+  let actBtn=null;
+  if(step.action && step.action.callback){
+    const actWrap=document.createElement('div'); actWrap.className='tour-tip-action';
+    actBtn=document.createElement('button');
+    actBtn.className='tour-action-btn'; actBtn.id='tour-action-btn';
+    actBtn.textContent=(step.action.label||'Run');
+    actWrap.appendChild(actBtn);
+    tip.appendChild(actWrap);
+  }
   const foot=document.createElement('div'); foot.className='tour-tip-foot';
   const prev=document.createElement('button'); prev.className='tour-nav-btn'; prev.id='tour-prev-btn'; prev.textContent='prev'; if(isFirst) prev.disabled=true;
   foot.appendChild(prev);
-  const nextOrDone=document.createElement('button'); nextOrDone.className='tour-nav-btn primary';
-  if(isLast){ nextOrDone.id='tour-done-btn'; nextOrDone.textContent='done'; }
-  else      { nextOrDone.id='tour-next-btn'; nextOrDone.textContent='next'; }
-  foot.appendChild(nextOrDone);
+  // Footer layout:
+  //   not-last:                                   prev, next (primary)
+  //   last + no further built section:            prev, done (primary)
+  //   last + another built section after:         prev, done (secondary), next ▸ {name} (primary)
+  let doneBtn=null, nextOrUpBtn=null;
+  if(hasUpNext){
+    doneBtn=document.createElement('button');
+    doneBtn.className='tour-nav-btn'; doneBtn.id='tour-done-btn'; doneBtn.textContent='done';
+    foot.appendChild(doneBtn);
+    nextOrUpBtn=document.createElement('button');
+    nextOrUpBtn.className='tour-nav-btn primary'; nextOrUpBtn.id='tour-upnext-btn';
+    // Use an en-dash + arrow glyph via HTML entity so no non-ASCII in JS literals.
+    const nxName=(TOUR_CONTENT.sections[nextSecIdx] && TOUR_CONTENT.sections[nextSecIdx].label) || '';
+    nextOrUpBtn.textContent='next \u203A '+nxName;
+    foot.appendChild(nextOrUpBtn);
+  } else if(isLast){
+    nextOrUpBtn=document.createElement('button');
+    nextOrUpBtn.className='tour-nav-btn primary'; nextOrUpBtn.id='tour-done-btn'; nextOrUpBtn.textContent='done';
+    foot.appendChild(nextOrUpBtn);
+  } else {
+    nextOrUpBtn=document.createElement('button');
+    nextOrUpBtn.className='tour-nav-btn primary'; nextOrUpBtn.id='tour-next-btn'; nextOrUpBtn.textContent='next';
+    foot.appendChild(nextOrUpBtn);
+  }
   tip.appendChild(foot);
   // Wire
-  back.addEventListener('click', _tourShowMenu);
+  back.addEventListener('click', function(){ _tourRunStepExit(); _tourShowMenu(); });
   if(!isFirst) prev.addEventListener('click', _tourPrev);
-  if(isLast) nextOrDone.addEventListener('click', _tourShowMenu);
-  else       nextOrDone.addEventListener('click', _tourNext);
+  if(hasUpNext){
+    doneBtn.addEventListener('click', function(){ _tourRunStepExit(); _tourShowMenu(); });
+    nextOrUpBtn.addEventListener('click', function(){
+      _tourRunStepExit();
+      _tourState.sectionIdx = nextSecIdx;
+      _tourState.stepIdx = 0;
+      _tourShowStep();
+    });
+  } else if(isLast){
+    nextOrUpBtn.addEventListener('click', function(){ _tourRunStepExit(); _tourShowMenu(); });
+  } else {
+    nextOrUpBtn.addEventListener('click', _tourNext);
+  }
   const fb=document.getElementById('tour-flag-btn');
   if(fb) fb.addEventListener('click', function(ev){ if(ev && ev.stopPropagation) ev.stopPropagation(); _tourFlagStep(step); });
+  if(actBtn){
+    actBtn.addEventListener('click', function(ev){
+      if(ev && ev.stopPropagation) ev.stopPropagation();
+      _tourRunCallback(step.action.callback);
+    });
+  }
   _tourPositionTooltip(tip, rect, step);
 }
 
@@ -11535,6 +11711,7 @@ function _tourPositionTooltip(tip, rect, step){
 function _tourNext(){
   const sec=TOUR_CONTENT.sections[_tourState.sectionIdx];
   if(!sec) return;
+  _tourRunStepExit();
   if(_tourState.stepIdx < sec.steps.length-1){
     _tourState.stepIdx++;
     _tourShowStep();
@@ -11545,12 +11722,14 @@ function _tourNext(){
 
 function _tourPrev(){
   if(_tourState.stepIdx > 0){
+    _tourRunStepExit();
     _tourState.stepIdx--;
     _tourShowStep(-1);
   }
 }
 
 function _tourExit(){
+  _tourRunStepExit();
   _tourState.active=false;
   _tourState.sectionIdx=-1;
   _tourState.stepIdx=-1;
