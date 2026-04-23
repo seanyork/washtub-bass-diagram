@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.7.12</title>
+<title>Washtub Bass String Map · v7.7.13</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -1606,7 +1606,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.7.12';
+const VERSION='v7.7.13';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -10651,330 +10651,400 @@ function _tourDevMode(){
 // the menu as "(not yet built)" and are inert.
 const TOUR_CONTENT = {
   sections: [
-    // Section 1 -- The Instrument  (v7.7.10)
+    // Section 1 -- The Instrument  (v7.7.10, cleanup v7.7.13)
     { key:'instrument', label:'The Instrument', built:true, steps:[
       // step 1.1
       { id: '1.1',
         title: 'The washtub bass',
         body: "A washtub bass is a one-string instrument made from an inverted metal tub, a wooden pole, and a single length of string or cable. The player plucks the string while varying its tension by leaning the pole -- more tension raises the pitch, less tension lowers it. It's a deeply physical instrument: no frets, no keys, just your hands and your ear.",
         target: { kind:'canvas' },
-        onEnter: 'fullViewFit', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','fullViewFit'], onExit: null },
 
       // step 1.2
       { id: '1.2',
         title: 'Tension equals pitch',
         body: "This vertical slider on the left represents string tension. Drag it up to tighten the string and raise the pitch; drag down to loosen and lower it. The fundamental frequency updates in real time. The readout at the top of the rail shows the current pitch in Hz and as a note name.",
         target: { kind:'id', id:'lr-tension-track' },
-        onEnter: null, onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
       // step 1.3
       { id: '1.3',
         title: 'A map of the string',
         body: "This diagram maps every harmonic node on the string -- the points where the string can be lightly touched to produce bell-like overtone tones. Understanding these nodes helps you find pitches, navigate keys, and develop technique. This tour will walk you through how the map works and what each control does.",
         target: { kind:'canvas' },
-        onEnter: 'zoomFit', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','zoomFit'], onExit: null },
     ]},
 
-    // Section 2 -- The String Map  (v7.7.5)
+    // Section 2 -- The String Map  (v7.7.5, cleanup v7.7.13)
     { key:'string_map', label:'The String Map', built:true, steps:[
       // step 2.1
       { id: '2.1',
         title: 'The string',
         body: "The vertical line is the string. The nut at the top is where the string meets the pole. The tub at the bottom is the bridge -- the resonating body. The full length between them is the speaking length: the part that vibrates when you play.",
         target: { kind:'id', id:'string-line', padX:14 },
-        onEnter: 'fullViewFit', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','fullViewFit'], onExit: null },
 
       // step 2.2
       { id: '2.2',
         title: 'Harmonic nodes',
         body: "Each mark across the string is a harmonic node -- a point where the string can be gently touched while plucking to isolate a specific overtone. Larger circles are primary nodes (4ths, 5ths, octaves); smaller circles are secondary nodes. Tap any node row to hear its tone.",
         target: { kind:'svgPoint', svgX:480, svgY:489, r:24 },
-        onEnter: 'fullViewFit', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','fullViewFit'], onExit: null },
 
       // step 2.3
       { id: '2.3',
         title: 'What the colors mean',
         body: "Purple marks the tonic -- the musical home note. Green marks nodes in the current key and mode. Coral / red marks chromatic nodes -- in pitch, but outside the key. Grey dashed marks fall between named pitches. Colors update live as you change key, mode, or home node. The full legend lives here in the view panel for reference.",
         target: { kind:'id', id:'vp-legend-section' },
-        onEnter: 'openViewToLegend', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closePlayTray','openViewToLegend'], onExit: null },
 
       // step 2.4
       { id: '2.4',
         title: 'Current tone strip',
         body: "When you tap a node, the strip at the top fills with its details: degree, note name, frequency, and segment lengths. Tapping a node plays the tone simultaneously. The strip is your running readout of whatever you just touched.",
         target: { kind:'id', id:'new-tone-strip' },
-        onEnter: null, onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
       // step 2.5
       { id: '2.5',
         title: 'Reading the columns',
         body: "Left to right: str-deg is the string degree -- fixed by physics, never changes. home-deg shows how this node relates to your tonal center. key-deg is the chromatic degree within the home key. note is the letter name and octave. The remaining columns show fraction, ratio, interval description, and segment lengths.",
         target: { kind:'group', ids:['col-strdeg','col-homedeg','col-keydeg','col-note','col-info','col-segs'], padY:6 },
-        onEnter: 'fullViewFit', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','fullViewFit'], onExit: null },
     ]},
 
-    // Section 3 -- Modes and the Bottom Rail  (POC, v7.7.2)
+    // Section 3 -- Modes and the Bottom Rail  (POC, v7.7.2, cleanup v7.7.13)
     { key:'modes_rail', label:'Modes and the Bottom Rail', built:true, steps:[
       // step 3.1
       { id: '3.1',
         title: 'The bottom rail',
         body: "The bottom rail is your main control hub. The upper area (context) shows controls for the current mode. The lower row of buttons switches modes and opens the settings and view panels. The leftmost button is mute; the rightmost two are settings and view.",
         target: { kind:'id', id:'bottom-rail' },
-        onEnter: null, onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
       // step 3.2
       { id: '3.2',
         title: 'Four ways to look at the string',
         body: "Four mode buttons switch how the string is visualized: map (pitch map), nodes (the default rich view), nut (adjustable speaking length), and capo (two-segment playback). Each mode has its own context controls above. We'll walk through each mode in its own section.",
         target: { kind:'group', ids:['br-mode-map','br-mode-nodes','br-mode-nut','br-mode-capo'] },
-        onEnter: null, onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
       // step 3.3
       { id: '3.3',
         title: 'Mute',
         body: "The mute button silences all audio -- tap-to-play tones, tension-drag tone, playback sequences, everything. Useful if you want to explore the map quietly or if you're practicing without disturbing others.",
         target: { kind:'id', id:'br-mute-btn' },
-        onEnter: null, onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
       // step 3.4
       { id: '3.4',
         title: 'Settings and view',
         body: "The settings panel holds audio and physics editing: waveform, duration, volume, string length, tension, density, saved defaults. The view panel holds display toggles: zoom, which nodes to show, visualization on/off, the legend, and mode-specific display options. Settings is for editing; view is for looking.",
         target: { kind:'group', ids:['br-settings-btn','br-view-btn'] },
-        onEnter: null, onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
     ]},
 
-    // Section 4 -- Musical Context  (v7.7.10)
+    // Section 4 -- Musical Context  (v7.7.10, cleanup v7.7.13)
     { key:'musical_ctx', label:'Musical Context', built:true, steps:[
       // step 4.1
       { id: '4.1',
         title: 'Home key',
         body: "The circle-of-fifths wheel peeks above the bottom rail. Tap to expand it, then spin to select a key. The center opens the mode/scale picker. All node colors and degree labels update immediately. Note names use proper enharmonic spelling -- B-flat, not A-sharp; E-flat, not D-sharp.",
         target: { kind:'id', id:'cof-wrap' },
-        onEnter: 'openCoF', onExit: null },
+        onEnter: ['closeSettingsPanel','closeViewPanel','closePlayTray','openCoF'], onExit: null },
 
       // step 4.2
       { id: '4.2',
         title: 'Mode / scale',
         body: "Tap the center of the wheel to open the mode picker. A mode is a scale built by treating a different degree of the major scale as home. Ionian is the standard major scale. Dorian and Mixolydian are common in folk and blues. Each mode highlights a different set of nodes as in-key.",
         target: { kind:'id', id:'cof-wrap' },
-        onEnter: 'openCoF', onExit: null },
+        onEnter: ['closeSettingsPanel','closeViewPanel','closePlayTray','openCoF'], onExit: null },
 
       // step 4.3
       { id: '4.3',
         title: 'Home node',
         body: "The home node tells the diagram which string node functions as the musical 1 -- the tonal center. By default it's the fundamental. Setting it to, say, 5 means you're treating the fifth harmonic node as home, and all degree labels remap accordingly. This is how you explore modal playing from fixed positions on the string.",
         target: { kind:'id', id:'chip-home' },
-        onEnter: null, onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
       // step 4.4
       { id: '4.4',
         title: 'Auto-tune',
         body: "When auto-tune is on (the default), the app automatically recalculates string tension whenever you change key, mode, or home node -- keeping the home node aligned to the selected key root. Turn it off if you want to explore how the map shifts without the string re-tuning itself.",
         target: { kind:'id', id:'lr-autotune-btn' },
-        onEnter: null, onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
       // step 4.5
       { id: '4.5',
         title: 'Tune button',
         body: "The tune button calculates the tension needed to bring the home node to the home key root and sets it. It plays the before and after pitches in sequence so you can hear the change. In pitch map mode this button behaves slightly differently -- see the pitch map section.",
         target: { kind:'id', id:'lr-tune-btn' },
-        onEnter: null, onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
     ]},
-    // Section 5 -- Playback  (v7.7.11)
+    // Section 5 -- Playback  (v7.7.11, cleanup v7.7.13)
     { key:'playback', label:'Playback', built:true, steps:[
       // step 5.1
       { id: '5.1',
         title: 'Play tray',
         body: "Tap the play button on the left rail to open the play tray. The string re-fits to stay fully visible. The tray holds all playback settings: voices, scale options, register, start note, direction, and preview controls.",
         target: { kind:'id', id:'lr-play-btn' },
-        onEnter: null, onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
       // step 5.2
       { id: '5.2',
         title: 'Preview and persist',
         body: "With the tray open, all notes in the current scale or chord are highlighted at low opacity. The PVW button toggles this preview. The PIN button enables persist mode: highlights stay visible after the tray closes, so you can see the full string while playing.",
         target: { kind:'id', id:'pd-preview-btn' },
-        onEnter: 'openPlayTray', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null },
 
       // step 5.3
       { id: '5.3',
         title: 'Persist mode',
         body: "Long-press the play button on the left rail to toggle persist mode. In persist mode, a compact play button stays visible even when the tray is closed -- so you can see the full string while playing.",
         target: { kind:'id', id:'lr-play-btn' },
-        onEnter: null, onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
       // step 5.4
       { id: '5.4',
         title: 'Register',
         body: "Five buttons (0 through 4) select the octave of the tonal center pitch for playback. Button 0 is the lowest available octave, 4 the highest. Unavailable octaves are dimmed. The readout below shows the start and top note of the selected octave.",
         target: { kind:'id', id:'pd-reg-section' },
-        onEnter: 'openPlayTray', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null },
 
       // step 5.5
       { id: '5.5',
         title: 'Sequence and direction',
         body: "Choose between chord, one-octave scale, or full-string scale. Direction buttons control up, down, or both.",
         target: { kind:'group', ids:['pd-chord-section','pd-scale-section','pd-dir-section'] },
-        onEnter: 'openPlayTray', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null },
 
       // step 5.6
       { id: '5.6',
         title: 'Chord voices',
         body: "The voices section selects which chord tones to include -- root, 3rd, 5th, 7th, and extensions. Use arp for arpeggiated playback or blk for block chord.",
         target: { kind:'id', id:'pd-chord-voices' },
-        onEnter: 'openPlayTray', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null },
 
       // step 5.7
       { id: '5.7',
         title: 'Start at note',
         body: "Four start options: home node, open string fundamental, a specific scale degree (opens a picker), or a pinned node. The thumbtack option is dimmed when nothing is pinned.",
         target: { kind:'id', id:'pd-start-section' },
-        onEnter: 'openPlayTray', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null },
 
       // step 5.8
       { id: '5.8',
         title: 'Pinning',
         body: "Tap any node to pin it -- it stays highlighted even after your finger moves away. Tap the pinned node again to unpin. With start-at-pin selected, playback begins from the pinned node.",
         target: { kind:'canvas' },
-        onEnter: 'zoomFit', onExit: null,
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray','zoomFit'], onExit: 'closePlayTray',
         action: { label:'Play 1-3-5 arp', callback:'playDemoGIonianArp' } },
     ]},
-    // Section 6 -- Settings Panel  (v7.7.11)
+    // Section 6 -- Settings Panel  (v7.7.11, cleanup v7.7.13)
     { key:'settings_panel', label:'Settings Panel', built:true, steps:[
       // step 6.1
       { id: '6.1',
         title: 'The settings panel',
         body: "The settings panel slides in from the left when you tap the gear button. It holds everything editable about the app's sound and physics model. Organized into sections: audio, physics, defaults.",
         target: { kind:'id', id:'br-settings-btn' },
-        onEnter: null, onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
       // step 6.2
       { id: '6.2',
         title: 'Audio',
         body: "Waveform: sine (pure), warm (softer, filtered), or string (richer, more overtones). Duration: how long each note sounds. Spacing: pause between notes in a sequence. Volume: master level. Sample: play a short preview with current settings.",
         target: { kind:'id', id:'sp-audio-section' },
-        onEnter: 'openSettingsPanel', onExit: null },
+        onEnter: ['closeCoF','closeViewPanel','closePlayTray','openSettingsPanel'], onExit: null },
 
       // step 6.3
       { id: '6.3',
         title: 'Physics and calibration',
         body: "String length (inches or cm -- toggleable). Tension (lbs). Linear density (kg/m). These three values plus the standard physics formula determine every pitch on the string. The defaults (69 inches, calibrated, 0.000754 kg/m) match the instrument this app was built for -- a plastic-coated aviation cable. Adjust them to model a different setup.",
         target: { kind:'id', id:'sp-phys-section' },
-        onEnter: 'openSettingsPanel', onExit: null },
+        onEnter: ['closeCoF','closeViewPanel','closePlayTray','openSettingsPanel'], onExit: null },
 
       // step 6.4
       { id: '6.4',
         title: 'My bass defaults',
         body: "Save your own calibration with use current (takes the current live values as your defaults). Reset wipes back to the app defaults. Apply restores your saved defaults. This is how you make the app persistent to your specific instrument across sessions.",
         target: { kind:'group', ids:['sp-deflen-fld','sp-deften-fld','sp-defmu-fld'] },
-        onEnter: 'openSettingsPanel', onExit: null },
+        onEnter: ['closeCoF','closeViewPanel','closePlayTray','openSettingsPanel'], onExit: null },
 
       // step 6.5
       { id: '6.5',
         title: 'Tour and readme',
         body: "The two buttons at the bottom of the settings panel open this tour and the full readme. Tapping readme shows a section picker above the button; pick a section to read the full document.",
         target: { kind:'group', ids:['sp-foot-tour','sp-foot-readme'] },
-        onEnter: 'openSettingsPanel', onExit: null },
+        onEnter: ['closeCoF','closeViewPanel','closePlayTray','openSettingsPanel'], onExit: 'closeSettingsPanel' },
     ]},
-    // Section 7 -- View Panel  (v7.7.11)
+    // Section 7 -- View Panel  (v7.7.11, cleanup v7.7.13)
     { key:'view_panel', label:'View Panel', built:true, steps:[
       // step 7.1
       { id: '7.1',
         title: 'The view panel',
         body: "The view panel slides in from the right when you tap the view button. It holds display toggles -- what to show, how much to show, at what zoom. The panel stays open while you adjust; close with the X.",
         target: { kind:'id', id:'br-view-btn' },
-        onEnter: null, onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
       // step 7.2
       { id: '7.2',
         title: 'Zoom',
         body: "Fit shows the full string; zoom in or out for more or less detail. The sidebar ministring on the right stays visible at any zoom, so you never lose context.",
         target: { kind:'id', id:'vp-zoom-section' },
-        onEnter: 'openViewPanel', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closePlayTray','openViewPanel'], onExit: null },
 
       // step 7.3
       { id: '7.3',
         title: 'Nodes and ticks',
         body: "Choose which nodes to show: primary only, primary plus secondary, everything. Tick labels can be in-key only, always shown, active only (just the pinned/hovered node), or off.",
         target: { kind:'id', id:'vp-nodes-section' },
-        onEnter: 'openViewPanel', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closePlayTray','openViewPanel'], onExit: null },
 
       // step 7.4
       { id: '7.4',
         title: 'Node and wave viz',
         body: "Node viz shows concentric rings when a node is played. Wave viz shows the string's standing wave pattern. Each has independent amplitude and duration controls. Wave viz is suppressed in pitch-map mode -- ET notes don't correspond to standing wave modes, so a waveform pattern would be physically misleading.",
         target: { kind:'group', ids:['vp-nviz-section','vp-wviz-section'] },
-        onEnter: 'openViewPanel', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closePlayTray','openViewPanel'], onExit: null },
 
       // step 7.5
       { id: '7.5',
         title: 'Legend',
         body: "The legend section is a quick reference for node colors, shapes (primary / secondary), and the dashed-chromatic convention. Coloring is driven by current key and mode, so the legend is reflective of your current setup.",
         target: { kind:'id', id:'vp-legend-section' },
-        onEnter: 'openViewToLegend', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closePlayTray','openViewToLegend'], onExit: null },
 
       // step 7.6
       { id: '7.6',
         title: 'Mode-specific options',
         body: "The bottom of the view panel has two gated sections -- map and capo -- that are only active when you're in those modes. Map's section controls tiny labels for ET notes. Capo's section has show/hide toggles for on-string buttons. Sections grey out when not in the relevant mode.",
         target: { kind:'group', ids:['vp-pm-sec','vp-capo-sec'] },
-        onEnter: 'openViewPanel', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closePlayTray','openViewPanel'], onExit: 'closeViewPanel' },
     ]},
-    // Section 8 -- not yet built
-    { key:'nut_mode', label:'Nut Mode', built:false, steps:[] },
-    // Section 9 -- not yet built
-    { key:'capo_mode', label:'Capo Mode', built:false, steps:[] },
-    // Section 10 -- Pitch Map Mode  (v7.7.10)
+    // Section 8 -- Nut Mode  (v7.7.13)
+    { key:'nut_mode', label:'Nut Mode', built:true, steps:[
+      // step 8.1
+      { id: '8.1',
+        title: 'Nut mode',
+        body: "A washtub bass can use an alternate nut -- a contact point clamped lower on the pole that shortens the speaking length. A shorter string, at the same tension, produces a higher pitch. Nut mode models this: all nodes compress into the shorter speaking length as you raise the nut.",
+        target: { kind:'id', id:'br-mode-nut' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setNutView'], onExit: null },
+
+      // step 8.2
+      { id: '8.2',
+        title: 'The nut marker',
+        body: "Drag this purple marker up or down to set the effective nut position. All nodes below the nut update in real time. On release, the app plays the before and after pitches so you hear the change.",
+        target: { kind:'id', id:'nut-drag-marker' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setNutView'], onExit: null },
+
+      // step 8.3
+      { id: '8.3',
+        title: 'Nut presets',
+        body: "Three preset nut positions can be saved and recalled instantly. The defaults (6 inches, 12 inches, 19 inches) match the instrument this app was built for. Edit the preset values from the settings panel; apply them from the bottom-rail preset buttons while in nut mode.",
+        target: { kind:'id', id:'br-nut-preset-row' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setNutView'], onExit: null },
+    ]},
+    // Section 9 -- Capo Mode  (v7.7.13)
+    { key:'capo_mode', label:'Capo Mode', built:true, steps:[
+      // step 9.1
+      { id: '9.1',
+        title: 'Capo mode',
+        body: "A capo stops the string at an intermediate point, dividing it into two independently resonating segments. The upper segment (capo to nut) and the lower segment (capo to tub) each produce their own pitch. The interval between them is determined by where the capo lands on the string.",
+        target: { kind:'id', id:'br-mode-capo' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView'], onExit: null },
+
+      // step 9.2
+      { id: '9.2',
+        title: 'Snap positions',
+        body: "The capo snaps to positions that produce musically useful intervals. P5 (perfect fifth) is the default. Tap any fan label to jump to that position -- m3, M3, P4, P5, m6, M6, m7, M7, P8. The two segment pitches and the interval between them update instantly.",
+        target: { kind:'id', id:'capo-ticks' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView'], onExit: null },
+
+      // step 9.3
+      { id: '9.3',
+        title: 'Segment nodes',
+        body: "Each segment has its own set of harmonic nodes -- teal for the lower segment, amber for the upper. The seg/str toggle in the sidebar switches between labeling relative to the segment's own fundamental or the full string.",
+        target: { kind:'id', id:'capo-sub-nodes' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView','zoomFit'], onExit: null },
+
+      // step 9.4
+      { id: '9.4',
+        title: 'Playback and pinning (single mode)',
+        body: "In single-segment mode, tap a sub-node to hear its tone and pin it. The segment you last touched determines which segment is used for scale and chord playback. This lets you practice within one segment at a time.",
+        target: { kind:'id', id:'capo-sub-nodes' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView','setTransCapoSingle'], onExit: null },
+
+      // step 9.5
+      { id: '9.5',
+        title: 'Playing across the capo',
+        body: "The capo play section at the bottom of the play tray lets you play across both segments at once. Select both to enable trans-capo mode: scales and chords span the full combined range, with each note assigned to whichever segment produces it. Notes below the upper fundamental play on the lower segment (teal), notes at or above play on the upper segment (amber). Switch back to single to play within one segment at a time.",
+        target: { kind:'id', id:'pd-capo-section' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','setCapoView','openPlayTray'], onExit: null },
+
+      // step 9.6
+      { id: '9.6',
+        title: 'Gaps and coincidences',
+        body: "In trans-capo scale-full, the scale ascends continuously through the full diatonic range. Where both segments share a note (for example, the perfect fifth of the lower equals the fundamental of the upper), both highlight at once -- but only one tone plays. Where neither segment has a physical node at a scale tone, the scale still plays that note as a tension-only tone with no highlight. This is the 'scale is the notes, not the nodes' principle.",
+        target: { kind:'id', id:'pd-capo-section' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','setCapoView','setTransCapoBoth','openPlayTray'], onExit: null },
+
+      // step 9.7
+      { id: '9.7',
+        title: 'Segment vs full-string labels',
+        body: "In segment view, degrees are labeled relative to each segment's own fundamental. In full-string view, all nodes are labeled relative to the home key, regardless of which segment they sit in. Segment view is better for learning what the capo produces; full-string view is better for improvising in a fixed key.",
+        target: { kind:'id', id:'capo-ruler-persp' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView'], onExit: ['closePlayTray','setTransCapoSingle'] },
+    ]},
+    // Section 10 -- Pitch Map Mode  (v7.7.10, cleanup v7.7.13)
     { key:'pitchmap', label:'Pitch Map Mode', built:true, steps:[
       // step 10.1
       { id: '10.1',
         title: 'Pitch map',
         body: "Pitch map overlays all equal-temperament notes across the string at their current tension-dependent positions. As you adjust tension, all lines move -- showing how the full pitch landscape of your string shifts. Purple lines are tonic notes, green are diatonic, coral are chromatic.",
         target: { kind:'id', id:'br-mode-map' },
-        onEnter: 'setPitchmapView', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setPitchmapView'], onExit: null },
 
       // step 10.2
       { id: '10.2',
         title: 'Diatonic only',
         body: "Toggle diatonic only to show just the notes in the current scale or mode. Combined with the mode picker, this turns the pitch map into a visual scale explorer -- you can see exactly where each note in D Dorian or G Mixolydian falls at any given tension.",
         target: { kind:'id', id:'br-pm-diatonic-btn' },
-        onEnter: 'setPitchmapView', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setPitchmapView'], onExit: null },
 
       // step 10.3
       { id: '10.3',
         title: 'Node snap',
         body: "When node snap is on, releasing the tension thumb snaps the string so a tonic note aligns with a physics node. Three snap targets (chosen from the snap-target popover): tonic to nearest node, tonic to the open string fundamental, or nearest note to the fundamental. The snap animates smoothly so you can watch the lines settle.",
         target: { kind:'id', id:'br-snap-target-btn' },
-        onEnter: 'setPitchmapView', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setPitchmapView'], onExit: null },
 
       // step 10.4
       { id: '10.4',
         title: 'Tune in pitch map mode',
         body: "The tune button works differently in pitch map mode. Tune key to any places a tonic on the nearest physics node. Tune key to fund tunes the open string so a tonic becomes the fundamental. After tuning, the result is pinned -- highlighted with ruler and tone strip information.",
         target: { kind:'id', id:'lr-tune-btn' },
-        onEnter: 'setPitchmapView', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setPitchmapView'], onExit: null },
 
       // step 10.5
       { id: '10.5',
         title: 'Tapping pitch map notes',
         body: "Tap any ET note line to pin it. You'll see row highlight, a ruler reading for interval distances to tonic notes, and tone strip updates. Tap again to unpin. Note that wave viz is not shown in this mode -- ET notes don't correspond to standing wave modes, so a waveform pattern would be physically misleading.",
         target: { kind:'canvas' },
-        onEnter: 'setPitchmapView', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setPitchmapView'], onExit: null },
 
       // step 10.6
       { id: '10.6',
         title: 'Tonic ruler',
         body: "By default in pitch map mode, the ruler on the right shows interval distances to tonic notes -- any octave of the current key root. Toggle tonic ruler off to switch back to home-node references. Each mode gives a different perspective: the physics anchor (home nodes) or the musical anchor (tonic notes).",
         target: { kind:'id', id:'br-tonic-ruler-btn' },
-        onEnter: 'setPitchmapView', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setPitchmapView'], onExit: null },
 
       // step 10.7
       { id: '10.7',
         title: 'Ghost nodes',
         body: "When a pinned note has no visible tonic octave above or below it on the playable string, the ruler shows a ghost node -- a hollow dashed circle -- at the top or bottom of the track. The ghost marks where the next tonic octave would sit if the string extended past the nut or bridge. The fan line in the main canvas angles toward that hypothetical position, giving you a sense of direction and distance even when the reference is off-string.",
         target: { kind:'id', id:'rrail' },
-        onEnter: 'setPitchmapView', onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setPitchmapView'], onExit: null },
     ]},
   ]
 };
@@ -11163,6 +11233,25 @@ const TOUR_CALLBACKS = {
       }
       if(typeof updatePlayBtn === 'function') updatePlayBtn();
       if(typeof playSequence === 'function') playSequence();
+    }catch(e){}
+  },
+  // v7.7.13: capo position setter. Accepts {idx}; CAPO_NODES indices are
+  // 0=m3, 1=M3, 2=P4, 3=P5 (default), 4=m6, 5=M6, 6=m7, 7=M7, 8=P8.
+  setCapoPosition: function(args){
+    try{
+      if(!args || typeof args.idx !== 'number') return;
+      if(typeof setCapoNode === 'function') setCapoNode(args.idx);
+    }catch(e){}
+  },
+  // Trans-capo segment selectors. 'both' enables cross-segment playback.
+  setTransCapoBoth: function(){
+    try{
+      if(typeof setTransCapoSegments === 'function') setTransCapoSegments('both');
+    }catch(e){}
+  },
+  setTransCapoSingle: function(){
+    try{
+      if(typeof setTransCapoSegments === 'function') setTransCapoSegments('single');
     }catch(e){}
   },
   // Named zoom-to-region callbacks. Add more by copying the pattern.
