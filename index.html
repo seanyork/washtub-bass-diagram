@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.7.8</title>
+<title>Washtub Bass String Map · v7.7.9</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -698,7 +698,7 @@ input[type=range]{width:110px;cursor:pointer;}
 #tour-overlay.active{display:block;}
 #tour-dim-catcher{position:absolute;inset:0;pointer-events:auto;background:transparent;}
 #tour-spotlight{position:fixed;pointer-events:none;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,0.5);outline:2px solid #AFA9EC;outline-offset:0;top:-9999px;left:-9999px;width:1px;height:1px;}
-#tour-tooltip{display:none;position:fixed;pointer-events:auto;background:#fff;border:1px solid #533AB7;border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,0.28);padding:12px 14px;max-width:340px;font-size:13px;color:#1a1a1a;}
+#tour-tooltip{display:none;position:fixed;pointer-events:auto;background:#fff;border:1px solid #533AB7;border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,0.28);padding:12px 14px;max-width:340px;font-size:13px;color:#1a1a1a;z-index:1;overflow-y:auto;}
 #tour-tooltip .tour-tip-head{display:flex;align-items:center;gap:8px;font-size:10px;color:#7a75a8;margin-bottom:6px;}
 #tour-tooltip .tour-back-link{cursor:pointer;color:#533AB7;text-decoration:underline;}
 #tour-tooltip .tour-step-id{margin-left:auto;font-family:monospace;opacity:0.7;}
@@ -1602,7 +1602,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.7.8';
+const VERSION='v7.7.9';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -10933,7 +10933,7 @@ function _tourPaintCrosshair(){
   if(!ch){
     ch=document.createElement('div');
     ch.id='tour-crosshair';
-    ch.style.cssText='position:fixed;pointer-events:none;z-index:152;width:40px;height:40px;margin-left:-20px;margin-top:-20px;';
+    ch.style.cssText='position:fixed;pointer-events:none;z-index:10;width:40px;height:40px;margin-left:-20px;margin-top:-20px;';
     ch.innerHTML='<div style="position:absolute;left:19px;top:0;width:2px;height:40px;background:#ff3b30;"></div>'+
                  '<div style="position:absolute;top:19px;left:0;height:2px;width:40px;background:#ff3b30;"></div>'+
                  '<div style="position:absolute;left:14px;top:14px;width:12px;height:12px;border:2px solid #ff3b30;border-radius:50%;background:rgba(255,59,48,0.15);"></div>';
@@ -11055,85 +11055,135 @@ function _tourSetTooltip(step, rect){
   else       nextOrDone.addEventListener('click', _tourNext);
   const fb=document.getElementById('tour-flag-btn');
   if(fb) fb.addEventListener('click', function(ev){ if(ev && ev.stopPropagation) ev.stopPropagation(); _tourFlagStep(step); });
-  _tourPositionTooltip(tip, rect);
+  _tourPositionTooltip(tip, rect, step);
 }
 
-function _tourPositionTooltip(tip, rect){
-  // Reset sizing to measure natural box
-  tip.style.left='-9999px'; tip.style.top='0px'; tip.style.right=''; tip.style.width=''; tip.style.maxWidth='340px';
+function _tourPositionTooltip(tip, rect, step){
+  // Reset sizing. max-width will be set per candidate below.
+  tip.style.left='-9999px'; tip.style.top='0px'; tip.style.right=''; tip.style.width=''; tip.style.maxWidth=''; tip.style.maxHeight='';
   const vw=window.innerWidth, vh=window.innerHeight;
-  const rail=document.getElementById('bottom-rail');
-  const railH = rail ? rail.getBoundingClientRect().height : 96;
-  if(vw < 600){
-    // Mobile / narrow: full-width, pinned above bottom rail. Predictable
-    // placement matters more than optimal fit at small widths.
-    tip.style.maxWidth='';
-    tip.style.left='8px';
-    tip.style.right='8px';
-    tip.style.width='auto';
-    const tipH=tip.getBoundingClientRect().height;
-    tip.style.top=Math.max(8, vh - railH - tipH - 10)+'px';
-    return;
+  const margin=8, gap=10;
+  const absMaxW=340;
+  const minSideW=180; // below this, left/right is too cramped to read
+
+  // Available rectangles on each side of the target, minus margins and gap
+  const spaceBelow = { w:vw - margin*2,             h:vh - (rect.top + rect.height) - gap - margin };
+  const spaceAbove = { w:vw - margin*2,             h:rect.top - gap - margin };
+  const spaceRight = { w:vw - (rect.left + rect.width) - gap - margin, h:vh - margin*2 };
+  const spaceLeft  = { w:rect.left - gap - margin,  h:vh - margin*2 };
+
+  // Honor step.tooltip.preferSide as a first try. If the preferred side has
+  // any usable room, use it. Otherwise fall through to scoring.
+  const preferred = (step && step.tooltip && step.tooltip.preferSide) || null;
+
+  function sideRoom(side){
+    if(side==='below') return spaceBelow;
+    if(side==='above') return spaceAbove;
+    if(side==='right') return spaceRight;
+    if(side==='left')  return spaceLeft;
+    return null;
   }
 
-  // Desktop / tablet: four-sided scoring. Consider below, above, right,
-  // left; pick the side with the best fit. Small bias to 'below' so
-  // equivalent placements are stable across renders. Tooltip is then
-  // aligned to the target's long axis on that side and clamped to viewport.
-  const tipR=tip.getBoundingClientRect();
-  const tw=tipR.width, th=tipR.height;
-  const gap=10, margin=8;
-  const spaceBelow = vh - (rect.top + rect.height) - gap - margin;
-  const spaceAbove = rect.top - gap - margin;
-  const spaceRight = vw - (rect.left + rect.width) - gap - margin;
-  const spaceLeft  = rect.left - gap - margin;
-
-  function score(side){
-    // Fits if its axis has room; quality is how much extra room on the
-    // cross-axis (so tooltip isn't jammed into a corner). Negative values
-    // signal a bad fit.
-    let primary, cross, bias;
-    if(side==='below'){ primary=spaceBelow-th; cross=vw-tw-margin*2; bias=5; }
-    else if(side==='above'){ primary=spaceAbove-th; cross=vw-tw-margin*2; bias=3; }
-    else if(side==='right'){ primary=spaceRight-tw; cross=vh-th-margin*2; bias=2; }
-    else { /* left */       primary=spaceLeft -tw; cross=vh-th-margin*2; bias=0; }
-    if(primary < 0) return primary; // doesn't fit on this side: score negative
-    return primary + Math.max(0, cross)*0.1 + bias;
+  // For a given side, compute the tooltip width we'll use. Below/above get
+  // up to absMaxW (but never wider than viewport minus margins). Left/right
+  // use all available space on that side, clamped between minSideW and
+  // absMaxW. Returns null if the side can't fit minSideW.
+  function widthFor(side){
+    const sp = sideRoom(side);
+    if(!sp || sp.w <= 0 || sp.h <= 0) return null;
+    if(side==='below' || side==='above') return Math.min(absMaxW, sp.w);
+    // left/right
+    if(sp.w < minSideW) return null;
+    return Math.min(absMaxW, sp.w);
   }
-  const sides=['below','above','right','left'];
-  let bestSide='below', bestScore=-Infinity;
-  sides.forEach(function(s){
-    const sc=score(s);
-    if(sc>bestScore){ bestScore=sc; bestSide=s; }
-  });
 
-  // If nothing fits cleanly, fall back to side with largest raw space so we
-  // still show something on-screen (clamped below).
-  if(bestScore < 0){
-    const raw={below:spaceBelow, above:spaceAbove, right:spaceRight, left:spaceLeft};
-    let maxS=-Infinity;
-    sides.forEach(function(s){ if(raw[s]>maxS){ maxS=raw[s]; bestSide=s; } });
+  // Measure tooltip height at a given width by applying the width and
+  // reading offsetHeight. Briefly renders the tooltip to measure.
+  function measureHeight(w){
+    tip.style.width = w+'px';
+    tip.style.maxWidth = w+'px';
+    // Temporarily uncap height so we measure natural content height
+    tip.style.maxHeight = '';
+    return tip.offsetHeight;
   }
+
+  // Score: primary-axis fit is the driver; cross-axis slack is a small
+  // tiebreaker. If content exceeds available height, score is reduced but
+  // not disqualified -- we'll enable internal scrolling and still display.
+  function score(side, width){
+    const sp = sideRoom(side);
+    if(!sp || width==null) return -Infinity;
+    const h = measureHeight(width);
+    const fitsH = sp.h - h; // >=0 means content fits without scroll
+    const biases = {below:5, above:3, right:2, left:0};
+    // Primary value: positive when content fits; mild penalty proportional
+    // to how much we'd have to scroll when it doesn't.
+    const primary = (fitsH>=0) ? (fitsH + 20) : (fitsH*0.5);
+    // Cross-axis slack: favor sides that don't pin tooltip to the edge.
+    const cross = (side==='below'||side==='above')
+      ? (vw - width - margin*2)
+      : (sp.h - h);
+    return primary + Math.max(0, cross)*0.1 + biases[side];
+  }
+
+  // If preferred side has any usable width, prefer it outright -- assume
+  // the content author knows what they want. Scoring only fires when no
+  // preference or preference has no room at all.
+  let chosenSide=null, chosenW=null;
+  if(preferred){
+    const w = widthFor(preferred);
+    if(w!=null){ chosenSide=preferred; chosenW=w; }
+  }
+  if(!chosenSide){
+    const sides=['below','above','right','left'];
+    let best=-Infinity;
+    sides.forEach(function(s){
+      const w=widthFor(s);
+      if(w==null) return;
+      const sc=score(s,w);
+      if(sc>best){ best=sc; chosenSide=s; chosenW=w; }
+    });
+  }
+  // Ultimate fallback: if nothing scored (tiny target on tiny viewport),
+  // use below with minimum-viable width.
+  if(!chosenSide){ chosenSide='below'; chosenW=Math.min(absMaxW, vw - margin*2); }
+
+  // Apply final width and measure final height for positioning.
+  tip.style.width = chosenW+'px';
+  tip.style.maxWidth = chosenW+'px';
+  tip.style.maxHeight = (vh - margin*2) + 'px';
+  const finalH = tip.offsetHeight;
 
   let top, left;
-  if(bestSide==='below'){
-    top = rect.top + rect.height + gap;
-    left = rect.left + rect.width/2 - tw/2;
-  } else if(bestSide==='above'){
-    top = rect.top - th - gap;
-    left = rect.left + rect.width/2 - tw/2;
-  } else if(bestSide==='right'){
-    left = rect.left + rect.width + gap;
-    top = rect.top + rect.height/2 - th/2;
-  } else { // left
-    left = rect.left - tw - gap;
-    top = rect.top + rect.height/2 - th/2;
+  if(chosenSide==='below' || chosenSide==='above'){
+    // Align tooltip to the target edge that gives more horizontal slack.
+    const targetCenter = rect.left + rect.width/2;
+    const viewportCenter = vw/2;
+    if(targetCenter < viewportCenter){
+      left = rect.left;
+    } else {
+      left = rect.left + rect.width - chosenW;
+    }
+    // Center if that's actually better (both edges have room)
+    const centeredLeft = targetCenter - chosenW/2;
+    if(centeredLeft >= margin && centeredLeft + chosenW <= vw - margin){
+      left = centeredLeft;
+    }
+    top = (chosenSide==='below')
+      ? rect.top + rect.height + gap
+      : rect.top - finalH - gap;
+  } else { // right / left
+    left = (chosenSide==='right')
+      ? rect.left + rect.width + gap
+      : rect.left - chosenW - gap;
+    // Vertical: center on target if possible, clamp otherwise.
+    top = rect.top + rect.height/2 - finalH/2;
   }
 
   // Clamp to viewport
-  if(left + tw > vw - margin) left = vw - tw - margin;
+  if(left + chosenW > vw - margin) left = vw - chosenW - margin;
   if(left < margin) left = margin;
-  if(top + th > vh - margin) top = vh - th - margin;
+  if(top + finalH > vh - margin) top = vh - finalH - margin;
   if(top < margin) top = margin;
 
   tip.style.top=top+'px';
