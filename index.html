@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.7.9</title>
+<title>Washtub Bass String Map · v7.7.10</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -1602,7 +1602,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.7.9';
+const VERSION='v7.7.10';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -4162,9 +4162,9 @@ function renderNodeViewCtx(view){
              +   '<span class="vr"></span>'
              +   '<span class="chip lbl">view</span>'
              +   '<div class="cbtn teal'+(_pmDiatonicOnly?' on':'')+
-             '" onclick="_pmDiatonicOnly=!_pmDiatonicOnly;render();renderBRCtx()">diatonic</div>'
+             '" id="br-pm-diatonic-btn" onclick="_pmDiatonicOnly=!_pmDiatonicOnly;render();renderBRCtx()">diatonic</div>'
              +   '<div class="cbtn teal'+(_rulerRefMode==='tonic-notes'?' on':'')+
-             '" onclick="_toggleTonicRuler()">tonic ruler</div>'
+             '" id="br-tonic-ruler-btn" onclick="_toggleTonicRuler()">tonic ruler</div>'
              + '</div>';
     const row2='<div class="ctx-row">'
              +   '<span class="chip lbl">snap</span>'
@@ -10647,8 +10647,29 @@ function _tourDevMode(){
 // the menu as "(not yet built)" and are inert.
 const TOUR_CONTENT = {
   sections: [
-    // Section 1 -- not yet built
-    { key:'instrument', label:'The Instrument', built:false, steps:[] },
+    // Section 1 -- The Instrument  (v7.7.10)
+    { key:'instrument', label:'The Instrument', built:true, steps:[
+      // step 1.1
+      { id: '1.1',
+        title: 'The washtub bass',
+        body: "A washtub bass is a one-string instrument made from an inverted metal tub, a wooden pole, and a single length of string or cable. The player plucks the string while varying its tension by leaning the pole -- more tension raises the pitch, less tension lowers it. It's a deeply physical instrument: no frets, no keys, just your hands and your ear.",
+        target: { kind:'canvas' },
+        onEnter: 'fullViewFit', onExit: null },
+
+      // step 1.2
+      { id: '1.2',
+        title: 'Tension equals pitch',
+        body: "This vertical slider on the left represents string tension. Drag it up to tighten the string and raise the pitch; drag down to loosen and lower it. The fundamental frequency updates in real time. The readout at the top of the rail shows the current pitch in Hz and as a note name.",
+        target: { kind:'id', id:'lr-tension-track' },
+        onEnter: null, onExit: null },
+
+      // step 1.3
+      { id: '1.3',
+        title: 'A map of the string',
+        body: "This diagram maps every harmonic node on the string -- the points where the string can be lightly touched to produce bell-like overtone tones. Understanding these nodes helps you find pitches, navigate keys, and develop technique. This tour will walk you through how the map works and what each control does.",
+        target: { kind:'canvas' },
+        onEnter: 'zoomFit', onExit: null },
+    ]},
 
     // Section 2 -- The String Map  (v7.7.5)
     { key:'string_map', label:'The String Map', built:true, steps:[
@@ -10719,8 +10740,43 @@ const TOUR_CONTENT = {
         onEnter: null, onExit: null },
     ]},
 
-    // Section 4 -- not yet built
-    { key:'musical_ctx', label:'Musical Context', built:false, steps:[] },
+    // Section 4 -- Musical Context  (v7.7.10)
+    { key:'musical_ctx', label:'Musical Context', built:true, steps:[
+      // step 4.1
+      { id: '4.1',
+        title: 'Home key',
+        body: "The circle-of-fifths wheel peeks above the bottom rail. Tap to expand it, then spin to select a key. The center opens the mode/scale picker. All node colors and degree labels update immediately. Note names use proper enharmonic spelling -- B-flat, not A-sharp; E-flat, not D-sharp.",
+        target: { kind:'id', id:'cof-wrap' },
+        onEnter: 'openCoF', onExit: null },
+
+      // step 4.2
+      { id: '4.2',
+        title: 'Mode / scale',
+        body: "Tap the center of the wheel to open the mode picker. A mode is a scale built by treating a different degree of the major scale as home. Ionian is the standard major scale. Dorian and Mixolydian are common in folk and blues. Each mode highlights a different set of nodes as in-key.",
+        target: { kind:'id', id:'cof-wrap' },
+        onEnter: 'openCoF', onExit: null },
+
+      // step 4.3
+      { id: '4.3',
+        title: 'Home node',
+        body: "The home node tells the diagram which string node functions as the musical 1 -- the tonal center. By default it's the fundamental. Setting it to, say, 5 means you're treating the fifth harmonic node as home, and all degree labels remap accordingly. This is how you explore modal playing from fixed positions on the string.",
+        target: { kind:'id', id:'chip-home' },
+        onEnter: null, onExit: null },
+
+      // step 4.4
+      { id: '4.4',
+        title: 'Auto-tune',
+        body: "When auto-tune is on (the default), the app automatically recalculates string tension whenever you change key, mode, or home node -- keeping the home node aligned to the selected key root. Turn it off if you want to explore how the map shifts without the string re-tuning itself.",
+        target: { kind:'id', id:'lr-autotune-btn' },
+        onEnter: null, onExit: null },
+
+      // step 4.5
+      { id: '4.5',
+        title: 'Tune button',
+        body: "The tune button calculates the tension needed to bring the home node to the home key root and sets it. It plays the before and after pitches in sequence so you can hear the change. In pitch map mode this button behaves slightly differently -- see the pitch map section.",
+        target: { kind:'id', id:'lr-tune-btn' },
+        onEnter: null, onExit: null },
+    ]},
     // Section 5 -- not yet built
     { key:'playback', label:'Playback', built:false, steps:[] },
     // Section 6 -- not yet built
@@ -10731,8 +10787,57 @@ const TOUR_CONTENT = {
     { key:'nut_mode', label:'Nut Mode', built:false, steps:[] },
     // Section 9 -- not yet built
     { key:'capo_mode', label:'Capo Mode', built:false, steps:[] },
-    // Section 10 -- not yet built
-    { key:'pitchmap', label:'Pitch Map Mode', built:false, steps:[] },
+    // Section 10 -- Pitch Map Mode  (v7.7.10)
+    { key:'pitchmap', label:'Pitch Map Mode', built:true, steps:[
+      // step 10.1
+      { id: '10.1',
+        title: 'Pitch map',
+        body: "Pitch map overlays all equal-temperament notes across the string at their current tension-dependent positions. As you adjust tension, all lines move -- showing how the full pitch landscape of your string shifts. Purple lines are tonic notes, green are diatonic, coral are chromatic.",
+        target: { kind:'id', id:'br-mode-map' },
+        onEnter: 'setPitchmapView', onExit: null },
+
+      // step 10.2
+      { id: '10.2',
+        title: 'Diatonic only',
+        body: "Toggle diatonic only to show just the notes in the current scale or mode. Combined with the mode picker, this turns the pitch map into a visual scale explorer -- you can see exactly where each note in D Dorian or G Mixolydian falls at any given tension.",
+        target: { kind:'id', id:'br-pm-diatonic-btn' },
+        onEnter: 'setPitchmapView', onExit: null },
+
+      // step 10.3
+      { id: '10.3',
+        title: 'Node snap',
+        body: "When node snap is on, releasing the tension thumb snaps the string so a tonic note aligns with a physics node. Three snap targets (chosen from the snap-target popover): tonic to nearest node, tonic to the open string fundamental, or nearest note to the fundamental. The snap animates smoothly so you can watch the lines settle.",
+        target: { kind:'id', id:'br-snap-target-btn' },
+        onEnter: 'setPitchmapView', onExit: null },
+
+      // step 10.4
+      { id: '10.4',
+        title: 'Tune in pitch map mode',
+        body: "The tune button works differently in pitch map mode. Tune key to any places a tonic on the nearest physics node. Tune key to fund tunes the open string so a tonic becomes the fundamental. After tuning, the result is pinned -- highlighted with ruler and tone strip information.",
+        target: { kind:'id', id:'lr-tune-btn' },
+        onEnter: 'setPitchmapView', onExit: null },
+
+      // step 10.5
+      { id: '10.5',
+        title: 'Tapping pitch map notes',
+        body: "Tap any ET note line to pin it. You'll see row highlight, a ruler reading for interval distances to tonic notes, and tone strip updates. Tap again to unpin. Note that wave viz is not shown in this mode -- ET notes don't correspond to standing wave modes, so a waveform pattern would be physically misleading.",
+        target: { kind:'canvas' },
+        onEnter: 'setPitchmapView', onExit: null },
+
+      // step 10.6
+      { id: '10.6',
+        title: 'Tonic ruler',
+        body: "By default in pitch map mode, the ruler on the right shows interval distances to tonic notes -- any octave of the current key root. Toggle tonic ruler off to switch back to home-node references. Each mode gives a different perspective: the physics anchor (home nodes) or the musical anchor (tonic notes).",
+        target: { kind:'id', id:'br-tonic-ruler-btn' },
+        onEnter: 'setPitchmapView', onExit: null },
+
+      // step 10.7
+      { id: '10.7',
+        title: 'Ghost nodes',
+        body: "When a pinned note has no visible tonic octave above or below it on the playable string, the ruler shows a ghost node -- a hollow dashed circle -- at the top or bottom of the track. The ghost marks where the next tonic octave would sit if the string extended past the nut or bridge. The fan line in the main canvas angles toward that hypothetical position, giving you a sense of direction and distance even when the reference is off-string.",
+        target: { kind:'id', id:'rrail' },
+        onEnter: 'setPitchmapView', onExit: null },
+    ]},
   ]
 };
 
@@ -10754,6 +10859,29 @@ const TOUR_CALLBACKS = {
       if(el && typeof el.scrollIntoView==='function'){
         el.scrollIntoView({block:'nearest'});
       }
+    }catch(e){}
+  },
+  // Open the Circle of Fifths wheel if it's not already visible.
+  // Used in Section 4 so the #cof-wrap target is painted when spotlighted.
+  openCoF: function(){
+    try{
+      if(typeof cofVisible!=='undefined' && !cofVisible){
+        if(typeof toggleCoF==='function') toggleCoF();
+      }
+    }catch(e){}
+  },
+  // Switch to pitch map mode. Idempotent -- safe to call repeatedly so
+  // every Section 10 step can set it and jumping to a mid-section step
+  // still lands in the right mode.
+  setPitchmapView: function(){
+    try{
+      if(typeof nodeView==='undefined' || nodeView!=='pitchmap'){
+        if(typeof setNodeView==='function'){
+          const b=document.getElementById('view-pitchmap');
+          setNodeView('pitchmap', b);
+        }
+      }
+      if(typeof zoomFit==='function') zoomFit();
     }catch(e){}
   },
 };
