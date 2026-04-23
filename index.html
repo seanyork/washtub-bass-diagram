@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.7.10</title>
+<title>Washtub Bass String Map · v7.7.11</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -1127,7 +1127,7 @@ input[type=range]{width:110px;cursor:pointer;}
       <div class="x" id="sp-close-btn" onclick="_closeSettingsPanel()" title="Close settings">&#10005;</div>
     </div>
     <div class="sp-body">
-      <div class="sp-sec">
+      <div class="sp-sec" id="sp-audio-section">
         <div class="sec-h">Playback Tones</div>
         <div class="row">
           <span class="lbl">waveform</span>
@@ -1161,7 +1161,7 @@ input[type=range]{width:110px;cursor:pointer;}
         </div>
       </div>
 
-      <div class="sp-sec">
+      <div class="sp-sec" id="sp-phys-section">
         <div class="sec-h">Physics &amp; Calibration</div>
         <div class="row">
           <span class="lbl">units</span>
@@ -1232,7 +1232,7 @@ input[type=range]{width:110px;cursor:pointer;}
     </div>
     <div class="vp-body">
 
-      <div class="sec">
+      <div class="sec" id="vp-zoom-section">
         <div class="sec-h" id="vp-zoom-sec-h"><span>zoom</span><span class="pin-dot" id="vp-zoom-pin" title="Tap &amp; hold to pin zoom cluster to sidebar"></span></div>
         <div class="zoom-grid">
           <button class="zb" onclick="zoom(1.3)" title="zoom in">+</button>
@@ -1243,7 +1243,7 @@ input[type=range]{width:110px;cursor:pointer;}
         <div class="vp-status" id="vp-zoom-status">100%<br>tap &amp; hold pin to lock</div>
       </div>
 
-      <div class="sec">
+      <div class="sec" id="vp-nodes-section">
         <div class="sec-h">nodes</div>
         <div class="stack-group">
           <div class="sg-lbl">octaves</div>
@@ -1265,7 +1265,7 @@ input[type=range]{width:110px;cursor:pointer;}
         </div>
       </div>
 
-      <div class="sec">
+      <div class="sec" id="vp-nviz-section">
         <div class="sec-h">node viz</div>
         <div class="anim-toggle-row">
           <span class="lbl">on / off</span>
@@ -1281,7 +1281,7 @@ input[type=range]{width:110px;cursor:pointer;}
         </div>
       </div>
 
-      <div class="sec">
+      <div class="sec" id="vp-wviz-section">
         <div class="sec-h">wave viz</div>
         <div class="anim-toggle-row">
           <span class="lbl">on / off</span>
@@ -1602,7 +1602,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.7.10';
+const VERSION='v7.7.11';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -4111,7 +4111,7 @@ function renderNodeViewCtx(view){
          +   '<span class="chip lbl">speaking</span>'
          +   '<span class="chip" id="br-nut-speaking">'+speaking+'</span>'
          + '</div>'
-         + '<div class="ctx-row" style="gap:3px;">'+pbtns+'</div>';
+         + '<div class="ctx-row" id="br-nut-preset-row" style="gap:3px;">'+pbtns+'</div>';
   }
 
   if(view==='capo'){
@@ -10777,12 +10777,145 @@ const TOUR_CONTENT = {
         target: { kind:'id', id:'lr-tune-btn' },
         onEnter: null, onExit: null },
     ]},
-    // Section 5 -- not yet built
-    { key:'playback', label:'Playback', built:false, steps:[] },
-    // Section 6 -- not yet built
-    { key:'settings_panel', label:'Settings Panel', built:false, steps:[] },
-    // Section 7 -- not yet built
-    { key:'view_panel', label:'View Panel', built:false, steps:[] },
+    // Section 5 -- Playback  (v7.7.11)
+    { key:'playback', label:'Playback', built:true, steps:[
+      // step 5.1
+      { id: '5.1',
+        title: 'Play tray',
+        body: "Tap the play button on the left rail to open the play tray. The string re-fits to stay fully visible. The tray holds all playback settings: voices, scale options, register, start note, direction, and preview controls.",
+        target: { kind:'id', id:'lr-play-btn' },
+        onEnter: null, onExit: null },
+
+      // step 5.2
+      { id: '5.2',
+        title: 'Preview and persist',
+        body: "With the tray open, all notes in the current scale or chord are highlighted at low opacity. The PVW button toggles this preview. The PIN button enables persist mode: highlights stay visible after the tray closes, so you can see the full string while playing.",
+        target: { kind:'id', id:'pd-preview-btn' },
+        onEnter: 'openPlayTray', onExit: null },
+
+      // step 5.3
+      { id: '5.3',
+        title: 'Persist mode',
+        body: "Long-press the play button on the left rail to toggle persist mode. In persist mode, a compact play button stays visible even when the tray is closed -- so you can see the full string while playing.",
+        target: { kind:'id', id:'lr-play-btn' },
+        onEnter: null, onExit: null },
+
+      // step 5.4
+      { id: '5.4',
+        title: 'Register',
+        body: "Five buttons (0 through 4) select the octave of the tonal center pitch for playback. Button 0 is the lowest available octave, 4 the highest. Unavailable octaves are dimmed. The readout below shows the start and top note of the selected octave.",
+        target: { kind:'id', id:'pd-reg-section' },
+        onEnter: 'openPlayTray', onExit: null },
+
+      // step 5.5
+      { id: '5.5',
+        title: 'Sequence and direction',
+        body: "Choose between chord, one-octave scale, or full-string scale. Direction buttons control up, down, or both.",
+        target: { kind:'group', ids:['pd-chord-section','pd-scale-section','pd-dir-section'] },
+        onEnter: 'openPlayTray', onExit: null },
+
+      // step 5.6
+      { id: '5.6',
+        title: 'Chord voices',
+        body: "The voices section selects which chord tones to include -- root, 3rd, 5th, 7th, and extensions. Use arp for arpeggiated playback or blk for block chord.",
+        target: { kind:'id', id:'pd-chord-voices' },
+        onEnter: 'openPlayTray', onExit: null },
+
+      // step 5.7
+      { id: '5.7',
+        title: 'Start at note',
+        body: "Four start options: home node, open string fundamental, a specific scale degree (opens a picker), or a pinned node. The thumbtack option is dimmed when nothing is pinned.",
+        target: { kind:'id', id:'pd-start-section' },
+        onEnter: 'openPlayTray', onExit: null },
+
+      // step 5.8
+      { id: '5.8',
+        title: 'Pinning',
+        body: "Tap any node to pin it -- it stays highlighted even after your finger moves away. Tap the pinned node again to unpin. With start-at-pin selected, playback begins from the pinned node.",
+        target: { kind:'canvas' },
+        onEnter: 'zoomFit', onExit: null },
+    ]},
+    // Section 6 -- Settings Panel  (v7.7.11)
+    { key:'settings_panel', label:'Settings Panel', built:true, steps:[
+      // step 6.1
+      { id: '6.1',
+        title: 'The settings panel',
+        body: "The settings panel slides in from the left when you tap the gear button. It holds everything editable about the app's sound and physics model. Organized into sections: audio, physics, defaults.",
+        target: { kind:'id', id:'br-settings-btn' },
+        onEnter: null, onExit: null },
+
+      // step 6.2
+      { id: '6.2',
+        title: 'Audio',
+        body: "Waveform: sine (pure), warm (softer, filtered), or string (richer, more overtones). Duration: how long each note sounds. Spacing: pause between notes in a sequence. Volume: master level. Sample: play a short preview with current settings.",
+        target: { kind:'id', id:'sp-audio-section' },
+        onEnter: 'openSettingsPanel', onExit: null },
+
+      // step 6.3
+      { id: '6.3',
+        title: 'Physics and calibration',
+        body: "String length (inches or cm -- toggleable). Tension (lbs). Linear density (kg/m). These three values plus the standard physics formula determine every pitch on the string. The defaults (69 inches, calibrated, 0.000754 kg/m) match the instrument this app was built for -- a plastic-coated aviation cable. Adjust them to model a different setup.",
+        target: { kind:'id', id:'sp-phys-section' },
+        onEnter: 'openSettingsPanel', onExit: null },
+
+      // step 6.4
+      { id: '6.4',
+        title: 'My bass defaults',
+        body: "Save your own calibration with use current (takes the current live values as your defaults). Reset wipes back to the app defaults. Apply restores your saved defaults. This is how you make the app persistent to your specific instrument across sessions.",
+        target: { kind:'group', ids:['sp-deflen-fld','sp-deften-fld','sp-defmu-fld'] },
+        onEnter: 'openSettingsPanel', onExit: null },
+
+      // step 6.5
+      { id: '6.5',
+        title: 'Tour and readme',
+        body: "The two buttons at the bottom of the settings panel open this tour and the full readme. Tapping readme shows a section picker above the button; pick a section to read the full document.",
+        target: { kind:'group', ids:['sp-foot-tour','sp-foot-readme'] },
+        onEnter: 'openSettingsPanel', onExit: null },
+    ]},
+    // Section 7 -- View Panel  (v7.7.11)
+    { key:'view_panel', label:'View Panel', built:true, steps:[
+      // step 7.1
+      { id: '7.1',
+        title: 'The view panel',
+        body: "The view panel slides in from the right when you tap the view button. It holds display toggles -- what to show, how much to show, at what zoom. The panel stays open while you adjust; close with the X.",
+        target: { kind:'id', id:'br-view-btn' },
+        onEnter: null, onExit: null },
+
+      // step 7.2
+      { id: '7.2',
+        title: 'Zoom',
+        body: "Fit shows the full string; zoom in or out for more or less detail. The sidebar ministring on the right stays visible at any zoom, so you never lose context.",
+        target: { kind:'id', id:'vp-zoom-section' },
+        onEnter: 'openViewPanel', onExit: null },
+
+      // step 7.3
+      { id: '7.3',
+        title: 'Nodes and ticks',
+        body: "Choose which nodes to show: primary only, primary plus secondary, everything. Tick labels can be in-key only, always shown, active only (just the pinned/hovered node), or off.",
+        target: { kind:'id', id:'vp-nodes-section' },
+        onEnter: 'openViewPanel', onExit: null },
+
+      // step 7.4
+      { id: '7.4',
+        title: 'Node and wave viz',
+        body: "Node viz shows concentric rings when a node is played. Wave viz shows the string's standing wave pattern. Each has independent amplitude and duration controls. Wave viz is suppressed in pitch-map mode -- ET notes don't correspond to standing wave modes, so a waveform pattern would be physically misleading.",
+        target: { kind:'group', ids:['vp-nviz-section','vp-wviz-section'] },
+        onEnter: 'openViewPanel', onExit: null },
+
+      // step 7.5
+      { id: '7.5',
+        title: 'Legend',
+        body: "The legend section is a quick reference for node colors, shapes (primary / secondary), and the dashed-chromatic convention. Coloring is driven by current key and mode, so the legend is reflective of your current setup.",
+        target: { kind:'id', id:'vp-legend-section' },
+        onEnter: 'openViewToLegend', onExit: null },
+
+      // step 7.6
+      { id: '7.6',
+        title: 'Mode-specific options',
+        body: "The bottom of the view panel has two gated sections -- map and capo -- that are only active when you're in those modes. Map's section controls tiny labels for ET notes. Capo's section has show/hide toggles for on-string buttons. Sections grey out when not in the relevant mode.",
+        target: { kind:'group', ids:['vp-pm-sec','vp-capo-sec'] },
+        onEnter: 'openViewPanel', onExit: null },
+    ]},
     // Section 8 -- not yet built
     { key:'nut_mode', label:'Nut Mode', built:false, steps:[] },
     // Section 9 -- not yet built
@@ -10844,6 +10977,26 @@ const TOUR_CONTENT = {
 // ── Callback registry ─────────────────────────────────────────────
 // Steps reference callbacks by string name. Missing callback: warn +
 // continue, don't crash. Add new hooks here as later sections need them.
+// Zoom to a specific region of the SVG canvas. Reusable helper for
+// named zoom callbacks (e.g. zoomToNut, zoomToTub). svgCenterY is the
+// Y coordinate in SVG units to center on; svgHeightVisible is how many
+// SVG vertical units should fit in the canvas height. Scale is clamped
+// to the existing scMn..scMx limits so phone viewports stay sane.
+function _zoomToRegion(svgCenterY, svgHeightVisible){
+  try{
+    if(typeof canvas==='undefined' || !canvas) return;
+    const ch = canvas.clientHeight;
+    if(!ch || !svgHeightVisible) return;
+    let s = ch / svgHeightVisible;
+    if(typeof scMn!=='undefined' && s<scMn) s=scMn;
+    if(typeof scMx!=='undefined' && s>scMx) s=scMx;
+    sc = s;
+    ty = ch/2 - svgCenterY*sc;
+    if(typeof smartPan==='function') smartPan();
+    if(typeof applyT==='function') applyT();
+  }catch(e){}
+}
+
 const TOUR_CALLBACKS = {
   fullViewFit: function(){
     try{ if(typeof zoomFit==='function') zoomFit(); }catch(e){}
@@ -10861,8 +11014,6 @@ const TOUR_CALLBACKS = {
       }
     }catch(e){}
   },
-  // Open the Circle of Fifths wheel if it's not already visible.
-  // Used in Section 4 so the #cof-wrap target is painted when spotlighted.
   openCoF: function(){
     try{
       if(typeof cofVisible!=='undefined' && !cofVisible){
@@ -10870,9 +11021,6 @@ const TOUR_CALLBACKS = {
       }
     }catch(e){}
   },
-  // Switch to pitch map mode. Idempotent -- safe to call repeatedly so
-  // every Section 10 step can set it and jumping to a mid-section step
-  // still lands in the right mode.
   setPitchmapView: function(){
     try{
       if(typeof nodeView==='undefined' || nodeView!=='pitchmap'){
@@ -10884,6 +11032,72 @@ const TOUR_CALLBACKS = {
       if(typeof zoomFit==='function') zoomFit();
     }catch(e){}
   },
+  // v7.7.11: idempotent mode / panel openers.
+  setFullView: function(){
+    try{
+      if(typeof nodeView==='undefined' || nodeView!=='full'){
+        if(typeof setNodeView==='function'){
+          const b=document.getElementById('view-full');
+          setNodeView('full', b);
+        }
+      }
+      if(typeof zoomFit==='function') zoomFit();
+    }catch(e){}
+  },
+  setNutView: function(){
+    try{
+      if(typeof nodeView==='undefined' || nodeView!=='nut'){
+        if(typeof setNodeView==='function'){
+          const b=document.getElementById('view-nut');
+          setNodeView('nut', b);
+        }
+      }
+      if(typeof zoomFit==='function') zoomFit();
+    }catch(e){}
+  },
+  setCapoView: function(){
+    try{
+      if(typeof nodeView==='undefined' || nodeView!=='capo'){
+        if(typeof setNodeView==='function'){
+          const b=document.getElementById('view-capo');
+          setNodeView('capo', b);
+        }
+      }
+      // Default to P5 capo position for pedagogy; index 3 = P5 by convention
+      if(typeof setCapoNode==='function'){
+        try{ setCapoNode(3); }catch(e){}
+      }
+      if(typeof zoomFit==='function') zoomFit();
+    }catch(e){}
+  },
+  openSettingsPanel: function(){
+    try{
+      if(typeof _settingsPanelOpen!=='undefined' && !_settingsPanelOpen){
+        if(typeof _toggleSettingsPanel==='function') _toggleSettingsPanel();
+      }
+    }catch(e){}
+  },
+  openViewPanel: function(){
+    try{
+      if(typeof _viewPanelOpen!=='undefined' && !_viewPanelOpen){
+        if(typeof _toggleViewPanel==='function') _toggleViewPanel();
+      }
+    }catch(e){}
+  },
+  openPlayTray: function(){
+    try{
+      if(typeof _playPanelOpen!=='undefined' && !_playPanelOpen){
+        if(typeof togglePlayPanel==='function') togglePlayPanel();
+      }
+    }catch(e){}
+  },
+  // Named zoom-to-region callbacks. Add more by copying the pattern.
+  // svgCenterY + svgHeightVisible are in SVG coordinate units
+  // (canvas viewBox 0 0 1380 1440). Nut sits at y~78, tub at y~1350,
+  // string midpoint at y~694.
+  zoomToNut: function(){ _zoomToRegion(120, 280); },
+  zoomToTub: function(){ _zoomToRegion(1320, 280); },
+  zoomToMidpoint: function(){ _zoomToRegion(694, 300); },
 };
 
 // ── Engine ────────────────────────────────────────────────────────
