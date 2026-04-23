@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.7.4</title>
+<title>Washtub Bass String Map · v7.7.5</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -979,7 +979,7 @@ input[type=range]{width:110px;cursor:pointer;}
 <text x="480" y="60" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.5">nut</text>
 
 <!-- String -->
-<line x1="480" y1="78" x2="480" y2="1310" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+<line id="string-line" x1="480" y1="78" x2="480" y2="1310" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
 
 <!-- Washtub -->
 <path d="M398,1310 L356,1392 L604,1392 L562,1310 Z" fill="rgba(128,128,128,0.07)" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
@@ -1319,7 +1319,7 @@ input[type=range]{width:110px;cursor:pointer;}
         </div>
       </div>
 
-      <div class="sec legend">
+      <div class="sec legend" id="vp-legend-section">
         <div class="sec-h">legend</div>
         <div class="leg-item"><span class="leg-dot d1"></span>in key</div>
         <div class="leg-item"><span class="leg-dot d2"></span>chromatic</div>
@@ -1602,7 +1602,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.7.4';
+const VERSION='v7.7.5';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -10650,8 +10650,43 @@ const TOUR_CONTENT = {
     // Section 1 -- not yet built
     { key:'instrument', label:'The Instrument', built:false, steps:[] },
 
-    // Section 2 -- not yet built
-    { key:'string_map', label:'The String Map', built:false, steps:[] },
+    // Section 2 -- The String Map  (v7.7.5)
+    { key:'string_map', label:'The String Map', built:true, steps:[
+      // step 2.1
+      { id: '2.1',
+        title: 'The string',
+        body: "The vertical line is the string. The nut at the top is where the string meets the pole. The tub at the bottom is the bridge -- the resonating body. The full length between them is the speaking length: the part that vibrates when you play.",
+        target: { kind:'id', id:'string-line', padX:14 },
+        onEnter: 'fullViewFit', onExit: null },
+
+      // step 2.2
+      { id: '2.2',
+        title: 'Harmonic nodes',
+        body: "Each mark across the string is a harmonic node -- a point where the string can be gently touched while plucking to isolate a specific overtone. Larger circles are primary nodes (4ths, 5ths, octaves); smaller circles are secondary nodes. Tap any node row to hear its tone.",
+        target: { kind:'svgPoint', svgX:480, svgY:694, r:24 },
+        onEnter: 'fullViewFit', onExit: null },
+
+      // step 2.3
+      { id: '2.3',
+        title: 'What the colors mean',
+        body: "Purple marks the tonic -- the musical home note. Green marks nodes in the current key and mode. Coral / red marks chromatic nodes -- in pitch, but outside the key. Grey dashed marks fall between named pitches. Colors update live as you change key, mode, or home node. The full legend lives here in the view panel for reference.",
+        target: { kind:'id', id:'vp-legend-section' },
+        onEnter: 'openViewToLegend', onExit: null },
+
+      // step 2.4
+      { id: '2.4',
+        title: 'Current tone strip',
+        body: "When you tap a node, the strip at the top fills with its details: degree, note name, frequency, and segment lengths. Tapping a node plays the tone simultaneously. The strip is your running readout of whatever you just touched.",
+        target: { kind:'id', id:'new-tone-strip' },
+        onEnter: null, onExit: null },
+
+      // step 2.5
+      { id: '2.5',
+        title: 'Reading the columns',
+        body: "Left to right: str-deg is the string degree -- fixed by physics, never changes. home-deg shows how this node relates to your tonal center. key-deg is the chromatic degree within the home key. note is the letter name and octave. The remaining columns show fraction, ratio, interval description, and segment lengths.",
+        target: { kind:'group', ids:['col-strdeg','col-homedeg','col-keydeg','col-note','col-info','col-segs'], padY:6 },
+        onEnter: 'fullViewFit', onExit: null },
+    ]},
 
     // Section 3 -- Modes and the Bottom Rail  (POC, v7.7.2)
     { key:'modes_rail', label:'Modes and the Bottom Rail', built:true, steps:[
@@ -10710,6 +10745,17 @@ const TOUR_CALLBACKS = {
     try{ if(typeof setNodeView==='function'){ const b=document.getElementById('view-full'); setNodeView('full', b); } }catch(e){}
   },
   zoomFit: function(){ try{ if(typeof zoomFit==='function') zoomFit(); }catch(e){} },
+  openViewToLegend: function(){
+    try{
+      if(typeof _viewPanelOpen!=='undefined' && !_viewPanelOpen){
+        if(typeof _toggleViewPanel==='function') _toggleViewPanel();
+      }
+      const el=document.getElementById('vp-legend-section');
+      if(el && typeof el.scrollIntoView==='function'){
+        el.scrollIntoView({block:'nearest'});
+      }
+    }catch(e){}
+  },
 };
 
 // ── Engine ────────────────────────────────────────────────────────
@@ -10717,37 +10763,75 @@ let _tourState = { active:false, sectionIdx:-1, stepIdx:-1 };
 
 function _tourResolveTarget(target){
   if(!target || !target.kind) return null;
+  // Compute the raw rect for the given kind, then apply optional padX/padY
+  // symmetrically (same amount added to each side). padX/padY can be used on
+  // any kind to make thin or point targets visible under the spotlight.
+  let rect = null;
   if(target.kind==='id'){
     const el=document.getElementById(target.id);
-    if(!el) return null;
-    const r=el.getBoundingClientRect();
-    if(r.width===0 && r.height===0) return null;
-    return { top:r.top, left:r.left, width:r.width, height:r.height };
-  }
-  if(target.kind==='group'){
-    if(!target.ids || !target.ids.length) return null;
-    let minT=Infinity, minL=Infinity, maxR=-Infinity, maxB=-Infinity, any=false;
-    for(let i=0;i<target.ids.length;i++){
-      const el=document.getElementById(target.ids[i]);
-      if(!el) continue;
+    if(el){
       const r=el.getBoundingClientRect();
-      if(r.width===0 && r.height===0) continue;
-      any=true;
-      if(r.top<minT) minT=r.top;
-      if(r.left<minL) minL=r.left;
-      if(r.right>maxR) maxR=r.right;
-      if(r.bottom>maxB) maxB=r.bottom;
+      if(r.width!==0 || r.height!==0){
+        rect = { top:r.top, left:r.left, width:r.width, height:r.height };
+      }
     }
-    if(!any) return null;
-    return { top:minT, left:minL, width:maxR-minL, height:maxB-minT };
-  }
-  if(target.kind==='canvas'){
+  } else if(target.kind==='group'){
+    if(target.ids && target.ids.length){
+      let minT=Infinity, minL=Infinity, maxR=-Infinity, maxB=-Infinity, any=false;
+      for(let i=0;i<target.ids.length;i++){
+        const el=document.getElementById(target.ids[i]);
+        if(!el) continue;
+        const r=el.getBoundingClientRect();
+        if(r.width===0 && r.height===0) continue;
+        any=true;
+        if(r.top<minT) minT=r.top;
+        if(r.left<minL) minL=r.left;
+        if(r.right>maxR) maxR=r.right;
+        if(r.bottom>maxB) maxB=r.bottom;
+      }
+      if(any){
+        rect = { top:minT, left:minL, width:maxR-minL, height:maxB-minT };
+      }
+    }
+  } else if(target.kind==='canvas'){
     const el=document.getElementById('canvas-wrap');
-    if(!el) return null;
-    const r=el.getBoundingClientRect();
-    return { top:r.top, left:r.left, width:r.width, height:r.height };
+    if(el){
+      const r=el.getBoundingClientRect();
+      rect = { top:r.top, left:r.left, width:r.width, height:r.height };
+    }
+  } else if(target.kind==='svgPoint'){
+    // Target an SVG coordinate (svgX, svgY) with a radius r in SVG units.
+    // Uses getScreenCTM to convert to screen pixels, so the spotlight tracks
+    // CSS scaling, viewBox transforms, zoom, and pan automatically.
+    const svg = document.getElementById(target.svgId || 'main-svg');
+    if(svg && typeof svg.getScreenCTM==='function' && typeof svg.createSVGPoint==='function'){
+      const ctm = svg.getScreenCTM();
+      if(ctm){
+        const r = (typeof target.r==='number') ? target.r : 16;
+        const p1 = svg.createSVGPoint(); p1.x = target.svgX - r; p1.y = target.svgY - r;
+        const p2 = svg.createSVGPoint(); p2.x = target.svgX + r; p2.y = target.svgY + r;
+        const s1 = p1.matrixTransform(ctm);
+        const s2 = p2.matrixTransform(ctm);
+        const top = Math.min(s1.y, s2.y);
+        const left = Math.min(s1.x, s2.x);
+        const width = Math.abs(s2.x - s1.x);
+        const height = Math.abs(s2.y - s1.y);
+        if(width > 0 && height > 0){
+          rect = { top, left, width, height };
+        }
+      }
+    }
   }
-  return null;
+  if(!rect) return null;
+  const padX = (typeof target.padX==='number') ? target.padX : 0;
+  const padY = (typeof target.padY==='number') ? target.padY : 0;
+  if(padX || padY){
+    rect.top    -= padY;
+    rect.left   -= padX;
+    rect.width  += padX * 2;
+    rect.height += padY * 2;
+  }
+  return rect;
 }
 
 function _tourRunCallback(name){
