@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.7.7</title>
+<title>Washtub Bass String Map · v7.7.8</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -1602,7 +1602,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.7.7';
+const VERSION='v7.7.8';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -10804,38 +10804,69 @@ function _tourResolveTarget(target){
     }
   } else if(target.kind==='svgPoint'){
     // Target an SVG coordinate (svgX, svgY) with a radius r in SVG units.
-    // Uses getScreenCTM to convert to screen pixels, so the spotlight tracks
-    // CSS scaling, viewBox transforms, zoom, and pan automatically.
+    //
+    // History: v7.7.5-v7.7.7 used getScreenCTM() + createSVGPoint. That
+    // works on Chrome desktop but fails on iOS Safari / the iOS Claude
+    // renderer, which returns the viewBox-to-user matrix without the
+    // ancestor CSS transform stack folded in. Result: correct screen
+    // coords on desktop, ~350 px off on iOS.
+    //
+    // Fix: compute the effective mapping from getBoundingClientRect
+    // (which includes ancestor transforms on every engine) plus the
+    // SVG's viewBox. Accounts for preserveAspectRatio "meet"
+    // letterboxing so the mapping stays correct even if the bbox
+    // aspect ratio doesn't match the viewBox.
     const svg = document.getElementById(target.svgId || 'main-svg');
-    if(svg && typeof svg.getScreenCTM==='function' && typeof svg.createSVGPoint==='function'){
-      const ctm = svg.getScreenCTM();
-      if(ctm){
+    if(svg){
+      const bb = svg.getBoundingClientRect();
+      // Parse viewBox: fall back to width/height attrs, then 0/0 scale.
+      let vbX=0, vbY=0, vbW=0, vbH=0;
+      const vbAttr = svg.getAttribute('viewBox');
+      if(vbAttr){
+        const parts = vbAttr.split(/[ ,]+/).map(parseFloat);
+        if(parts.length===4 && parts.every(function(n){return isFinite(n);})){
+          vbX=parts[0]; vbY=parts[1]; vbW=parts[2]; vbH=parts[3];
+        }
+      }
+      if(!vbW || !vbH){
+        vbW = parseFloat(svg.getAttribute('width'))||0;
+        vbH = parseFloat(svg.getAttribute('height'))||0;
+      }
+      if(bb.width>0 && bb.height>0 && vbW>0 && vbH>0){
+        // Default preserveAspectRatio="xMidYMid meet": viewBox is
+        // scaled uniformly to fit inside the bbox; extra space is
+        // letterboxed centered. Compute the actual rendered viewBox
+        // rectangle within the bbox.
+        const scale = Math.min(bb.width/vbW, bb.height/vbH);
+        const renderedW = vbW*scale;
+        const renderedH = vbH*scale;
+        const offX = bb.left + (bb.width - renderedW)/2;
+        const offY = bb.top  + (bb.height - renderedH)/2;
         const r = (typeof target.r==='number') ? target.r : 16;
-        const p1 = svg.createSVGPoint(); p1.x = target.svgX - r; p1.y = target.svgY - r;
-        const p2 = svg.createSVGPoint(); p2.x = target.svgX + r; p2.y = target.svgY + r;
-        const pC = svg.createSVGPoint(); pC.x = target.svgX;     pC.y = target.svgY;
-        const s1 = p1.matrixTransform(ctm);
-        const s2 = p2.matrixTransform(ctm);
-        const sC = pC.matrixTransform(ctm);
-        const top = Math.min(s1.y, s2.y);
-        const left = Math.min(s1.x, s2.x);
-        const width = Math.abs(s2.x - s1.x);
-        const height = Math.abs(s2.y - s1.y);
-        // Capture dev diagnostics regardless of whether rect resolves
+        const cx = offX + (target.svgX - vbX)*scale;
+        const cy = offY + (target.svgY - vbY)*scale;
+        const half = r*scale;
+        const left = cx - half;
+        const top  = cy - half;
+        const width = half*2;
+        const height = half*2;
+        // Capture dev diagnostics
         if(_tourDevMode()){
-          const svgBB = svg.getBoundingClientRect();
           _tourLastDiag = {
             kind: 'svgPoint',
             svgX: target.svgX, svgY: target.svgY, r: r,
-            ctm: { a:ctm.a, b:ctm.b, c:ctm.c, d:ctm.d, e:ctm.e, f:ctm.f },
-            svgBBox: { left:svgBB.left, top:svgBB.top, width:svgBB.width, height:svgBB.height },
+            method: 'bbox+viewBox',
+            scale: scale,
+            viewBox: { x:vbX, y:vbY, w:vbW, h:vbH },
+            svgBBox: { left:bb.left, top:bb.top, width:bb.width, height:bb.height },
+            rendered: { offX:offX, offY:offY, w:renderedW, h:renderedH },
             viewport: { w:window.innerWidth, h:window.innerHeight, dpr:window.devicePixelRatio||1 },
             scroll: { x:window.scrollX||0, y:window.scrollY||0 },
-            screenCenter: { x:sC.x, y:sC.y },
+            screenCenter: { x:cx, y:cy },
             screenRect: { top:top, left:left, width:width, height:height }
           };
         }
-        if(width > 0 && height > 0){
+        if(width>0 && height>0){
           rect = { top, left, width, height };
         }
       }
@@ -11147,10 +11178,23 @@ function _tourFlagStep(step){
     const d=_tourLastDiag;
     const fx=function(n){ return (typeof n==='number') ? n.toFixed(3) : String(n); };
     payload += '\n\nDiag (svgPoint):'+
+      '\n  method:      '+(d.method||'(ctm)')+
       '\n  svgTarget:   ('+d.svgX+','+d.svgY+') r='+d.r+
       '\n  screenCenter:('+fx(d.screenCenter.x)+','+fx(d.screenCenter.y)+')'+
-      '\n  screenRect:  top='+fx(d.screenRect.top)+' left='+fx(d.screenRect.left)+' w='+fx(d.screenRect.width)+' h='+fx(d.screenRect.height)+
-      '\n  ctm:         a='+fx(d.ctm.a)+' b='+fx(d.ctm.b)+' c='+fx(d.ctm.c)+' d='+fx(d.ctm.d)+' e='+fx(d.ctm.e)+' f='+fx(d.ctm.f)+
+      '\n  screenRect:  top='+fx(d.screenRect.top)+' left='+fx(d.screenRect.left)+' w='+fx(d.screenRect.width)+' h='+fx(d.screenRect.height);
+    if(d.scale!==undefined){
+      payload += '\n  scale:       '+fx(d.scale);
+    }
+    if(d.viewBox){
+      payload += '\n  viewBox:     x='+d.viewBox.x+' y='+d.viewBox.y+' w='+d.viewBox.w+' h='+d.viewBox.h;
+    }
+    if(d.rendered){
+      payload += '\n  rendered:    offX='+fx(d.rendered.offX)+' offY='+fx(d.rendered.offY)+' w='+fx(d.rendered.w)+' h='+fx(d.rendered.h);
+    }
+    if(d.ctm){
+      payload += '\n  ctm:         a='+fx(d.ctm.a)+' b='+fx(d.ctm.b)+' c='+fx(d.ctm.c)+' d='+fx(d.ctm.d)+' e='+fx(d.ctm.e)+' f='+fx(d.ctm.f);
+    }
+    payload +=
       '\n  svgBBox:     left='+fx(d.svgBBox.left)+' top='+fx(d.svgBBox.top)+' w='+fx(d.svgBBox.width)+' h='+fx(d.svgBBox.height)+
       '\n  viewport:    '+d.viewport.w+'x'+d.viewport.h+' dpr='+d.viewport.dpr+
       '\n  scroll:      x='+d.scroll.x+' y='+d.scroll.y;
