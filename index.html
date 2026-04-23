@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.7.5</title>
+<title>Washtub Bass String Map · v7.7.6</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -1602,7 +1602,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.7.5';
+const VERSION='v7.7.6';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -10663,7 +10663,7 @@ const TOUR_CONTENT = {
       { id: '2.2',
         title: 'Harmonic nodes',
         body: "Each mark across the string is a harmonic node -- a point where the string can be gently touched while plucking to isolate a specific overtone. Larger circles are primary nodes (4ths, 5ths, octaves); smaller circles are secondary nodes. Tap any node row to hear its tone.",
-        target: { kind:'svgPoint', svgX:480, svgY:694, r:24 },
+        target: { kind:'svgPoint', svgX:480, svgY:489, r:24 },
         onEnter: 'fullViewFit', onExit: null },
 
       // step 2.3
@@ -10987,7 +10987,8 @@ function _tourPositionTooltip(tip, rect){
   const rail=document.getElementById('bottom-rail');
   const railH = rail ? rail.getBoundingClientRect().height : 96;
   if(vw < 600){
-    // Mobile / narrow: full-width, pinned above bottom rail
+    // Mobile / narrow: full-width, pinned above bottom rail. Predictable
+    // placement matters more than optimal fit at small widths.
     tip.style.maxWidth='';
     tip.style.left='8px';
     tip.style.right='8px';
@@ -10996,17 +10997,67 @@ function _tourPositionTooltip(tip, rect){
     tip.style.top=Math.max(8, vh - railH - tipH - 10)+'px';
     return;
   }
+
+  // Desktop / tablet: four-sided scoring. Consider below, above, right,
+  // left; pick the side with the best fit. Small bias to 'below' so
+  // equivalent placements are stable across renders. Tooltip is then
+  // aligned to the target's long axis on that side and clamped to viewport.
   const tipR=tip.getBoundingClientRect();
-  const pad=10;
-  // Prefer below target
-  let top = rect.top + rect.height + pad;
-  let left = rect.left;
-  if(top + tipR.height > vh - 8){
-    top = rect.top - tipR.height - pad; // flip above
-    if(top < 8) top = 8;
+  const tw=tipR.width, th=tipR.height;
+  const gap=10, margin=8;
+  const spaceBelow = vh - (rect.top + rect.height) - gap - margin;
+  const spaceAbove = rect.top - gap - margin;
+  const spaceRight = vw - (rect.left + rect.width) - gap - margin;
+  const spaceLeft  = rect.left - gap - margin;
+
+  function score(side){
+    // Fits if its axis has room; quality is how much extra room on the
+    // cross-axis (so tooltip isn't jammed into a corner). Negative values
+    // signal a bad fit.
+    let primary, cross, bias;
+    if(side==='below'){ primary=spaceBelow-th; cross=vw-tw-margin*2; bias=5; }
+    else if(side==='above'){ primary=spaceAbove-th; cross=vw-tw-margin*2; bias=3; }
+    else if(side==='right'){ primary=spaceRight-tw; cross=vh-th-margin*2; bias=2; }
+    else { /* left */       primary=spaceLeft -tw; cross=vh-th-margin*2; bias=0; }
+    if(primary < 0) return primary; // doesn't fit on this side: score negative
+    return primary + Math.max(0, cross)*0.1 + bias;
   }
-  if(left + tipR.width > vw - 8) left = vw - tipR.width - 8;
-  if(left < 8) left = 8;
+  const sides=['below','above','right','left'];
+  let bestSide='below', bestScore=-Infinity;
+  sides.forEach(function(s){
+    const sc=score(s);
+    if(sc>bestScore){ bestScore=sc; bestSide=s; }
+  });
+
+  // If nothing fits cleanly, fall back to side with largest raw space so we
+  // still show something on-screen (clamped below).
+  if(bestScore < 0){
+    const raw={below:spaceBelow, above:spaceAbove, right:spaceRight, left:spaceLeft};
+    let maxS=-Infinity;
+    sides.forEach(function(s){ if(raw[s]>maxS){ maxS=raw[s]; bestSide=s; } });
+  }
+
+  let top, left;
+  if(bestSide==='below'){
+    top = rect.top + rect.height + gap;
+    left = rect.left + rect.width/2 - tw/2;
+  } else if(bestSide==='above'){
+    top = rect.top - th - gap;
+    left = rect.left + rect.width/2 - tw/2;
+  } else if(bestSide==='right'){
+    left = rect.left + rect.width + gap;
+    top = rect.top + rect.height/2 - th/2;
+  } else { // left
+    left = rect.left - tw - gap;
+    top = rect.top + rect.height/2 - th/2;
+  }
+
+  // Clamp to viewport
+  if(left + tw > vw - margin) left = vw - tw - margin;
+  if(left < margin) left = margin;
+  if(top + th > vh - margin) top = vh - th - margin;
+  if(top < margin) top = margin;
+
   tip.style.top=top+'px';
   tip.style.left=left+'px';
 }
