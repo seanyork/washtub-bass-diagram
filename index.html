@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.7.20</title>
+<title>Washtub Bass String Map · v7.7.21</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -1618,7 +1618,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.7.20';
+const VERSION='v7.7.21';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -2552,7 +2552,10 @@ function _vpInit(){
   });
   // Outside-tap close for the tick popover (mousedown + touchstart patterns
   // mirror the readme-picker and snap-target-popover close handlers).
+  // v7.7.21: tour overlay guard -- taps on the tour dim-catcher/tooltip
+  // must not close this (or any) popover. See shared pattern below.
   document.addEventListener('mousedown', function(e){
+    if(e.target && e.target.closest && e.target.closest('#tour-overlay')) return;
     const pop=document.getElementById('tick-popover');
     const btn=document.getElementById('vp-tick-btn');
     if(pop && pop.classList.contains('open') && !pop.contains(e.target) && e.target!==btn && (!btn || !btn.contains(e.target))){
@@ -2560,6 +2563,7 @@ function _vpInit(){
     }
   });
   document.addEventListener('touchstart', function(e){
+    if(e.target && e.target.closest && e.target.closest('#tour-overlay')) return;
     const pop=document.getElementById('tick-popover');
     const btn=document.getElementById('vp-tick-btn');
     if(pop && pop.classList.contains('open') && !pop.contains(e.target) && e.target!==btn && (!btn || !btn.contains(e.target))){
@@ -6711,6 +6715,12 @@ function closePickers(){closeScalePicker();closeHomePicker();}
 function _checkPickerDismiss(target){
   try{
     if(!target) return;
+    // v7.7.21: tour overlay guard. Events reaching the tour's dim-catcher
+    // or tooltip must not dismiss the app pickers that live behind/under
+    // the tour UI -- otherwise tour steps that open a picker (e.g. the
+    // scale-picker step in Section 4) get dismissed by taps anywhere on
+    // the dim-catcher.
+    if(target.closest && target.closest('#tour-overlay')) return;
     const sp=document.getElementById('scale-picker');
     const hp=document.getElementById('home-picker');
     const pk=document.getElementById('play-deg-picker');
@@ -11881,6 +11891,17 @@ function _tourNextBuiltSection(startIdx){
   return -1;
 }
 
+// v7.7.21: mirror of _tourNextBuiltSection for backward cross-boundary
+// navigation. Returns index of the previous built-and-populated section,
+// or -1 if none.
+function _tourPrevBuiltSection(startIdx){
+  for(let i=startIdx-1;i>=0;i--){
+    const s=TOUR_CONTENT.sections[i];
+    if(s && s.built && s.steps && s.steps.length) return i;
+  }
+  return -1;
+}
+
 function _tourShowOverlay(){
   const ov=document.getElementById('tour-overlay');
   if(ov) ov.classList.add('active');
@@ -12070,7 +12091,22 @@ function _tourSetTooltip(step, rect){
     tip.appendChild(actWrap);
   }
   const foot=document.createElement('div'); foot.className='tour-tip-foot';
-  const prev=document.createElement('button'); prev.className='tour-nav-btn'; prev.id='tour-prev-btn'; prev.textContent='prev'; if(isFirst) prev.disabled=true;
+  // v7.7.21: prev button is symmetric with the next/up-next pattern.
+  // - mid-section: plain "prev", enabled, steps back within section
+  // - at step 0 with a previous built section: "\u2039 prev {Name}",
+  //   enabled, jumps to last step of previous section
+  // - at step 0 with no previous section: "prev", disabled
+  const prevSecIdx = isFirst ? _tourPrevBuiltSection(_tourState.sectionIdx) : -1;
+  const hasUpPrev = isFirst && prevSecIdx >= 0;
+  const prev=document.createElement('button');
+  prev.className='tour-nav-btn'; prev.id='tour-prev-btn';
+  if(hasUpPrev){
+    const pvName=(TOUR_CONTENT.sections[prevSecIdx] && TOUR_CONTENT.sections[prevSecIdx].label) || '';
+    prev.textContent='\u2039 prev '+pvName;
+  } else {
+    prev.textContent='prev';
+    if(isFirst) prev.disabled=true;
+  }
   foot.appendChild(prev);
   // Footer layout:
   //   not-last:                                   prev, next (primary)
@@ -12100,7 +12136,9 @@ function _tourSetTooltip(step, rect){
   // Wire
   back.addEventListener('click', function(){ _tourRunStepExit(); _tourShowMenu(); });
   exitLink.addEventListener('click', _tourExit);
-  if(!isFirst) prev.addEventListener('click', _tourPrev);
+  // Attach prev click whenever the button is not disabled; _tourPrev
+  // handles both in-section step-back and cross-section boundary crossing.
+  if(!prev.disabled) prev.addEventListener('click', _tourPrev);
   if(hasUpNext){
     doneBtn.addEventListener('click', function(){ _tourRunStepExit(); _tourShowMenu(); });
     nextOrUpBtn.addEventListener('click', function(){
@@ -12270,11 +12308,23 @@ function _tourNext(){
 }
 
 function _tourPrev(){
+  // v7.7.21: at step 0 of a section, prev crosses to the last step of
+  // the previous built section (symmetric with next advancing via the
+  // "next ▸" up-next affordance).
   if(_tourState.stepIdx > 0){
     _tourRunStepExit();
     _tourState.stepIdx--;
     _tourShowStep(-1);
+    return;
   }
+  const prevSecIdx = _tourPrevBuiltSection(_tourState.sectionIdx);
+  if(prevSecIdx < 0) return;
+  const prevSec = TOUR_CONTENT.sections[prevSecIdx];
+  if(!prevSec || !prevSec.steps || !prevSec.steps.length) return;
+  _tourRunStepExit();
+  _tourState.sectionIdx = prevSecIdx;
+  _tourState.stepIdx = prevSec.steps.length - 1;
+  _tourShowStep(-1);
 }
 
 function _tourExit(){
@@ -12427,11 +12477,13 @@ function _tourInitButtons(){
 // the outside handler before the onclick handler could toggle it.
 document.addEventListener('mousedown',e=>{
   if(!_readmePickerOpen) return;
+  if(e.target && e.target.closest && e.target.closest('#tour-overlay')) return;
   const pop=document.getElementById('readme-section-popover');
   if(pop&&!pop.contains(e.target)&&!e.target.closest('#sp-foot-readme')) closeReadmePicker();
 });
 document.addEventListener('touchstart',e=>{
   if(!_readmePickerOpen) return;
+  if(e.target && e.target.closest && e.target.closest('#tour-overlay')) return;
   const pop=document.getElementById('readme-section-popover');
   if(pop&&!pop.contains(e.target)&&!e.target.closest('#sp-foot-readme')) closeReadmePicker();
 },{passive:true});
@@ -12439,6 +12491,7 @@ document.addEventListener('touchstart',e=>{
 // Close readme on outside tap
 document.addEventListener('touchstart',e=>{
   if(!_readmeOpen) return;
+  if(e.target && e.target.closest && e.target.closest('#tour-overlay')) return;
   const panel=document.getElementById('readme-panel');
   if(panel&&!panel.contains(e.target)) closeReadme();
 },{passive:true});
@@ -12449,6 +12502,8 @@ document.addEventListener('touchstart',e=>{
 function _closeSnapTargetPopoverOnOutsideTap(target){
   const pop=document.getElementById('snap-target-popover');
   if(!pop || !pop.classList.contains('open')) return;
+  // v7.7.21: tour overlay guard
+  if(target && target.closest && target.closest('#tour-overlay')) return;
   if(pop.contains(target)) return;
   if(target && target.closest && target.closest('#br-snap-target-btn')) return;
   pop.classList.remove('open');
