@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.7.18</title>
+<title>Washtub Bass String Map · v7.7.19</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -1618,7 +1618,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.7.18';
+const VERSION='v7.7.19';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -10849,8 +10849,8 @@ const TOUR_CONTENT = {
       // step 5.3  (string-highlight split from old 5.2)
       { id: '5.3',
         title: 'Preview highlights',
-        body: "The shaded ring here shows the preview highlights between the upstring 6th and the midpoint (octave node). With PVW enabled, all in-scale nodes in the current range light up -- giving you a visual map of what's about to play.",
-        target: { kind:'svgRect', svgX:440, svgY:571, svgW:80, svgH:130 },
+        body: "The shaded region shows an example preview slice: from the upper portion of the string down to the midpoint (octave node), spanning the full width of the map including labels. With PVW enabled, all in-scale nodes in the current range light up -- giving you a visual map of what's about to play.",
+        target: { kind:'svgRect', svgX:440, svgY:0, svgW:810, svgH:701 },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null },
 
       // step 5.4  (was 5.3) Persist mode
@@ -10872,7 +10872,7 @@ const TOUR_CONTENT = {
         title: 'Chord: arpeggio',
         body: "With chord + arp selected, playback spells out the chord one note at a time -- an arpeggio. Tap Play to hear the current chord arpeggiated up through the selected voices.",
         target: { kind:'id', id:'pd-chord-section' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null,
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray','setChordArp'], onExit: null,
         action: { label:'Play arp', callback:'playDemoChordArp' } },
 
       // step 5.7  NEW: chord block demo
@@ -10880,7 +10880,7 @@ const TOUR_CONTENT = {
         title: 'Chord: block',
         body: "With chord + blk selected, all chord tones sound simultaneously -- a block chord. Tap Play to hear it.",
         target: { kind:'id', id:'pd-chord-section' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null,
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray','setChordBlock'], onExit: null,
         action: { label:'Play block', callback:'playDemoChordBlock' } },
 
       // step 5.8  NEW: scale oct demo
@@ -10888,7 +10888,7 @@ const TOUR_CONTENT = {
         title: 'Scale: one octave',
         body: "With scale + oct selected, playback ascends through one full octave of the current scale. Tap Play to hear it.",
         target: { kind:'id', id:'pd-scale-section' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null,
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray','setScaleOneOct'], onExit: null,
         action: { label:'Play scale', callback:'playDemoScaleOneOct' } },
 
       // step 5.9  (was 5.5) Direction
@@ -10896,7 +10896,7 @@ const TOUR_CONTENT = {
         title: 'Direction',
         body: "The direction row controls whether the sequence ascends, descends, or plays up-and-back-down. Tap Play to hear an up-down arpeggio.",
         target: { kind:'id', id:'pd-dir-section' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null,
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray','setArpUpDown'], onExit: null,
         action: { label:'Play up-down', callback:'playDemoArpUpDown' } },
 
       // step 5.10  (was 5.6) Chord voices with 1-3-5 arp
@@ -10904,7 +10904,7 @@ const TOUR_CONTENT = {
         title: 'Chord voices',
         body: "The voices section selects which chord tones to include -- root, 3rd, 5th, 7th, and extensions. The default triad is 1-3-5. Tap Play to hear the default arpeggio.",
         target: { kind:'id', id:'pd-chord-voices' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null,
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray','setVoices135'], onExit: null,
         action: { label:'Play 1-3-5 arp', callback:'playDemoChordArp' } },
 
       // step 5.11  NEW: 1-3-5-7 demo
@@ -10912,7 +10912,7 @@ const TOUR_CONTENT = {
         title: 'Adding the 7th',
         body: "Adding voice 7 turns the triad into a seventh chord. The selected voices update the playback immediately. Tap Play to hear the four-note arpeggio.",
         target: { kind:'id', id:'pd-chord-voices' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null,
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray','setVoices1357'], onExit: null,
         action: { label:'Play 1-3-5-7 arp', callback:'playDemo1357Arp' } },
 
       // step 5.12  (was 5.7) Start at note, preferSide:below, pin upstring-5
@@ -11070,16 +11070,16 @@ const TOUR_CONTENT = {
       { id: '9.4',
         title: 'Upper segment',
         body: "The upper segment runs from the nut to the capo. Its amber nodes are the harmonics of that shorter vibrating length -- a higher pitch than the full string would produce.",
-        target: { kind:'svgRect', svgX:440, svgY:78, svgW:80, svgH:492 },
-        tooltip: { preferSide:'right' },
+        target: { kind:'svgRect', svgX:440, svgY:78, svgW:810, svgH:492 },
+        tooltip: { preferSide:'below' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView','panCanvasLeft'], onExit: null },
 
       // step 9.5  NEW -- lower segment
       { id: '9.5',
         title: 'Lower segment',
         body: "The lower segment runs from the capo to the tub. Its teal nodes are the harmonics of that shorter vibrating length. The pitch interval between the two segments is what gives capo mode its character.",
-        target: { kind:'svgRect', svgX:440, svgY:570, svgW:80, svgH:740 },
-        tooltip: { preferSide:'right' },
+        target: { kind:'svgRect', svgX:440, svgY:570, svgW:810, svgH:740 },
+        tooltip: { preferSide:'above' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView','panCanvasLeft'], onExit: null },
 
       // step 9.6  NEW -- label controls cluster
@@ -11513,6 +11513,68 @@ const TOUR_CALLBACKS = {
       if(typeof playSeq !== 'undefined') playSeq = 'chord';
       if(typeof updatePlayBtn === 'function') updatePlayBtn();
       if(typeof playSequence === 'function') playSequence();
+    }catch(e){}
+  },
+  // v7.7.19: state-only setters for the play-config. These mirror the
+  // play-demo callbacks above but STOP BEFORE playSequence(), so the UI
+  // buttons visually reflect the step's context on entry rather than
+  // lighting up only when the user taps the demo-play button. Pair each
+  // onEnter with its matching play-demo action for the full "here's what
+  // the button does + tap to hear it" flow.
+  _applyVoiceSet: function(voiceSet){
+    if(typeof playVoiceSet === 'undefined') return;
+    playVoiceSet = voiceSet;
+    const btnMap={13:'pdv-13th',11:'pdv-11th',9:'pdv-9th',7:'pdv-7th',5:'pdv-5',3:'pdv-3',1:'pdv-1'};
+    Object.keys(btnMap).forEach(function(k){
+      const b=document.getElementById(btnMap[k]);
+      if(b) b.classList.toggle('on', !!playVoiceSet[parseInt(k)]);
+    });
+  },
+  setChordArp: function(){
+    try{
+      if(typeof setPlayChordStyle === 'function') setPlayChordStyle('arpeg');
+      if(typeof playSeq !== 'undefined') playSeq = 'chord';
+      if(typeof updatePlayBtn === 'function') updatePlayBtn();
+    }catch(e){}
+  },
+  setChordBlock: function(){
+    try{
+      if(typeof setPlayChordStyle === 'function') setPlayChordStyle('block');
+      if(typeof playSeq !== 'undefined') playSeq = 'chord';
+      if(typeof updatePlayBtn === 'function') updatePlayBtn();
+    }catch(e){}
+  },
+  setScaleOneOct: function(){
+    try{
+      if(typeof setPlayScaleStyle === 'function') setPlayScaleStyle('1oct');
+      if(typeof setPlayDir === 'function') setPlayDir('up');
+      if(typeof updatePlayBtn === 'function') updatePlayBtn();
+    }catch(e){}
+  },
+  setArpUpDown: function(){
+    try{
+      if(typeof setPlayChordStyle === 'function') setPlayChordStyle('arpeg');
+      if(typeof setPlayDir === 'function') setPlayDir('updown');
+      if(typeof playSeq !== 'undefined') playSeq = 'chord';
+      if(typeof updatePlayBtn === 'function') updatePlayBtn();
+    }catch(e){}
+  },
+  setVoices135: function(){
+    try{
+      TOUR_CALLBACKS._applyVoiceSet({1:true, 3:true, 5:true, 7:false, 9:false, 11:false, 13:false});
+      if(typeof setPlayChordStyle === 'function') setPlayChordStyle('arpeg');
+      if(typeof setPlayDir === 'function') setPlayDir('up');
+      if(typeof playSeq !== 'undefined') playSeq = 'chord';
+      if(typeof updatePlayBtn === 'function') updatePlayBtn();
+    }catch(e){}
+  },
+  setVoices1357: function(){
+    try{
+      TOUR_CALLBACKS._applyVoiceSet({1:true, 3:true, 5:true, 7:true, 9:false, 11:false, 13:false});
+      if(typeof setPlayChordStyle === 'function') setPlayChordStyle('arpeg');
+      if(typeof setPlayDir === 'function') setPlayDir('up');
+      if(typeof playSeq !== 'undefined') playSeq = 'chord';
+      if(typeof updatePlayBtn === 'function') updatePlayBtn();
     }catch(e){}
   },
   // 1-3-5-7 arp up.
@@ -11958,6 +12020,11 @@ function _tourSetTooltip(step, rect){
   const head=document.createElement('div'); head.className='tour-tip-head';
   const back=document.createElement('a'); back.className='tour-back-link'; back.textContent='sections'; back.id='tour-back-link';
   head.appendChild(back);
+  // v7.7.19: explicit exit link. Placed after sections so leftward
+  // mis-taps land on the safer 'sections' option.
+  const exitLink=document.createElement('a'); exitLink.className='tour-back-link'; exitLink.textContent='exit'; exitLink.id='tour-exit-link';
+  exitLink.style.marginLeft='10px';
+  head.appendChild(exitLink);
   const idSpan=document.createElement('span'); idSpan.className='tour-step-id'; idSpan.textContent=step.id; head.appendChild(idSpan);
   if(_tourDevMode()){
     const flagBtn=document.createElement('button');
@@ -12010,6 +12077,7 @@ function _tourSetTooltip(step, rect){
   tip.appendChild(foot);
   // Wire
   back.addEventListener('click', function(){ _tourRunStepExit(); _tourShowMenu(); });
+  exitLink.addEventListener('click', _tourExit);
   if(!isFirst) prev.addEventListener('click', _tourPrev);
   if(hasUpNext){
     doneBtn.addEventListener('click', function(){ _tourRunStepExit(); _tourShowMenu(); });
@@ -12253,9 +12321,13 @@ function _tourKeyHandler(e){
   if(e.key==='Escape' || e.keyCode===27){ _tourExit(); }
 }
 function _tourOutsideTap(e){
-  if(!_tourState.active) return;
-  // Only fire when the target IS the dim-catcher itself.
-  if(e.target && e.target.id==='tour-dim-catcher') _tourExit();
+  // v7.7.19: outside-tap no longer exits the tour. Accidental dismissals
+  // from mis-taps near the tooltip edge were a major UX problem. The
+  // dim-catcher still catches the event (so canvas taps behind it don't
+  // leak through to the app) but does nothing. Exit is now only via the
+  // tooltip head "exit" link, the section-menu "exit tour" button, or
+  // the Escape key.
+  if(e && e.preventDefault) try{ e.preventDefault(); }catch(err){}
 }
 
 function openTour(){
