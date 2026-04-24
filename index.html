@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.7.13</title>
+<title>Washtub Bass String Map · v7.7.17</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -12,6 +12,17 @@ body{margin:0;padding:0;font-family:system-ui,sans-serif;background:rgb(250,250,
 html{overflow:hidden;overscroll-behavior:none;}
 :root{--inkey:#1a1a1a;--inkey-fill:rgba(0,0,0,0.06);--bottom-rail-height:calc(96px + max(12px, env(safe-area-inset-bottom, 0px)));}
 @media(prefers-color-scheme:dark){body{background:#1a1a1a;color:#e0e0e0;}:root{--inkey:#d8d8d0;--inkey-fill:rgba(255,255,255,0.08);}}
+/* v7.7.17: block text selection app-wide. Long-press on UI controls was
+   triggering the iOS text-selection magnifier and degrading the touch
+   experience. Text selection is re-enabled only where copying is
+   legitimate: readme body, tour tooltip prose, and input/textarea. */
+body{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+#readme-panel-body,
+#tour-tooltip .tour-tip-title,
+#tour-tooltip .tour-tip-body,
+input, textarea{
+  user-select:text;-webkit-user-select:text;-webkit-touch-callout:default;
+}
 #ctrl-bar{background:rgba(128,128,128,0.07);border:0.5px solid rgba(128,128,128,0.2);border-radius:10px;padding:10px 14px;margin-bottom:10px;}
 .ctrl-sep{height:0.5px;background:rgba(128,128,128,0.2);margin:8px 0;}
 .ctrl-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
@@ -603,12 +614,13 @@ input[type=range]{width:110px;cursor:pointer;}
 
 /* Zoom grid — 2x2 */
 #view-panel .zoom-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
-#view-panel .zoom-grid .zb{height:28px;background:rgba(128,128,128,0.07);border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#1a1a1a;font-weight:600;cursor:pointer;-webkit-appearance:none;appearance:none;padding:0;font-family:inherit;}
+#view-panel .zoom-grid .zb{height:28px;background:rgba(128,128,128,0.07);border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#1a1a1a;font-weight:600;cursor:pointer;-webkit-appearance:none;appearance:none;padding:0;font-family:inherit;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
 #view-panel .zoom-grid .zb:active{opacity:0.65;}
 @media(prefers-color-scheme:dark){#view-panel .zoom-grid .zb{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.15);color:#e0e0e0;}}
 
 /* Status line under zoom (e.g., '100%  tap & hold pin to lock') */
-#view-panel .sec .vp-status{font-size:8.5px;color:#8A8882;text-align:center;margin-top:2px;line-height:1.3;}
+#view-panel .sec .vp-status{font-size:8.5px;color:#8A8882;text-align:center;margin-top:2px;line-height:1.3;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+#view-panel #vp-zoom-section{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
 @media(prefers-color-scheme:dark){#view-panel .sec .vp-status{color:#888;}}
 
 /* Stack group: label + row of buttons */
@@ -750,7 +762,7 @@ input[type=range]{width:110px;cursor:pointer;}
 #zoom-pinned-cluster::before{content:'';position:absolute;top:4px;right:4px;width:7px;height:7px;background:#533AB7;border-radius:50%;}
 #zoom-pinned-cluster .pzc-lbl{font-size:7px;color:#533AB7;font-weight:700;letter-spacing:0.06em;margin-bottom:3px;}
 #zoom-pinned-cluster .pzc-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;}
-#zoom-pinned-cluster .pzc-grid .zb{height:22px;background:rgba(128,128,128,0.07);border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#1a1a1a;font-weight:600;cursor:pointer;-webkit-appearance:none;appearance:none;padding:0;font-family:inherit;}
+#zoom-pinned-cluster .pzc-grid .zb{height:22px;background:rgba(128,128,128,0.07);border:0.5px solid rgba(128,128,128,0.25);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#1a1a1a;font-weight:600;cursor:pointer;-webkit-appearance:none;appearance:none;padding:0;font-family:inherit;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
 #zoom-pinned-cluster .pzc-grid .zb:active{opacity:0.65;}
 @media(prefers-color-scheme:dark){
   #zoom-pinned-cluster{background:#1a1a1a;border-bottom-color:rgba(255,255,255,0.15);}
@@ -1606,7 +1618,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.7.13';
+const VERSION='v7.7.17';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -2156,7 +2168,7 @@ setTimeout(_spInit, 0);
 // #capo-ticks and #capo-label-hits display, preserving drag marker.
 // ══════════════════════════════════════════════════════════════════
 
-let _zoomPinned=false;
+let _zoomPinned=true;
 let _capoOnStrVisible=true;
 let _vpHoldTimer=null;
 let _vpHoldMoved=false;
@@ -2403,15 +2415,26 @@ function _vpSyncGatedSections(){
 // under the zoom grid updates; when pinned, #zoom-pinned-cluster in
 // the sidebar becomes visible.
 
+// Single source of truth for painting the zoom status readout in the
+// view panel. Called from _vpSyncZoomPinned (pin/unpin toggles) AND from
+// applyT (every zoom/pan update). v7.7.14: was hardcoded to "100%".
+// v7.7.15: Always show live percentage. Second line states the
+// long-press action (pin or unpin) that's available from here.
+function _updateZoomReadouts(){
+  const status=document.getElementById('vp-zoom-status');
+  if(!status) return;
+  let pct = '100';
+  try{ if(typeof sc==='number' && isFinite(sc) && sc>0) pct=Math.round(sc*100)+''; }catch(e){}
+  const action = _zoomPinned ? 'unpin' : 'pin';
+  status.innerHTML=pct+'%<br>long press to '+action;
+}
+
 function _vpSyncZoomPinned(){
   const pinDot=document.getElementById('vp-zoom-pin');
   if(pinDot) pinDot.classList.toggle('pinned', _zoomPinned);
   const cluster=document.getElementById('zoom-pinned-cluster');
   if(cluster) cluster.classList.toggle('visible', _zoomPinned);
-  const status=document.getElementById('vp-zoom-status');
-  if(status){
-    status.innerHTML=_zoomPinned ? 'PINNED<br>to sidebar' : '100%<br>tap &amp; hold pin to lock';
-  }
+  _updateZoomReadouts();
 }
 
 function _vpPinStartHold(e){
@@ -2507,9 +2530,14 @@ function _vpInit(){
   // text-selection interaction that was firing before the hold registered.
   // Sidebar cluster also receives the handler so users can unpin directly
   // from the sidebar when the view panel is closed.
+  // v7.7.15: Expanded view-panel hold target from the sec-h row alone to
+  // the whole #vp-zoom-section container, matching the sidebar cluster's
+  // generous hit area. Taps on +/-/fitV/fitH still work because touchend
+  // clears the 450ms timer before it fires. A pin-dot remains bound as
+  // a belt-and-suspenders for anyone targeting it explicitly.
   const holdTargets=[
     document.getElementById('vp-zoom-pin'),
-    document.getElementById('vp-zoom-sec-h'),
+    document.getElementById('vp-zoom-section'),
     document.getElementById('zoom-pinned-cluster')
   ];
   holdTargets.forEach(function(el){
@@ -9807,6 +9835,10 @@ function applyT(){
   // Guarded so the write doesn't throw when the element is absent.
   const zl=document.getElementById('zoom-label');
   if(zl) zl.textContent=Math.round(sc*100)+'%';
+  // v7.7.14: paint the view-panel readout on every zoom/pan, not just
+  // on pin toggle. _updateZoomReadouts itself guards absence/non-open
+  // panel scenarios.
+  if(typeof _updateZoomReadouts==='function') _updateZoomReadouts();
 }
 function clamp(){
   const sw=1380*sc, sh=1440*sc, ww=canvas.clientWidth, wh=canvas.clientHeight;
@@ -12105,6 +12137,9 @@ _syncSplashVer();
 _syncSplashHereMark();
 _installSplashDismissListener();
 _tourInitButtons();
+// v7.7.14 (#38): zoom panel pinned by default. Sync on boot so the
+// sidebar cluster shows up on first paint.
+try{ _vpSyncZoomPinned(); }catch(e){ if(window._dbgErr) window._dbgErr('init _vpSyncZoomPinned: '+(e&&e.message||e)); }
 </script>
 </body>
 </html>
