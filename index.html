@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.7.17</title>
+<title>Washtub Bass String Map · v7.7.18</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -1618,7 +1618,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.7.17';
+const VERSION='v7.7.18';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -10683,69 +10683,70 @@ function _tourDevMode(){
 // the menu as "(not yet built)" and are inert.
 const TOUR_CONTENT = {
   sections: [
-    // Section 1 -- The Instrument  (v7.7.10, cleanup v7.7.13)
+    // Section 1 -- The Instrument  (v7.7.10, cleanup v7.7.13, v7.7.18 reorg)
     { key:'instrument', label:'The Instrument', built:true, steps:[
       // step 1.1
       { id: '1.1',
         title: 'The washtub bass',
         body: "A washtub bass is a one-string instrument made from an inverted metal tub, a wooden pole, and a single length of string or cable. The player plucks the string while varying its tension by leaning the pole -- more tension raises the pitch, less tension lowers it. It's a deeply physical instrument: no frets, no keys, just your hands and your ear.",
         target: { kind:'canvas' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','fullViewFit'], onExit: null },
+        tooltip: { preferSide:'above' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','fullViewFit','zoomToTubFill'], onExit: null },
 
-      // step 1.2
+      // step 1.2  (was 2.1)
       { id: '1.2',
-        title: 'Tension equals pitch',
-        body: "This vertical slider on the left represents string tension. Drag it up to tighten the string and raise the pitch; drag down to loosen and lower it. The fundamental frequency updates in real time. The readout at the top of the rail shows the current pitch in Hz and as a note name.",
-        target: { kind:'id', id:'lr-tension-track' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
-
-      // step 1.3
-      { id: '1.3',
-        title: 'A map of the string',
-        body: "This diagram maps every harmonic node on the string -- the points where the string can be lightly touched to produce bell-like overtone tones. Understanding these nodes helps you find pitches, navigate keys, and develop technique. This tour will walk you through how the map works and what each control does.",
-        target: { kind:'canvas' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','zoomFit'], onExit: null },
-    ]},
-
-    // Section 2 -- The String Map  (v7.7.5, cleanup v7.7.13)
-    { key:'string_map', label:'The String Map', built:true, steps:[
-      // step 2.1
-      { id: '2.1',
         title: 'The string',
         body: "The vertical line is the string. The nut at the top is where the string meets the pole. The tub at the bottom is the bridge -- the resonating body. The full length between them is the speaking length: the part that vibrates when you play.",
         target: { kind:'id', id:'string-line', padX:14 },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','fullViewFit'], onExit: null },
 
-      // step 2.2
+      // step 1.3  (was 1.2)
+      { id: '1.3',
+        title: 'Tension equals pitch',
+        body: "This vertical slider on the left represents string tension. Drag it up to tighten the string and raise the pitch; drag down to loosen and lower it. The fundamental frequency updates in real time. The readout at the top of the rail shows the current pitch in Hz and as a note name.",
+        target: { kind:'id', id:'lr-tension-track' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
+    ]},
+
+    // Section 2 -- The String Map  (v7.7.5, cleanup v7.7.13, v7.7.18 reorg)
+    { key:'string_map', label:'The String Map', built:true, steps:[
+      // step 2.1  (was 1.3)
+      { id: '2.1',
+        title: 'A map of the string',
+        body: "This diagram maps every harmonic node on the string -- the points where the string can be lightly touched to produce bell-like overtone tones. Understanding these nodes helps you find pitches, navigate keys, and develop technique. This tour will walk you through how the map works and what each control does.",
+        target: { kind:'canvas' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','zoomFit'], onExit: null },
+
+      // step 2.2  (was 2.5)
       { id: '2.2',
+        title: 'Reading the columns',
+        body: "Left to right: str-deg is the string degree -- fixed by physics, never changes. home-deg shows how this node relates to your tonal center. key-deg is the chromatic degree within the home key. note is the letter name and octave. The remaining columns show fraction, ratio, interval description, and segment lengths.",
+        target: { kind:'group', ids:['col-strdeg','col-homedeg','col-keydeg','col-note','col-info','col-segs'], padY:6 },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','fullViewFit'], onExit: null },
+
+      // step 2.3  (was 2.2)
+      { id: '2.3',
         title: 'Harmonic nodes',
         body: "Each mark across the string is a harmonic node -- a point where the string can be gently touched while plucking to isolate a specific overtone. Larger circles are primary nodes (4ths, 5ths, octaves); smaller circles are secondary nodes. Tap any node row to hear its tone.",
         target: { kind:'svgPoint', svgX:480, svgY:489, r:24 },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','fullViewFit'], onExit: null },
 
-      // step 2.3
-      { id: '2.3',
+      // step 2.4  (was 2.3)
+      { id: '2.4',
         title: 'What the colors mean',
         body: "Purple marks the tonic -- the musical home note. Green marks nodes in the current key and mode. Coral / red marks chromatic nodes -- in pitch, but outside the key. Grey dashed marks fall between named pitches. Colors update live as you change key, mode, or home node. The full legend lives here in the view panel for reference.",
         target: { kind:'id', id:'vp-legend-section' },
         onEnter: ['closeCoF','closeSettingsPanel','closePlayTray','openViewToLegend'], onExit: null },
 
-      // step 2.4
-      { id: '2.4',
-        title: 'Current tone strip',
-        body: "When you tap a node, the strip at the top fills with its details: degree, note name, frequency, and segment lengths. Tapping a node plays the tone simultaneously. The strip is your running readout of whatever you just touched.",
-        target: { kind:'id', id:'new-tone-strip' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
-
-      // step 2.5
+      // step 2.5  (was 2.4; highlight now just the right half of the tone strip)
       { id: '2.5',
-        title: 'Reading the columns',
-        body: "Left to right: str-deg is the string degree -- fixed by physics, never changes. home-deg shows how this node relates to your tonal center. key-deg is the chromatic degree within the home key. note is the letter name and octave. The remaining columns show fraction, ratio, interval description, and segment lengths.",
-        target: { kind:'group', ids:['col-strdeg','col-homedeg','col-keydeg','col-note','col-info','col-segs'], padY:6 },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','fullViewFit'], onExit: null },
+        title: 'Current tone strip',
+        body: "When you tap a node, the right half of the strip at the top fills with its details: degree, note name, frequency, and segment lengths. Tapping a node plays the tone simultaneously. The strip is your running readout of whatever you just touched.",
+        target: { kind:'id', id:'nts-right' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
     ]},
 
-    // Section 3 -- Modes and the Bottom Rail  (POC, v7.7.2, cleanup v7.7.13)
+    // Section 3 -- Modes and the Bottom Rail  (POC v7.7.2, cleanup v7.7.13, v7.7.18 reorg)
     { key:'modes_rail', label:'Modes and the Bottom Rail', built:true, steps:[
       // step 3.1
       { id: '3.1',
@@ -10754,18 +10755,18 @@ const TOUR_CONTENT = {
         target: { kind:'id', id:'bottom-rail' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
-      // step 3.2
+      // step 3.2  (was 3.3)
       { id: '3.2',
-        title: 'Four ways to look at the string',
-        body: "Four mode buttons switch how the string is visualized: map (pitch map), nodes (the default rich view), nut (adjustable speaking length), and capo (two-segment playback). Each mode has its own context controls above. We'll walk through each mode in its own section.",
-        target: { kind:'group', ids:['br-mode-map','br-mode-nodes','br-mode-nut','br-mode-capo'] },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
-
-      // step 3.3
-      { id: '3.3',
         title: 'Mute',
         body: "The mute button silences all audio -- tap-to-play tones, tension-drag tone, playback sequences, everything. Useful if you want to explore the map quietly or if you're practicing without disturbing others.",
         target: { kind:'id', id:'br-mute-btn' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
+
+      // step 3.3  (was 3.2)
+      { id: '3.3',
+        title: 'Four ways to look at the string',
+        body: "Four mode buttons switch how the string is visualized: map (pitch map), nodes (the default rich view), nut (adjustable speaking length), and capo (two-segment playback). Each mode has its own context controls above. We'll walk through each mode in its own section.",
+        target: { kind:'group', ids:['br-mode-map','br-mode-nodes','br-mode-nut','br-mode-capo'] },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
       // step 3.4
@@ -10776,44 +10777,59 @@ const TOUR_CONTENT = {
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
     ]},
 
-    // Section 4 -- Musical Context  (v7.7.10, cleanup v7.7.13)
+    // Section 4 -- Musical Context  (v7.7.10, cleanup v7.7.13, v7.7.18 reorg)
     { key:'musical_ctx', label:'Musical Context', built:true, steps:[
-      // step 4.1
+      // step 4.1  NEW
       { id: '4.1',
-        title: 'Home key',
-        body: "The circle-of-fifths wheel peeks above the bottom rail. Tap to expand it, then spin to select a key. The center opens the mode/scale picker. All node colors and degree labels update immediately. Note names use proper enharmonic spelling -- B-flat, not A-sharp; E-flat, not D-sharp.",
-        target: { kind:'id', id:'cof-wrap' },
+        title: 'The current key',
+        body: "The current key chip shows your home key and mode. In the default setup that's G Ionian. Tapping this chip opens the circle-of-fifths wheel so you can change keys.",
+        target: { kind:'id', id:'chip-keyscale' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
+
+      // step 4.2  (was 4.1)
+      { id: '4.2',
+        title: 'The circle of fifths',
+        body: "With the wheel open, spin to select a key. All node colors and degree labels update immediately. Note names use proper enharmonic spelling -- B-flat, not A-sharp; E-flat, not D-sharp. The center opens the mode / scale picker, which we'll see next.",
+        target: { kind:'idClipped', id:'cof-wrap', clipBottom:'bottom-rail' },
         onEnter: ['closeSettingsPanel','closeViewPanel','closePlayTray','openCoF'], onExit: null },
 
-      // step 4.2
-      { id: '4.2',
+      // step 4.3  (was 4.2)
+      { id: '4.3',
         title: 'Mode / scale',
         body: "Tap the center of the wheel to open the mode picker. A mode is a scale built by treating a different degree of the major scale as home. Ionian is the standard major scale. Dorian and Mixolydian are common in folk and blues. Each mode highlights a different set of nodes as in-key.",
-        target: { kind:'id', id:'cof-wrap' },
+        target: { kind:'idClipped', id:'cof-wrap', clipBottom:'bottom-rail' },
         onEnter: ['closeSettingsPanel','closeViewPanel','closePlayTray','openCoF'], onExit: null },
 
-      // step 4.3
-      { id: '4.3',
+      // step 4.4  NEW
+      { id: '4.4',
+        title: 'Scale picker',
+        body: "With the mode picker open, pick any mode to apply it. The node colors update in real time as you preview each mode. Modes in the picker are arranged by brightness: from the darkest (Locrian) to the brightest (Lydian), with Ionian (major) in the middle.",
+        target: { kind:'id', id:'scale-picker' },
+        tooltip: { preferSide:'right' },
+        onEnter: ['closeSettingsPanel','closeViewPanel','closePlayTray','openCoF','openScalePicker'], onExit: 'closeScalePicker' },
+
+      // step 4.5  (was 4.3)
+      { id: '4.5',
         title: 'Home node',
         body: "The home node tells the diagram which string node functions as the musical 1 -- the tonal center. By default it's the fundamental. Setting it to, say, 5 means you're treating the fifth harmonic node as home, and all degree labels remap accordingly. This is how you explore modal playing from fixed positions on the string.",
         target: { kind:'id', id:'chip-home' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
-      // step 4.4
-      { id: '4.4',
-        title: 'Auto-tune',
-        body: "When auto-tune is on (the default), the app automatically recalculates string tension whenever you change key, mode, or home node -- keeping the home node aligned to the selected key root. Turn it off if you want to explore how the map shifts without the string re-tuning itself.",
-        target: { kind:'id', id:'lr-autotune-btn' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
-
-      // step 4.5
-      { id: '4.5',
+      // step 4.6  (was 4.5)
+      { id: '4.6',
         title: 'Tune button',
         body: "The tune button calculates the tension needed to bring the home node to the home key root and sets it. It plays the before and after pitches in sequence so you can hear the change. In pitch map mode this button behaves slightly differently -- see the pitch map section.",
         target: { kind:'id', id:'lr-tune-btn' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
+
+      // step 4.7  (was 4.4)
+      { id: '4.7',
+        title: 'Auto-tune',
+        body: "When auto-tune is on (the default), the app automatically recalculates string tension whenever you change key, mode, or home node -- keeping the home node aligned to the selected key root. Turn it off if you want to explore how the map shifts without the string re-tuning itself.",
+        target: { kind:'id', id:'lr-autotune-btn' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
     ]},
-    // Section 5 -- Playback  (v7.7.11, cleanup v7.7.13)
+    // Section 5 -- Playback  (v7.7.11, cleanup v7.7.13, v7.7.18 reorg)
     { key:'playback', label:'Playback', built:true, steps:[
       // step 5.1
       { id: '5.1',
@@ -10822,50 +10838,93 @@ const TOUR_CONTENT = {
         target: { kind:'id', id:'lr-play-btn' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
-      // step 5.2
+      // step 5.2  (PVW split from old 5.2)
       { id: '5.2',
-        title: 'Preview and persist',
-        body: "With the tray open, all notes in the current scale or chord are highlighted at low opacity. The PVW button toggles this preview. The PIN button enables persist mode: highlights stay visible after the tray closes, so you can see the full string while playing.",
+        title: 'Preview',
+        body: "With the tray open, notes in the current scale or chord are highlighted at low opacity across the full string. The PVW button toggles this preview.",
         target: { kind:'id', id:'pd-preview-btn' },
+        tooltip: { preferSide:'below' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null },
 
-      // step 5.3
+      // step 5.3  (string-highlight split from old 5.2)
       { id: '5.3',
+        title: 'Preview highlights',
+        body: "The shaded ring here shows the preview highlights between the upstring 6th and the midpoint (octave node). With PVW enabled, all in-scale nodes in the current range light up -- giving you a visual map of what's about to play.",
+        target: { kind:'svgRect', svgX:440, svgY:571, svgW:80, svgH:130 },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null },
+
+      // step 5.4  (was 5.3) Persist mode
+      { id: '5.4',
         title: 'Persist mode',
         body: "Long-press the play button on the left rail to toggle persist mode. In persist mode, a compact play button stays visible even when the tray is closed -- so you can see the full string while playing.",
         target: { kind:'id', id:'lr-play-btn' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
-      // step 5.4
-      { id: '5.4',
+      // step 5.5  (was 5.4) Register
+      { id: '5.5',
         title: 'Register',
         body: "Five buttons (0 through 4) select the octave of the tonal center pitch for playback. Button 0 is the lowest available octave, 4 the highest. Unavailable octaves are dimmed. The readout below shows the start and top note of the selected octave.",
         target: { kind:'id', id:'pd-reg-section' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null },
 
-      // step 5.5
-      { id: '5.5',
-        title: 'Sequence and direction',
-        body: "Choose between chord, one-octave scale, or full-string scale. Direction buttons control up, down, or both.",
-        target: { kind:'group', ids:['pd-chord-section','pd-scale-section','pd-dir-section'] },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null },
-
-      // step 5.6
+      // step 5.6  NEW: chord arp demo
       { id: '5.6',
-        title: 'Chord voices',
-        body: "The voices section selects which chord tones to include -- root, 3rd, 5th, 7th, and extensions. Use arp for arpeggiated playback or blk for block chord.",
-        target: { kind:'id', id:'pd-chord-voices' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null },
+        title: 'Chord: arpeggio',
+        body: "With chord + arp selected, playback spells out the chord one note at a time -- an arpeggio. Tap Play to hear the current chord arpeggiated up through the selected voices.",
+        target: { kind:'id', id:'pd-chord-section' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null,
+        action: { label:'Play arp', callback:'playDemoChordArp' } },
 
-      // step 5.7
+      // step 5.7  NEW: chord block demo
       { id: '5.7',
-        title: 'Start at note',
-        body: "Four start options: home node, open string fundamental, a specific scale degree (opens a picker), or a pinned node. The thumbtack option is dimmed when nothing is pinned.",
-        target: { kind:'id', id:'pd-start-section' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null },
+        title: 'Chord: block',
+        body: "With chord + blk selected, all chord tones sound simultaneously -- a block chord. Tap Play to hear it.",
+        target: { kind:'id', id:'pd-chord-section' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null,
+        action: { label:'Play block', callback:'playDemoChordBlock' } },
 
-      // step 5.8
+      // step 5.8  NEW: scale oct demo
       { id: '5.8',
+        title: 'Scale: one octave',
+        body: "With scale + oct selected, playback ascends through one full octave of the current scale. Tap Play to hear it.",
+        target: { kind:'id', id:'pd-scale-section' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null,
+        action: { label:'Play scale', callback:'playDemoScaleOneOct' } },
+
+      // step 5.9  (was 5.5) Direction
+      { id: '5.9',
+        title: 'Direction',
+        body: "The direction row controls whether the sequence ascends, descends, or plays up-and-back-down. Tap Play to hear an up-down arpeggio.",
+        target: { kind:'id', id:'pd-dir-section' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null,
+        action: { label:'Play up-down', callback:'playDemoArpUpDown' } },
+
+      // step 5.10  (was 5.6) Chord voices with 1-3-5 arp
+      { id: '5.10',
+        title: 'Chord voices',
+        body: "The voices section selects which chord tones to include -- root, 3rd, 5th, 7th, and extensions. The default triad is 1-3-5. Tap Play to hear the default arpeggio.",
+        target: { kind:'id', id:'pd-chord-voices' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null,
+        action: { label:'Play 1-3-5 arp', callback:'playDemoChordArp' } },
+
+      // step 5.11  NEW: 1-3-5-7 demo
+      { id: '5.11',
+        title: 'Adding the 7th',
+        body: "Adding voice 7 turns the triad into a seventh chord. The selected voices update the playback immediately. Tap Play to hear the four-note arpeggio.",
+        target: { kind:'id', id:'pd-chord-voices' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null,
+        action: { label:'Play 1-3-5-7 arp', callback:'playDemo1357Arp' } },
+
+      // step 5.12  (was 5.7) Start at note, preferSide:below, pin upstring-5
+      { id: '5.12',
+        title: 'Start at note',
+        body: "Four start options: home node, open string fundamental, a specific scale degree (opens a picker), or a pinned node. With the upstring 5 pinned, the thumbtack option becomes active and playback can begin from that node.",
+        target: { kind:'id', id:'pd-start-section' },
+        tooltip: { preferSide:'below' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray',{name:'pinFrac', args:{frac:2/3}}], onExit: null },
+
+      // step 5.13  (was 5.8) Pinning
+      { id: '5.13',
         title: 'Pinning',
         body: "Tap any node to pin it -- it stays highlighted even after your finger moves away. Tap the pinned node again to unpin. With start-at-pin selected, playback begins from the pinned node.",
         target: { kind:'canvas' },
@@ -10946,12 +11005,19 @@ const TOUR_CONTENT = {
         target: { kind:'id', id:'vp-legend-section' },
         onEnter: ['closeCoF','closeSettingsPanel','closePlayTray','openViewToLegend'], onExit: null },
 
-      // step 7.6
+      // step 7.6  (was part of old 7.6 group) - map mode section
       { id: '7.6',
-        title: 'Mode-specific options',
-        body: "The bottom of the view panel has two gated sections -- map and capo -- that are only active when you're in those modes. Map's section controls tiny labels for ET notes. Capo's section has show/hide toggles for on-string buttons. Sections grey out when not in the relevant mode.",
-        target: { kind:'group', ids:['vp-pm-sec','vp-capo-sec'] },
-        onEnter: ['closeCoF','closeSettingsPanel','closePlayTray','openViewPanel'], onExit: 'closeViewPanel' },
+        title: 'Map mode options',
+        body: "The map section controls are only active when you're in pitch map mode. Tiny labels toggle controls the small ET-note labels. Diatonic mode filters to in-key notes only.",
+        target: { kind:'id', id:'vp-pm-sec' },
+        onEnter: ['closeCoF','closeSettingsPanel','closePlayTray','setPitchmapView','openViewPanel'], onExit: null },
+
+      // step 7.7  (was part of old 7.6 group) - capo mode section
+      { id: '7.7',
+        title: 'Capo mode options',
+        body: "The capo section controls are only active in capo mode. Show/hide toggles control the on-string fan labels and tap targets for each interval position. The sidebar also gets capo-specific label and ruler controls while in capo mode.",
+        target: { kind:'id', id:'vp-capo-sec' },
+        onEnter: ['closeCoF','closeSettingsPanel','closePlayTray','setCapoView','openViewPanel'], onExit: 'closeViewPanel' },
     ]},
     // Section 8 -- Nut Mode  (v7.7.13)
     { key:'nut_mode', label:'Nut Mode', built:true, steps:[
@@ -10976,7 +11042,7 @@ const TOUR_CONTENT = {
         target: { kind:'id', id:'br-nut-preset-row' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setNutView'], onExit: null },
     ]},
-    // Section 9 -- Capo Mode  (v7.7.13)
+    // Section 9 -- Capo Mode  (v7.7.13, cleanup v7.7.13, v7.7.18 expanded)
     { key:'capo_mode', label:'Capo Mode', built:true, steps:[
       // step 9.1
       { id: '9.1',
@@ -10997,31 +11063,73 @@ const TOUR_CONTENT = {
         title: 'Segment nodes',
         body: "Each segment has its own set of harmonic nodes -- teal for the lower segment, amber for the upper. The seg/str toggle in the sidebar switches between labeling relative to the segment's own fundamental or the full string.",
         target: { kind:'id', id:'capo-sub-nodes' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView','zoomFit'], onExit: null },
+        tooltip: { preferSide:'right' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView','zoomFit','panCanvasLeft'], onExit: null },
 
-      // step 9.4
+      // step 9.4  NEW -- upper segment
       { id: '9.4',
+        title: 'Upper segment',
+        body: "The upper segment runs from the nut to the capo. Its amber nodes are the harmonics of that shorter vibrating length -- a higher pitch than the full string would produce.",
+        target: { kind:'svgRect', svgX:440, svgY:78, svgW:80, svgH:492 },
+        tooltip: { preferSide:'right' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView','panCanvasLeft'], onExit: null },
+
+      // step 9.5  NEW -- lower segment
+      { id: '9.5',
+        title: 'Lower segment',
+        body: "The lower segment runs from the capo to the tub. Its teal nodes are the harmonics of that shorter vibrating length. The pitch interval between the two segments is what gives capo mode its character.",
+        target: { kind:'svgRect', svgX:440, svgY:570, svgW:80, svgH:740 },
+        tooltip: { preferSide:'right' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView','panCanvasLeft'], onExit: null },
+
+      // step 9.6  NEW -- label controls cluster
+      { id: '9.6',
+        title: 'Label controls',
+        body: "The labels cluster in the sidebar controls which segment's node labels are shown on the canvas: upper only, lower only, or both. Handy when the canvas gets dense.",
+        target: { kind:'id', id:'capo-label-toggle' },
+        tooltip: { preferSide:'left' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView'], onExit: null },
+
+      // step 9.7  NEW -- tuning in capo mode
+      { id: '9.7',
+        title: 'Tuning in capo mode',
+        body: "The tune-to cluster in the sidebar lets you choose whether the tune button targets the lower segment (default) or the upper segment as the home-key root. Changing this rebalances which segment's fundamental aligns to the key.",
+        target: { kind:'id', id:'capo-root-toggle' },
+        tooltip: { preferSide:'left' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView'], onExit: null },
+
+      // step 9.8  NEW -- ruler in capo mode, pin upper seg deg 5
+      { id: '9.8',
+        title: 'Ruler in capo mode',
+        body: "With the upper segment's 5th pinned, the ruler shows the interval from that node to the upper fundamental and to the tonic. The sidebar ruler, fan lines, and readout all track the pinned node together.",
+        target: { kind:'id', id:'rrail' },
+        tooltip: { preferSide:'left' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView','pinCapoUpperFracFive'], onExit: null },
+
+      // step 9.9  (was 9.4)
+      { id: '9.9',
         title: 'Playback and pinning (single mode)',
         body: "In single-segment mode, tap a sub-node to hear its tone and pin it. The segment you last touched determines which segment is used for scale and chord playback. This lets you practice within one segment at a time.",
         target: { kind:'id', id:'capo-sub-nodes' },
+        tooltip: { preferSide:'right' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView','setTransCapoSingle'], onExit: null },
 
-      // step 9.5
-      { id: '9.5',
+      // step 9.10  (was 9.5)
+      { id: '9.10',
         title: 'Playing across the capo',
         body: "The capo play section at the bottom of the play tray lets you play across both segments at once. Select both to enable trans-capo mode: scales and chords span the full combined range, with each note assigned to whichever segment produces it. Notes below the upper fundamental play on the lower segment (teal), notes at or above play on the upper segment (amber). Switch back to single to play within one segment at a time.",
         target: { kind:'id', id:'pd-capo-section' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','setCapoView','openPlayTray'], onExit: null },
 
-      // step 9.6
-      { id: '9.6',
+      // step 9.11  (was 9.6)
+      { id: '9.11',
         title: 'Gaps and coincidences',
         body: "In trans-capo scale-full, the scale ascends continuously through the full diatonic range. Where both segments share a note (for example, the perfect fifth of the lower equals the fundamental of the upper), both highlight at once -- but only one tone plays. Where neither segment has a physical node at a scale tone, the scale still plays that note as a tension-only tone with no highlight. This is the 'scale is the notes, not the nodes' principle.",
         target: { kind:'id', id:'pd-capo-section' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','setCapoView','setTransCapoBoth','openPlayTray'], onExit: null },
 
-      // step 9.7
-      { id: '9.7',
+      // step 9.12  (was 9.7)
+      { id: '9.12',
         title: 'Segment vs full-string labels',
         body: "In segment view, degrees are labeled relative to each segment's own fundamental. In full-string view, all nodes are labeled relative to the home key, regardless of which segment they sit in. Segment view is better for learning what the capo produces; full-string view is better for improvising in a fixed key.",
         target: { kind:'id', id:'capo-ruler-persp' },
@@ -11286,6 +11394,161 @@ const TOUR_CALLBACKS = {
       if(typeof setTransCapoSegments === 'function') setTransCapoSegments('single');
     }catch(e){}
   },
+  // v7.7.18: Fill canvas with tub area only (tight crop, no padding).
+  zoomToTubFill: function(){
+    try{
+      if(typeof canvas==='undefined' || !canvas) return;
+      const ch = canvas.clientHeight;
+      // Tub occupies roughly svgY 1260-1410 in the main canvas (~150 svg
+      // units). Scale so that range fills the canvas height exactly.
+      const tubSpan = 150;
+      let s = ch / tubSpan;
+      if(typeof scMn!=='undefined' && s<scMn) s=scMn;
+      if(typeof scMx!=='undefined' && s>scMx) s=scMx;
+      sc = s;
+      const tubCenterY = 1335;
+      ty = ch/2 - tubCenterY*sc;
+      if(typeof smartPan==='function') smartPan();
+      if(typeof applyT==='function') applyT();
+    }catch(e){}
+  },
+  // Horizontal pan override: string sits left-of-default so more right-
+  // hand label space is visible. Used in Section 9 capo walkthrough where
+  // segment highlights and label cluster both need to be readable.
+  panCanvasLeft: function(){
+    try{
+      if(typeof canvas==='undefined' || !canvas) return;
+      const cw = canvas.clientWidth;
+      const leftOffset = (typeof _playPanelOpen!=='undefined' && _playPanelOpen && typeof _activeTrayW!=='undefined') ? _activeTrayW : 0;
+      const availW = cw - leftOffset;
+      // smartPan uses 0.27; use 0.15 to bias the string left.
+      tx = leftOffset + availW*0.15 - SX*sc;
+      if(typeof clamp==='function') clamp();
+      if(typeof applyT==='function') applyT();
+    }catch(e){}
+  },
+  // Pin upstring-5 on upper capo segment. Requires capo mode + capoNodeIdx
+  // already set. cf = 1 - phi is the capo's position along the full string.
+  // Upper segment frac for a given node-relative frac f: cf + f*(1-cf).
+  // For upstring-5 (f = 2/3), full-string frac = cf + (2/3)*(1-cf).
+  pinCapoUpperFracFive: function(){
+    try{
+      if(typeof nodeView==='undefined' || nodeView!=='capo') return;
+      if(typeof CAPO_NODES==='undefined' || typeof capoNodeIdx==='undefined') return;
+      const cn = CAPO_NODES[capoNodeIdx];
+      if(!cn) return;
+      const cf = 1 - cn.phi;
+      const nodeFrac = 2/3;
+      const fullFrac = cf + nodeFrac*(1-cf);
+      // Locate the NODES entry for upstring-5 (frac 2/3).
+      if(typeof NODES==='undefined') return;
+      const n = NODES.find(function(nn){ return Math.abs(nn.frac - nodeFrac) < 0.005; });
+      if(!n) return;
+      if(typeof _pinnedFrac==='undefined') return;
+      _pinnedFrac = fullFrac;
+      // Fire _showSubNode to paint ruler/label/strip.
+      if(typeof _showSubNode==='function' && typeof fundFreq==='function' && typeof TY!=='undefined' && typeof SPX!=='undefined'){
+        const fund = fundFreq();
+        _showSubNode(n, 'upper', n.ratio*(fund/(1-cf)), cf, TY - fullFrac*SPX);
+      }
+    }catch(e){}
+  },
+  // Chord arp: 1-3-5 up (same as playDemoGIonianArp but name-agnostic).
+  playDemoChordArp: function(){
+    try{
+      if(typeof setPlayChordStyle === 'function') setPlayChordStyle('arpeg');
+      if(typeof setPlayDir === 'function') setPlayDir('up');
+      if(typeof playVoiceSet !== 'undefined'){
+        playVoiceSet = {1:true, 3:true, 5:true, 7:false, 9:false, 11:false, 13:false};
+        const btnMap={13:'pdv-13th',11:'pdv-11th',9:'pdv-9th',7:'pdv-7th',5:'pdv-5',3:'pdv-3',1:'pdv-1'};
+        Object.keys(btnMap).forEach(function(k){
+          const b=document.getElementById(btnMap[k]);
+          if(b) b.classList.toggle('on', !!playVoiceSet[parseInt(k)]);
+        });
+      }
+      if(typeof playSeq !== 'undefined') playSeq = 'chord';
+      if(typeof updatePlayBtn === 'function') updatePlayBtn();
+      if(typeof playSequence === 'function') playSequence();
+    }catch(e){}
+  },
+  // Chord block: 1-3-5 simultaneously.
+  playDemoChordBlock: function(){
+    try{
+      if(typeof setPlayChordStyle === 'function') setPlayChordStyle('block');
+      if(typeof playVoiceSet !== 'undefined'){
+        playVoiceSet = {1:true, 3:true, 5:true, 7:false, 9:false, 11:false, 13:false};
+        const btnMap={13:'pdv-13th',11:'pdv-11th',9:'pdv-9th',7:'pdv-7th',5:'pdv-5',3:'pdv-3',1:'pdv-1'};
+        Object.keys(btnMap).forEach(function(k){
+          const b=document.getElementById(btnMap[k]);
+          if(b) b.classList.toggle('on', !!playVoiceSet[parseInt(k)]);
+        });
+      }
+      if(typeof playSeq !== 'undefined') playSeq = 'chord';
+      if(typeof updatePlayBtn === 'function') updatePlayBtn();
+      if(typeof playSequence === 'function') playSequence();
+    }catch(e){}
+  },
+  // One-octave scale up.
+  playDemoScaleOneOct: function(){
+    try{
+      if(typeof setPlayScaleStyle === 'function') setPlayScaleStyle('1oct');
+      if(typeof setPlayDir === 'function') setPlayDir('up');
+      if(typeof updatePlayBtn === 'function') updatePlayBtn();
+      if(typeof playSequence === 'function') playSequence();
+    }catch(e){}
+  },
+  // 1-3-5 arp up then down.
+  playDemoArpUpDown: function(){
+    try{
+      if(typeof setPlayChordStyle === 'function') setPlayChordStyle('arpeg');
+      if(typeof setPlayDir === 'function') setPlayDir('updown');
+      if(typeof playVoiceSet !== 'undefined'){
+        playVoiceSet = {1:true, 3:true, 5:true, 7:false, 9:false, 11:false, 13:false};
+        const btnMap={13:'pdv-13th',11:'pdv-11th',9:'pdv-9th',7:'pdv-7th',5:'pdv-5',3:'pdv-3',1:'pdv-1'};
+        Object.keys(btnMap).forEach(function(k){
+          const b=document.getElementById(btnMap[k]);
+          if(b) b.classList.toggle('on', !!playVoiceSet[parseInt(k)]);
+        });
+      }
+      if(typeof playSeq !== 'undefined') playSeq = 'chord';
+      if(typeof updatePlayBtn === 'function') updatePlayBtn();
+      if(typeof playSequence === 'function') playSequence();
+    }catch(e){}
+  },
+  // 1-3-5-7 arp up.
+  playDemo1357Arp: function(){
+    try{
+      if(typeof setPlayChordStyle === 'function') setPlayChordStyle('arpeg');
+      if(typeof setPlayDir === 'function') setPlayDir('up');
+      if(typeof playVoiceSet !== 'undefined'){
+        playVoiceSet = {1:true, 3:true, 5:true, 7:true, 9:false, 11:false, 13:false};
+        const btnMap={13:'pdv-13th',11:'pdv-11th',9:'pdv-9th',7:'pdv-7th',5:'pdv-5',3:'pdv-3',1:'pdv-1'};
+        Object.keys(btnMap).forEach(function(k){
+          const b=document.getElementById(btnMap[k]);
+          if(b) b.classList.toggle('on', !!playVoiceSet[parseInt(k)]);
+        });
+      }
+      if(typeof playSeq !== 'undefined') playSeq = 'chord';
+      if(typeof updatePlayBtn === 'function') updatePlayBtn();
+      if(typeof playSequence === 'function') playSequence();
+    }catch(e){}
+  },
+  // Scale picker open/close (idempotent). openModePicker is a toggle, so
+  // we check the visible state before calling to avoid toggling off.
+  openScalePicker: function(){
+    try{
+      const sp=document.getElementById('scale-picker');
+      if(!sp) return;
+      if(!sp.classList.contains('visible')){
+        if(typeof openModePicker==='function') openModePicker();
+      }
+    }catch(e){}
+  },
+  closeScalePicker: function(){
+    try{
+      if(typeof window.closeScalePicker==='function') window.closeScalePicker();
+    }catch(e){}
+  },
   // Named zoom-to-region callbacks. Add more by copying the pattern.
   // svgCenterY + svgHeightVisible are in SVG coordinate units
   // (canvas viewBox 0 0 1380 1440). Nut sits at y~78, tub at y~1350,
@@ -11352,6 +11615,45 @@ function _tourResolveTarget(target){
       const r=el.getBoundingClientRect();
       rect = { top:r.top, left:r.left, width:r.width, height:r.height };
     }
+  } else if(target.kind==='idClipped'){
+    // Start from an id's bounding rect, then clip its edges based on
+    // other elements' bounds. Use 'clipTop' / 'clipBottom' / 'clipLeft' /
+    // 'clipRight' as IDs of elements whose respective edges bound this
+    // target. e.g. clipBottom:'bottom-rail' means the target's bottom
+    // can't go past the top of #bottom-rail.
+    const el=document.getElementById(target.id);
+    if(el){
+      try{ if(typeof el.scrollIntoView==='function') el.scrollIntoView({block:'nearest', inline:'nearest'}); }catch(e){}
+      const r=el.getBoundingClientRect();
+      let top=r.top, left=r.left, right=r.right, bottom=r.bottom;
+      if(target.clipTop){
+        const c=document.getElementById(target.clipTop);
+        if(c){ const cr=c.getBoundingClientRect(); top = Math.max(top, cr.bottom); }
+      }
+      if(target.clipBottom){
+        const c=document.getElementById(target.clipBottom);
+        if(c){ const cr=c.getBoundingClientRect(); bottom = Math.min(bottom, cr.top); }
+      }
+      if(target.clipLeft){
+        const c=document.getElementById(target.clipLeft);
+        if(c){ const cr=c.getBoundingClientRect(); left = Math.max(left, cr.right); }
+      }
+      if(target.clipRight){
+        const c=document.getElementById(target.clipRight);
+        if(c){ const cr=c.getBoundingClientRect(); right = Math.min(right, cr.left); }
+      }
+      const width = right-left;
+      const height = bottom-top;
+      if(width>0 && height>0){
+        rect = { top, left, width, height };
+      }
+    }
+  } else if(target.kind==='rect'){
+    // Raw viewport rect. Use sparingly when you need an exact region.
+    if(typeof target.top==='number' && typeof target.left==='number' &&
+       typeof target.width==='number' && typeof target.height==='number'){
+      rect = { top:target.top, left:target.left, width:target.width, height:target.height };
+    }
   } else if(target.kind==='svgPoint'){
     // Target an SVG coordinate (svgX, svgY) with a radius r in SVG units.
     //
@@ -11416,6 +11718,42 @@ function _tourResolveTarget(target){
             screenRect: { top:top, left:left, width:width, height:height }
           };
         }
+        if(width>0 && height>0){
+          rect = { top, left, width, height };
+        }
+      }
+    }
+  } else if(target.kind==='svgRect'){
+    // Target a rectangular region in SVG coordinates. Same bbox+viewBox
+    // mapping as svgPoint. Use when you want a tall-narrow or wide-short
+    // spotlight that doesn't map to any single element.
+    const svg = document.getElementById(target.svgId || 'main-svg');
+    if(svg){
+      const bb = svg.getBoundingClientRect();
+      let vbX=0, vbY=0, vbW=0, vbH=0;
+      const vbAttr = svg.getAttribute('viewBox');
+      if(vbAttr){
+        const parts = vbAttr.split(/[ ,]+/).map(parseFloat);
+        if(parts.length===4 && parts.every(function(n){return isFinite(n);})){
+          vbX=parts[0]; vbY=parts[1]; vbW=parts[2]; vbH=parts[3];
+        }
+      }
+      if(!vbW || !vbH){
+        vbW = parseFloat(svg.getAttribute('width'))||0;
+        vbH = parseFloat(svg.getAttribute('height'))||0;
+      }
+      if(bb.width>0 && bb.height>0 && vbW>0 && vbH>0 &&
+         typeof target.svgX==='number' && typeof target.svgY==='number' &&
+         typeof target.svgW==='number' && typeof target.svgH==='number'){
+        const scale = Math.min(bb.width/vbW, bb.height/vbH);
+        const renderedW = vbW*scale;
+        const renderedH = vbH*scale;
+        const offX = bb.left + (bb.width - renderedW)/2;
+        const offY = bb.top  + (bb.height - renderedH)/2;
+        const left = offX + (target.svgX - vbX)*scale;
+        const top  = offY + (target.svgY - vbY)*scale;
+        const width = target.svgW*scale;
+        const height = target.svgH*scale;
         if(width>0 && height>0){
           rect = { top, left, width, height };
         }
