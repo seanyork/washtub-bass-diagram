@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.7.19</title>
+<title>Washtub Bass String Map · v7.7.20</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -1618,7 +1618,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.7.19';
+const VERSION='v7.7.20';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -11987,23 +11987,45 @@ function _tourShowStep(direction){
   // forward -- so prev walks backward past missing targets instead of
   // silently re-rendering the current step. Falling off either end
   // returns to the section menu.
+  //
+  // v7.7.20: onEnter callbacks often switch mode or open a panel, both
+  // of which need a layout cycle before the new DOM target has a valid
+  // bounding rect. Without deferring, _tourResolveTarget reads a 0x0
+  // rect and the engine auto-skips the step. Defer the resolve+paint
+  // across two requestAnimationFrame callbacks (one to flush style,
+  // one to flush layout) so rects are always final when read.
   const dir = (direction === -1) ? -1 : 1;
   const sec=TOUR_CONTENT.sections[_tourState.sectionIdx];
   if(!sec){ _tourShowMenu(); return; }
   const step=sec.steps[_tourState.stepIdx];
   if(!step){ _tourShowMenu(); return; }
   _tourRunCallback(step.onEnter);
-  const rect=_tourResolveTarget(step.target);
-  if(!rect){
-    if(window.console && console.warn) console.warn('[tour] target missing, skipping step:', step.id);
-    _tourState.stepIdx += dir;
-    if(_tourState.stepIdx < 0 || _tourState.stepIdx >= sec.steps.length){ _tourShowMenu(); return; }
-    _tourShowStep(dir);
-    return;
+  // Snapshot step state to guard against the user advancing/exiting
+  // between the scheduling and the rAF fire.
+  const expectedSectionIdx = _tourState.sectionIdx;
+  const expectedStepIdx    = _tourState.stepIdx;
+  const _runPaint = function(){
+    // If the user moved on, abandon this delayed paint.
+    if(!_tourState.active) return;
+    if(_tourState.sectionIdx !== expectedSectionIdx) return;
+    if(_tourState.stepIdx    !== expectedStepIdx) return;
+    const rect=_tourResolveTarget(step.target);
+    if(!rect){
+      if(window.console && console.warn) console.warn('[tour] target missing, skipping step:', step.id);
+      _tourState.stepIdx += dir;
+      if(_tourState.stepIdx < 0 || _tourState.stepIdx >= sec.steps.length){ _tourShowMenu(); return; }
+      _tourShowStep(dir);
+      return;
+    }
+    _tourSetSpotlight(rect);
+    _tourPaintCrosshair();
+    _tourSetTooltip(step, rect);
+  };
+  if(typeof requestAnimationFrame==='function'){
+    requestAnimationFrame(function(){ requestAnimationFrame(_runPaint); });
+  } else {
+    setTimeout(_runPaint, 32);
   }
-  _tourSetSpotlight(rect);
-  _tourPaintCrosshair();
-  _tourSetTooltip(step, rect);
 }
 
 function _tourSetTooltip(step, rect){
@@ -12301,7 +12323,38 @@ function _tourFlagStep(step){
     const t=document.getElementById('tour-flag-toast');
     if(!t) return;
     t.textContent=msg;
-    t.style.display='block';
+    // v7.7.20: anchor toast directly under the flag button so it never
+    // drifts around the screen. Previously position:fixed with
+    // bottom:120px was unrelated to the flag button's actual location,
+    // so the toast appeared anywhere from above/below/beside the tooltip
+    // depending on the step's tooltip placement.
+    const fb = document.getElementById('tour-flag-btn');
+    if(fb){
+      const r = fb.getBoundingClientRect();
+      // Render hidden first to measure, then position
+      t.style.left = '-9999px';
+      t.style.bottom = 'auto';
+      t.style.transform = 'none';
+      t.style.display = 'block';
+      const tr = t.getBoundingClientRect();
+      // Center horizontally on the flag button; 6px below it
+      let left = r.left + r.width/2 - tr.width/2;
+      let top  = r.bottom + 6;
+      const vw = window.innerWidth, vh = window.innerHeight, m = 6;
+      if(left + tr.width > vw - m) left = vw - tr.width - m;
+      if(left < m) left = m;
+      if(top + tr.height > vh - m) top = r.top - tr.height - 6; // flip above if no room below
+      if(top < m) top = m;
+      t.style.left = left+'px';
+      t.style.top  = top+'px';
+    } else {
+      // Fallback: centered near bottom of viewport
+      t.style.left = '50%';
+      t.style.top  = 'auto';
+      t.style.bottom = '120px';
+      t.style.transform = 'translateX(-50%)';
+      t.style.display = 'block';
+    }
     setTimeout(function(){ t.style.display='none'; }, 1400);
   };
   if(navigator && navigator.clipboard && navigator.clipboard.writeText){
