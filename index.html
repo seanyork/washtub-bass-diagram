@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Washtub Bass String Map · v7.7.21</title>
+<title>Washtub Bass String Map · v7.7.27</title>
 <style>
 *{box-sizing:border-box;}
 html{background:#1a1a1a;}
@@ -418,6 +418,10 @@ input[type=range]{width:110px;cursor:pointer;}
 #br-top .mute-btn.muted{background:#FAECE7;border-color:#993C1D;}
 @media(prefers-color-scheme:dark){#br-top .mute-btn{background:#333;border-color:rgba(255,255,255,0.15);}#br-top .mute-btn.muted{background:rgba(153,60,29,0.25);}}
 #br-top .b{flex:1;min-width:0;background:#fff;border:0.5px solid rgba(128,128,128,0.25);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:#1a1a1a;font-weight:500;gap:1px;padding:2px;cursor:pointer;white-space:nowrap;}
+/* v7.7.23: icon-only fixed-width action buttons (settings, view, help).
+   Replace text labels with a single glyph, match mute-btn footprint. */
+#br-top .b.ico{flex:0 0 32px;width:32px;padding:0;}
+#br-top .b.ico .ic{font-size:18px;display:flex;align-items:center;justify-content:center;}
 @media(prefers-color-scheme:dark){#br-top .b{background:#333;border-color:rgba(255,255,255,0.15);color:#e0e0e0;}}
 #br-top .b.mode.on{border-color:#533AB7;background:rgba(83,58,183,0.10);color:#533AB7;font-weight:700;}
 #br-top .b.mode.capo-on{border-color:#C8821A;background:rgba(200,130,26,0.12);color:#C8821A;font-weight:700;}
@@ -710,6 +714,20 @@ input[type=range]{width:110px;cursor:pointer;}
 #tour-overlay.active{display:block;}
 #tour-dim-catcher{position:absolute;inset:0;pointer-events:auto;background:transparent;}
 #tour-spotlight{position:fixed;pointer-events:none;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,0.5);outline:2px solid #AFA9EC;outline-offset:0;top:-9999px;left:-9999px;width:1px;height:1px;}
+/* v7.7.26: tour pointing hand. Sits above dim-catcher. transform-origin
+   set to the SVG fingertip coord (40,8 in the 48x48 viewBox = 83.3%,
+   16.7%) so rotation pivots there and the fingertip stays planted on
+   the target. Smooth travel between steps via transition. Wiggle is a
+   subtle in-place loop applied to the inner SVG so it doesn't fight
+   the container's transform. */
+#tour-hand{position:fixed;width:48px;height:48px;pointer-events:none;z-index:0;transform-origin:83.3% 16.7%;transition:top 0.32s ease-out,left 0.32s ease-out,transform 0.32s ease-out,opacity 0.22s ease-out;display:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.3));opacity:0;}
+#tour-hand.visible{display:block;opacity:1;}
+#tour-hand .hand-inner{display:block;}
+#tour-hand.wiggle .hand-inner{animation:tour-hand-wiggle 1.8s ease-in-out infinite;transform-origin:83.3% 16.7%;}
+@keyframes tour-hand-wiggle{0%,100%{transform:translate(0,0);}50%{transform:translate(-3px,3px);}}
+@media(prefers-color-scheme:dark){
+  #tour-hand g{fill:#1a1a1a !important;stroke:#AFA9EC !important;}
+}
 #tour-tooltip{display:none;position:fixed;pointer-events:auto;background:#fff;border:1px solid #533AB7;border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,0.28);padding:12px 14px;max-width:340px;font-size:13px;color:#1a1a1a;z-index:1;overflow-y:auto;}
 #tour-tooltip .tour-tip-head{display:flex;align-items:center;gap:8px;font-size:10px;color:#7a75a8;margin-bottom:6px;}
 #tour-tooltip .tour-back-link{cursor:pointer;color:#533AB7;text-decoration:underline;}
@@ -736,6 +754,17 @@ input[type=range]{width:110px;cursor:pointer;}
 #tour-menu .tour-menu-num{font-family:monospace;font-size:11px;color:#7a75a8;min-width:22px;}
 #tour-menu .tour-menu-lbl{font-weight:500;flex:1;}
 #tour-menu .tour-menu-sub{font-size:10px;color:#bbb;font-style:italic;}
+/* v7.7.24: "Full readme" row lives at the bottom of the section list.
+   Styled distinct from section rows -- a thin divider above plus a
+   purple link-like label to signal it's a different kind of action.
+   Tapping it exits the tour and opens the readme panel. */
+#tour-menu .tour-menu-readme{margin-top:6px;padding-top:10px;border-top:0.5px solid rgba(128,128,128,0.25);display:flex;align-items:center;gap:6px;padding-left:10px;padding-right:10px;padding-bottom:8px;border-radius:0 0 5px 5px;cursor:pointer;color:#533AB7;font-weight:600;}
+#tour-menu .tour-menu-readme:hover{background:rgba(83,58,183,0.08);}
+#tour-menu .tour-menu-readme .ic{font-size:14px;}
+@media(prefers-color-scheme:dark){
+  #tour-menu .tour-menu-readme{color:#AFA9EC;border-top-color:rgba(255,255,255,0.15);}
+  #tour-menu .tour-menu-readme:hover{background:rgba(175,169,236,0.12);}
+}
 #tour-menu .tour-menu-foot{display:flex;justify-content:flex-end;margin-top:10px;}
 #tour-menu .tour-menu-exit{padding:6px 12px;border:0.5px solid rgba(128,128,128,0.3);border-radius:4px;background:#fff;color:#1a1a1a;font-size:12px;cursor:pointer;}
 #tour-flag-toast{display:none;position:fixed;left:50%;bottom:120px;transform:translateX(-50%);z-index:153;background:rgba(83,58,183,0.92);color:#fff;padding:6px 14px;border-radius:4px;font-size:12px;pointer-events:none;}
@@ -1230,10 +1259,6 @@ input[type=range]{width:110px;cursor:pointer;}
         </div>
       </div>
     </div>
-    <div class="sp-foot">
-      <div class="foot-btn primary" id="sp-foot-tour" onclick="_spOpenTour()"><span class="tour-main">take tour</span><span class="tour-sub">(coming soon)</span></div>
-      <div class="foot-btn" id="sp-foot-readme" onclick="_spOpenReadme()">readme</div>
-    </div>
   </div>
 
   <!-- v7.6 Phase 4 view panel — zoom / nodes / viz toggles / gated map & capo
@@ -1361,8 +1386,9 @@ input[type=range]{width:110px;cursor:pointer;}
       <div class="b mode" data-mode="nodes" id="br-mode-nodes" onclick="_handleModeClick('nodes')">nodes</div>
       <div class="b mode" data-mode="nut"   id="br-mode-nut"   onclick="_handleModeClick('nut')">nut</div>
       <div class="b mode" data-mode="capo"  id="br-mode-capo"  onclick="_handleModeClick('capo')">capo</div>
-      <div class="b act"  id="br-settings-btn" onclick="_toggleSettingsPanel()"><span class="ic">&#9881;</span>settings</div>
-      <div class="b act"  id="br-view-btn"     onclick="_toggleViewPanel()"><span class="ic">&#10033;</span>view</div>
+      <div class="b act ico" id="br-settings-btn" onclick="_toggleSettingsPanel()" title="Settings"><span class="ic">&#9881;</span></div>
+      <div class="b act ico" id="br-view-btn"     onclick="_toggleViewPanel()"     title="View"><span class="ic">&#128065;</span></div>
+      <div class="b act ico" id="br-help-btn"     onclick="openTour()"             title="Tour"><span class="ic">?</span></div>
     </div>
   </div>
 
@@ -1390,11 +1416,30 @@ input[type=range]{width:110px;cursor:pointer;}
   <div id="tour-overlay">
     <div id="tour-dim-catcher"></div>
     <div id="tour-spotlight"></div>
+    <!-- v7.7.26: pointing hand. Floats above dim-catcher to call out a
+         specific UI element. Pure visual; pointer-events:none. Position
+         and rotation set by engine per step's pointAt field. -->
+    <div id="tour-hand" aria-hidden="true">
+      <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" class="hand-inner" width="48" height="48">
+        <g fill="#fff" stroke="#533AB7" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">
+          <!-- fist / palm body -->
+          <rect x="6" y="22" width="22" height="22" rx="6" ry="6"/>
+          <!-- thumb bump on palm top -->
+          <path d="M 22 22 Q 28 16 30 22 L 30 26 L 22 26 Z"/>
+          <!-- index finger pointing NE; fingertip at (40,8) which is the pivot -->
+          <path d="M 40 8 L 44 12 L 24 32 L 16 28 L 18 22 Z"/>
+        </g>
+      </svg>
+    </div>
     <div id="tour-tooltip"></div>
     <div id="tour-menu">
       <div class="tour-menu-head">take a tour</div>
       <div class="tour-menu-sub-head">pick a section to walk through</div>
       <div class="tour-menu-list"></div>
+      <div class="tour-menu-readme" id="tour-menu-readme-btn">
+        <span class="ic">&#9776;</span>
+        <span>Full readme</span>
+      </div>
       <div class="tour-menu-foot">
         <button class="tour-menu-exit" id="tour-menu-exit-btn">exit tour</button>
       </div>
@@ -1563,6 +1608,11 @@ input[type=range]{width:110px;cursor:pointer;}
       <circle cx="85" cy="85" r="34" fill="rgba(255,255,255,0.45)"/>
     </svg>
     <div id="cof-dot"></div>
+    <!-- v7.7.25: invisible target div for tour spotlighting the inner mode
+         picker. Centered on the CoF wheel (85,85) with size matching the
+         picker's visible radius (~70px). Always present; pointer-events
+         pass through. Used by tour step 4.3 as target id. -->
+    <div id="cof-mode-target" style="position:absolute;left:50px;top:50px;width:70px;height:70px;pointer-events:none;"></div>
   </div>
 
   <!-- README slideup panel -->
@@ -1618,7 +1668,7 @@ const _disableFanOverlay=_isIframe&&!_isCoarsePointer;
 // Single source of truth for the version string.
 // Every tertiary build updates this one line.
 // Displayed in: title, splash panel chip (added in v7.6.0 Phase 6).
-const VERSION='v7.7.21';
+const VERSION='v7.7.27';
 
 // ══════════════════════════════════════════════════════════════════
 // v7.6 UI REFRESH — PHASE 1 JS HELPERS
@@ -3973,8 +4023,23 @@ function _sbDotFrac(_H, _dotY){
 }
 
 
+// v7.7.22 (#37): In pitch map mode, pinned ET notes use a synthetic
+// node (built locally at pin time) rather than setting _activeNode.
+// So when applyT() fires on zoom/pan, the wrapped updateVP() below
+// saw _activeNode=null and redrew the ruler with frac=null, clearing
+// the fan overlay and shade polygon. Fix: cache the last map-mode pin
+// node here so updateVP() can redraw with the correct frac. Cache is
+// invalidated by _clearPin() / unpinAndClear() / mode changes.
+let _pmLastPinNode=null;
+
 function updateVP(){
   try{
+    // Map-mode pins live in _pmLastPinNode (set by the map-mode pin path)
+    // because _activeNode remains null for synthetic ET nodes.
+    if(nodeView==='pitchmap' && _pinnedFrac!==null && _pmLastPinNode){
+      drawRulerSVG(_pmLastPinNode);
+      return;
+    }
     if(_activeNode) drawRulerSVG(_activeNode);
     else drawRulerSVG(null);
   }catch(e){}
@@ -4013,11 +4078,13 @@ clearStrip = function(){
 // Clear pin on structural changes (key/mode/homeNode/string length)
 function _clearPin(){
   if(_pinnedFrac!==null){ _pinnedFrac=null; _lastStripArgs=null; clearViz(); }
+  _pmLastPinNode=null; // v7.7.22: invalidate map-mode pin cache
   _syncRoot(playRoot);
 }
 
 function unpinAndClear(){
   _pinnedFrac=null; _lastStripArgs=null;
+  _pmLastPinNode=null; // v7.7.22: invalidate map-mode pin cache
   _origClearStrip_step5(); hideLabel();
   clearViz();
   if(playRoot==='pinned'){ playRoot='homenode'; }
@@ -8329,6 +8396,8 @@ function _renderPitchMapOverlay(){
           while(_pb){_pc=_pb;_pb=_pa%_pb;_pa=_pc;}
           var _pmSynNode={frac:_pmFrac,ratio:_pmRatio,label:_pmLabel,harm:_pmHarm,primary:false,tonic:false,
             fs:(_pn/_pa)+'/'+(_pd/_pa),rs:(Math.round(_pmRatio*100)/100)+':1',desc:'ET note'};
+          // v7.7.22: cache so updateVP() can redraw ruler on zoom/pan
+          _pmLastPinNode=_pmSynNode;
           drawRulerSVG(_pmSynNode);
         }catch(_e){}
         try{
@@ -10693,124 +10762,208 @@ function _tourDevMode(){
 // the menu as "(not yet built)" and are inert.
 const TOUR_CONTENT = {
   sections: [
-    // Section 1 -- The Instrument  (v7.7.10, cleanup v7.7.13, v7.7.18 reorg)
-    { key:'instrument', label:'The Instrument', built:true, steps:[
-      // step 1.1
+    // Section 1 -- Navigation  (v7.7.25 reorg: was Section 3 modes_rail,
+    // promoted to Section 1 and renamed; key kept stable for memory.)
+    { key:'modes_rail', label:'Navigation', built:true, steps:[
+      // step 1.1  (was 3.1)
       { id: '1.1',
-        title: 'The washtub bass',
-        body: "A washtub bass is a one-string instrument made from an inverted metal tub, a wooden pole, and a single length of string or cable. The player plucks the string while varying its tension by leaning the pole -- more tension raises the pitch, less tension lowers it. It's a deeply physical instrument: no frets, no keys, just your hands and your ear.",
-        target: { kind:'canvas' },
-        tooltip: { preferSide:'above' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','fullViewFit','zoomToTubFill'], onExit: null },
-
-      // step 1.2  (was 2.1)
-      { id: '1.2',
-        title: 'The string',
-        body: "The vertical line is the string. The nut at the top is where the string meets the pole. The tub at the bottom is the bridge -- the resonating body. The full length between them is the speaking length: the part that vibrates when you play.",
-        target: { kind:'id', id:'string-line', padX:14 },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','fullViewFit'], onExit: null },
-
-      // step 1.3  (was 1.2)
-      { id: '1.3',
-        title: 'Tension equals pitch',
-        body: "This vertical slider on the left represents string tension. Drag it up to tighten the string and raise the pitch; drag down to loosen and lower it. The fundamental frequency updates in real time. The readout at the top of the rail shows the current pitch in Hz and as a note name.",
-        target: { kind:'id', id:'lr-tension-track' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
-    ]},
-
-    // Section 2 -- The String Map  (v7.7.5, cleanup v7.7.13, v7.7.18 reorg)
-    { key:'string_map', label:'The String Map', built:true, steps:[
-      // step 2.1  (was 1.3)
-      { id: '2.1',
-        title: 'A map of the string',
-        body: "This diagram maps every harmonic node on the string -- the points where the string can be lightly touched to produce bell-like overtone tones. Understanding these nodes helps you find pitches, navigate keys, and develop technique. This tour will walk you through how the map works and what each control does.",
-        target: { kind:'canvas' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','zoomFit'], onExit: null },
-
-      // step 2.2  (was 2.5)
-      { id: '2.2',
-        title: 'Reading the columns',
-        body: "Left to right: str-deg is the string degree -- fixed by physics, never changes. home-deg shows how this node relates to your tonal center. key-deg is the chromatic degree within the home key. note is the letter name and octave. The remaining columns show fraction, ratio, interval description, and segment lengths.",
-        target: { kind:'group', ids:['col-strdeg','col-homedeg','col-keydeg','col-note','col-info','col-segs'], padY:6 },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','fullViewFit'], onExit: null },
-
-      // step 2.3  (was 2.2)
-      { id: '2.3',
-        title: 'Harmonic nodes',
-        body: "Each mark across the string is a harmonic node -- a point where the string can be gently touched while plucking to isolate a specific overtone. Larger circles are primary nodes (4ths, 5ths, octaves); smaller circles are secondary nodes. Tap any node row to hear its tone.",
-        target: { kind:'svgPoint', svgX:480, svgY:489, r:24 },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','fullViewFit'], onExit: null },
-
-      // step 2.4  (was 2.3)
-      { id: '2.4',
-        title: 'What the colors mean',
-        body: "Purple marks the tonic -- the musical home note. Green marks nodes in the current key and mode. Coral / red marks chromatic nodes -- in pitch, but outside the key. Grey dashed marks fall between named pitches. Colors update live as you change key, mode, or home node. The full legend lives here in the view panel for reference.",
-        target: { kind:'id', id:'vp-legend-section' },
-        onEnter: ['closeCoF','closeSettingsPanel','closePlayTray','openViewToLegend'], onExit: null },
-
-      // step 2.5  (was 2.4; highlight now just the right half of the tone strip)
-      { id: '2.5',
-        title: 'Current tone strip',
-        body: "When you tap a node, the right half of the strip at the top fills with its details: degree, note name, frequency, and segment lengths. Tapping a node plays the tone simultaneously. The strip is your running readout of whatever you just touched.",
-        target: { kind:'id', id:'nts-right' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
-    ]},
-
-    // Section 3 -- Modes and the Bottom Rail  (POC v7.7.2, cleanup v7.7.13, v7.7.18 reorg)
-    { key:'modes_rail', label:'Modes and the Bottom Rail', built:true, steps:[
-      // step 3.1
-      { id: '3.1',
         title: 'The bottom rail',
-        body: "The bottom rail is your main control hub. The upper area (context) shows controls for the current mode. The lower row of buttons switches modes and opens the settings and view panels. The leftmost button is mute; the rightmost two are settings and view.",
+        body: "The bottom rail is your main control hub. The upper area (context) shows controls for the current mode. The lower row of buttons switches modes and opens the settings, view, and tour panels. The leftmost button is mute; the rightmost three are settings (gear), view (eye), and tour (?).",
         target: { kind:'id', id:'bottom-rail' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
-      // step 3.2  (was 3.3)
-      { id: '3.2',
+      // step 1.2  (was 3.2)
+      { id: '1.2',
         title: 'Mute',
         body: "The mute button silences all audio -- tap-to-play tones, tension-drag tone, playback sequences, everything. Useful if you want to explore the map quietly or if you're practicing without disturbing others.",
         target: { kind:'id', id:'br-mute-btn' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
-      // step 3.3  (was 3.2)
-      { id: '3.3',
+      // step 1.3  (was 3.3)
+      { id: '1.3',
         title: 'Four ways to look at the string',
         body: "Four mode buttons switch how the string is visualized: map (pitch map), nodes (the default rich view), nut (adjustable speaking length), and capo (two-segment playback). Each mode has its own context controls above. We'll walk through each mode in its own section.",
         target: { kind:'group', ids:['br-mode-map','br-mode-nodes','br-mode-nut','br-mode-capo'] },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
-      // step 3.4
-      { id: '3.4',
-        title: 'Settings and view',
-        body: "The settings panel holds audio and physics editing: waveform, duration, volume, string length, tension, density, saved defaults. The view panel holds display toggles: zoom, which nodes to show, visualization on/off, the legend, and mode-specific display options. Settings is for editing; view is for looking.",
-        target: { kind:'group', ids:['br-settings-btn','br-view-btn'] },
+      // step 1.4  (was 3.4; text now mentions tour button)
+      { id: '1.4',
+        title: 'Settings, view, and tour',
+        body: "The settings panel (gear) holds audio and physics editing: waveform, duration, volume, string length, tension, density, saved defaults. The view panel (eye) holds display toggles: zoom, which nodes to show, visualization on/off, the legend, and mode-specific display options. The tour button (?) launches this tour any time -- you can pick up where you left off or start a different section.",
+        target: { kind:'group', ids:['br-settings-btn','br-view-btn','br-help-btn'] },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
     ]},
 
-    // Section 4 -- Musical Context  (v7.7.10, cleanup v7.7.13, v7.7.18 reorg)
+    // Section 2 -- The Instrument  (v7.7.10, cleanup v7.7.13, v7.7.25 expanded)
+    { key:'instrument', label:'The Instrument', built:true, steps:[
+      // step 2.1  (was 1.1; closeRuler + horizontal-fill on tub)
+      { id: '2.1',
+        title: 'The washtub bass',
+        body: "A washtub bass is a one-string instrument made from an inverted metal tub, a wooden pole, and a single length of string or cable. The player plucks the string while varying its tension by leaning the pole -- more tension raises the pitch, less tension lowers it. It's a deeply physical instrument: no frets, no keys, just your hands and your ear.",
+        target: { kind:'canvas' },
+        tooltip: { preferSide:'above' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','closeRuler','zoomTubFillH'], onExit: null },
+
+      // step 2.2  (was 1.2; v-fit + narrow spotlight)
+      { id: '2.2',
+        title: 'The string',
+        body: "The vertical line is the string. The nut at the top is where the string meets the pole. The tub at the bottom is the bridge -- the resonating body. The full length between them is the speaking length: the part that vibrates when you play.",
+        target: { kind:'id', id:'string-line', padX:4 },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','closeRuler','fitVCanvas'], onExit: null },
+
+      // step 2.3  (was 1.3; title change, padY top so readout stays visible)
+      { id: '2.3',
+        title: 'Tension adjusts pitch',
+        body: "This vertical slider on the left represents string tension. Drag it up to tighten the string and raise the pitch; drag down to loosen and lower it. The fundamental frequency updates in real time. The readout at the top of the rail shows the current pitch in Hz and as a note name.",
+        target: { kind:'id', id:'lr-tension-track', padY:60 },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','closeRuler'], onExit: null },
+
+      // step 2.4  NEW
+      { id: '2.4',
+        title: 'The full-string fundamental',
+        body: "The fundamental is the first harmonic in the harmonic series, sometimes called 1f. It's the pitch the open string sounds when you pluck it without touching anywhere else. Which note name it corresponds to depends on the string's tension, length, and density -- adjust tension and the fundamental moves with it.",
+        target: { kind:'id', id:'string-line', padX:4 },
+        tooltip: { preferSide:'right' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','closeRuler','fitVCanvas'], onExit: null },
+
+      // step 2.5  NEW
+      { id: '2.5',
+        title: 'Playing with tension: pull and pluck',
+        body: "Tapping the row at the nut plays the fundamental -- the same pitch shown in the readout above the tension bar. By adjusting tension while plucking, you can play a sequence of different notes: this is the most direct way to play the washtub bass.",
+        target: { kind:'id', id:'string-line', padX:4 },
+        tooltip: { preferSide:'right' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','closeRuler','fitVCanvas'], onExit: null },
+
+      // step 2.6  NEW
+      { id: '2.6',
+        title: 'Playing harmonics: touch and pluck',
+        body: "Touch the string lightly at a harmonic node and pluck nearby to produce a ringing overtone. The midpoint and the upstring 5 are the most resonant and easiest to play this way. How readily a harmonic sounds depends on the string material and current tension -- aviation cable rings differently than rope or gut.",
+        target: { kind:'id', id:'string-line', padX:4 },
+        tooltip: { preferSide:'right' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','closeRuler','fitVCanvas'], onExit: null },
+
+      // step 2.7  NEW
+      { id: '2.7',
+        title: 'Playing notes: pinch and pluck',
+        body: "Pinch the string firmly at a harmonic node to temporarily shorten the speaking length and produce a new fundamental. In practice, the pinch points coincide with the harmonic nodes -- so even when a harmonic is hard to ring out at a particular node, you can still pinch there to play that pitch class (the same note name in a different octave).",
+        target: { kind:'id', id:'string-line', padX:4 },
+        tooltip: { preferSide:'right' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','closeRuler','fitVCanvas'], onExit: null },
+
+      // step 2.8  (was 2.5; current tone strip moved here)
+      { id: '2.8',
+        title: 'Current tone strip',
+        body: "When you tap a node, the right half of the strip at the top fills with its details: degree, note name, frequency, and segment lengths. Tapping a node plays the tone simultaneously. The strip is your running readout of whatever you just touched.",
+        target: { kind:'id', id:'nts-right' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
+
+      // step 2.9  NEW (intro to ruler; deep dive lives at end of String Map)
+      { id: '2.9',
+        title: 'The ruler',
+        body: "The sidebar on the right is the ruler. With a node pinned, it shows interval distances from your touch point to nearby anchors -- home nodes, segment fundamentals, or tonic notes -- and a colored shade between them so you can see at a glance how the pitch sits in context. We'll explore the ruler in more depth at the end of the next section.",
+        target: { kind:'id', id:'rrail' },
+        tooltip: { preferSide:'left' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','openRuler'], onExit: null },
+    ]},
+
+    // Section 3 -- The String Map  (v7.7.5, cleanup v7.7.13, v7.7.25 expanded)
+    { key:'string_map', label:'The String Map', built:true, steps:[
+      // step 3.1  (was 2.1; close ruler, h-fit, +15px right, expanded right with labels)
+      { id: '3.1',
+        title: 'A map of the string',
+        body: "This diagram maps every harmonic node on the string -- the points where the string can be lightly touched to produce bell-like overtone tones. Understanding these nodes helps you find pitches, navigate keys, and develop technique. The columns to the right of the string show extra detail about each node: degrees, note names, intervals, segment lengths.",
+        target: { kind:'canvas', offsetX:15 },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','closeRuler','fitHCanvas'], onExit: null },
+
+      // step 3.2  (was 2.2; bring top to canvas top, extend down through 5 upstring rows)
+      { id: '3.2',
+        title: 'Reading the columns',
+        body: "Left to right: str-deg is the string degree -- fixed by physics, never changes. home-deg shows how this node relates to your tonal center. key-deg is the chromatic degree within the home key. note is the letter name and octave. The remaining columns show fraction, ratio, interval description, and segment lengths.",
+        target: { kind:'svgRect', svgX:430, svgY:0, svgW:820, svgH:580 },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','closeRuler','fitHCanvas'], onExit: null },
+
+      // step 3.3  (was 2.3; svgRect from canvas top down through 5 upstring nodes)
+      { id: '3.3',
+        title: 'Harmonic nodes',
+        body: "Each mark across the string is a harmonic node -- a point where the string can be gently touched while plucking to isolate a specific overtone. Larger circles are primary nodes (4ths, 5ths, octaves); smaller circles are secondary nodes. Tap any node row to hear its tone.",
+        target: { kind:'svgRect', svgX:430, svgY:0, svgW:140, svgH:580 },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','closeRuler','fitHCanvas'], onExit: null },
+
+      // step 3.4  NEW
+      { id: '3.4',
+        title: 'Just intonation',
+        body: "The harmonic nodes are positioned by integer multiples of the Pythagorean harmonic series -- pure ratios like 2:1 (octave), 3:2 (perfect fifth), 4:3 (perfect fourth), 5:4 (major third). Sequencing the right harmonics in order builds a major scale: fundamental, 9:8, 5:4, 4:3, 3:2, 5:3, 15:8, 2:1. This is just intonation -- musically pure but each interval has its own irrational ratio relative to the fundamental.",
+        target: { kind:'svgRect', svgX:430, svgY:0, svgW:140, svgH:580 },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','closeRuler','fitHCanvas'], onExit: null },
+
+      // step 3.5  NEW
+      { id: '3.5',
+        title: 'Chromatic ticks',
+        body: "Between two harmonic nodes that span more than a half-step (notes a major second apart, or wider), tick marks are drawn for each chromatic note in between. Here, between the upstring 5 and the upstring 6, you can see the ticks marking the chromatic notes that fill that gap.",
+        target: { kind:'svgRect', svgX:440, svgY:520, svgW:80, svgH:30 },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','closeRuler','fitHCanvas'], onExit: null },
+
+      // step 3.6  NEW
+      { id: '3.6',
+        title: 'Equal temperament',
+        body: "For simplicity, the chromatic tick marks are positioned using the equal temperament system -- each semitone the same fixed ratio (2^(1/12)) above the next. This is an approximation: the in-key node positions are still the pure just-intonation ratios, while the chromatic ticks between them are equal-tempered. Close enough for the learning goals of the app, and consistent with how most modern instruments are tuned.",
+        target: { kind:'svgRect', svgX:440, svgY:520, svgW:80, svgH:30 },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','closeRuler','fitHCanvas'], onExit: null },
+
+      // step 3.7  (was 2.4; legend)
+      { id: '3.7',
+        title: 'What the colors mean',
+        body: "Purple marks the tonic -- the musical home note. Green marks nodes in the current key and mode. Coral / red marks chromatic nodes -- in pitch, but outside the key. Grey dashed marks fall between named pitches. Colors update live as you change key, mode, or home node. The full legend lives here in the view panel for reference.",
+        target: { kind:'id', id:'vp-legend-section' },
+        onEnter: ['closeCoF','closeSettingsPanel','closePlayTray','openViewToLegend'], onExit: null },
+
+      // step 3.8  NEW (was the "after current 2.5" deep-dive request)
+      { id: '3.8',
+        title: 'Reading a pinned node',
+        body: "With the upstring 5 pinned, the tone strip shows: the home-degree (5 in G Ionian), the key-degree, the note name and octave, and the live frequency. The right-hand cluster shows the upper and lower segment lengths and their pitches -- the two pitches the string would sound if it were stopped at this exact point.",
+        target: { kind:'id', id:'new-tone-strip' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','openRuler',{name:'pinFrac', args:{frac:2/3}}], onExit: null },
+
+      // step 3.9  NEW (tone strip deep dive)
+      { id: '3.9',
+        title: 'Tone strip in motion',
+        body: "Hover or tap any node to update the tone strip. As you move across nodes, the upper / lower segment readout flips around: the segment above your pinch point shrinks, the segment below grows. This dual readout is unique to a one-string instrument with infinitely many touch points: every point divides the string into two, and each side has its own pitch.",
+        target: { kind:'id', id:'new-tone-strip' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','openRuler',{name:'pinFrac', args:{frac:2/3}}], onExit: null },
+
+      // step 3.10  NEW (ruler deep dive)
+      { id: '3.10',
+        title: 'Reading the ruler',
+        body: "The sidebar ruler is a focused view of your pinned node and its musical neighbors. The shaded region between two anchor lines marks the interval where the pinned pitch sits. Fan lines connect the pinned point on the main canvas to the upper and lower anchors -- so you can see the relationship physically and musically at once. The cluster of controls at the bottom of the ruler lets you switch reference modes between segments, the full string, or tonic-note context.",
+        target: { kind:'id', id:'rrail' },
+        tooltip: { preferSide:'left' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','openRuler',{name:'pinFrac', args:{frac:2/3}}], onExit: 'unpinAll' },
+    ]},
+
+    // Section 4 -- Musical Context  (v7.7.10, cleanup v7.7.13, v7.7.25 expanded)
     { key:'musical_ctx', label:'Musical Context', built:true, steps:[
-      // step 4.1  NEW
+      // step 4.1
       { id: '4.1',
         title: 'The current key',
         body: "The current key chip shows your home key and mode. In the default setup that's G Ionian. Tapping this chip opens the circle-of-fifths wheel so you can change keys.",
         target: { kind:'id', id:'chip-keyscale' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
-      // step 4.2  (was 4.1)
+      // step 4.2
       { id: '4.2',
         title: 'The circle of fifths',
         body: "With the wheel open, spin to select a key. All node colors and degree labels update immediately. Note names use proper enharmonic spelling -- B-flat, not A-sharp; E-flat, not D-sharp. The center opens the mode / scale picker, which we'll see next.",
         target: { kind:'idClipped', id:'cof-wrap', clipBottom:'bottom-rail' },
         onEnter: ['closeSettingsPanel','closeViewPanel','closePlayTray','openCoF'], onExit: null },
 
-      // step 4.3  (was 4.2)
+      // step 4.3  (highlight only the inner mode picker)
       { id: '4.3',
         title: 'Mode / scale',
-        body: "Tap the center of the wheel to open the mode picker. A mode is a scale built by treating a different degree of the major scale as home. Ionian is the standard major scale. Dorian and Mixolydian are common in folk and blues. Each mode highlights a different set of nodes as in-key.",
-        target: { kind:'idClipped', id:'cof-wrap', clipBottom:'bottom-rail' },
+        body: "Tap the center of the wheel -- where the mode label sits, like 1 ION for the first mode -- to open the mode picker. A mode is a scale built by treating a different degree of the major scale as home. Ionian is the standard major scale. Dorian and Mixolydian are common in folk and blues. Each mode highlights a different set of nodes as in-key.",
+        target: { kind:'id', id:'cof-mode-target' },
         onEnter: ['closeSettingsPanel','closeViewPanel','closePlayTray','openCoF'], onExit: null },
 
-      // step 4.4  NEW
+      // step 4.4  scale picker
       { id: '4.4',
         title: 'Scale picker',
         body: "With the mode picker open, pick any mode to apply it. The node colors update in real time as you preview each mode. Modes in the picker are arranged by brightness: from the darkest (Locrian) to the brightest (Lydian), with Ionian (major) in the middle.",
@@ -10818,25 +10971,40 @@ const TOUR_CONTENT = {
         tooltip: { preferSide:'right' },
         onEnter: ['closeSettingsPanel','closeViewPanel','closePlayTray','openCoF','openScalePicker'], onExit: 'closeScalePicker' },
 
-      // step 4.5  (was 4.3)
+      // step 4.5  NEW: G Aeolian state
       { id: '4.5',
+        title: 'Mode change in action',
+        body: "Here's the same string in G Aeolian -- the natural minor mode. Compare the green in-key nodes against what you saw in Ionian: the third, sixth, and seventh have shifted by a semitone, giving the mode its darker, more melancholic flavor. Tap next to return to Ionian.",
+        target: { kind:'canvas' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setModeAeolian','zoomFit'],
+        onExit: 'setModeIonian' },
+
+      // step 4.6  (was 4.5)
+      { id: '4.6',
         title: 'Home node',
         body: "The home node tells the diagram which string node functions as the musical 1 -- the tonal center. By default it's the fundamental. Setting it to, say, 5 means you're treating the fifth harmonic node as home, and all degree labels remap accordingly. This is how you explore modal playing from fixed positions on the string.",
         target: { kind:'id', id:'chip-home' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
-      // step 4.6  (was 4.5)
-      { id: '4.6',
+      // step 4.7  (was 4.6)
+      { id: '4.7',
         title: 'Tune button',
         body: "The tune button calculates the tension needed to bring the home node to the home key root and sets it. It plays the before and after pitches in sequence so you can hear the change. In pitch map mode this button behaves slightly differently -- see the pitch map section.",
         target: { kind:'id', id:'lr-tune-btn' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
 
-      // step 4.7  (was 4.4)
-      { id: '4.7',
+      // step 4.8  (was 4.7)
+      { id: '4.8',
         title: 'Auto-tune',
         body: "When auto-tune is on (the default), the app automatically recalculates string tension whenever you change key, mode, or home node -- keeping the home node aligned to the selected key root. Turn it off if you want to explore how the map shifts without the string re-tuning itself.",
         target: { kind:'id', id:'lr-autotune-btn' },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
+
+      // step 4.9  NEW: home node revisited under auto-tune
+      { id: '4.9',
+        title: 'Home node and auto-tune',
+        body: "When auto-tune is on, switching modes or scales also re-tunes the string so the home node stays anchored to the home key's root pitch. So if you switch from G Ionian to G Aeolian, the home node still corresponds to G -- the same pitch -- even though every other note in the scale has shifted. Together, home node and auto-tune keep your tonal center fixed in pitch space while everything else moves around it.",
+        target: { kind:'id', id:'chip-home' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray'], onExit: null },
     ]},
     // Section 5 -- Playback  (v7.7.11, cleanup v7.7.13, v7.7.18 reorg)
@@ -10856,12 +11024,12 @@ const TOUR_CONTENT = {
         tooltip: { preferSide:'below' },
         onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null },
 
-      // step 5.3  (string-highlight split from old 5.2)
+      // step 5.3  (string-highlight split from old 5.2; v7.7.25 close ruler + h-fit)
       { id: '5.3',
         title: 'Preview highlights',
         body: "The shaded region shows an example preview slice: from the upper portion of the string down to the midpoint (octave node), spanning the full width of the map including labels. With PVW enabled, all in-scale nodes in the current range light up -- giving you a visual map of what's about to play.",
         target: { kind:'svgRect', svgX:440, svgY:0, svgW:810, svgH:701 },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray'], onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','openPlayTray','closeRuler','fitHCanvas'], onExit: null },
 
       // step 5.4  (was 5.3) Persist mode
       { id: '5.4',
@@ -10969,13 +11137,6 @@ const TOUR_CONTENT = {
         title: 'My bass defaults',
         body: "Save your own calibration with use current (takes the current live values as your defaults). Reset wipes back to the app defaults. Apply restores your saved defaults. This is how you make the app persistent to your specific instrument across sessions.",
         target: { kind:'group', ids:['sp-deflen-fld','sp-deften-fld','sp-defmu-fld'] },
-        onEnter: ['closeCoF','closeViewPanel','closePlayTray','openSettingsPanel'], onExit: null },
-
-      // step 6.5
-      { id: '6.5',
-        title: 'Tour and readme',
-        body: "The two buttons at the bottom of the settings panel open this tour and the full readme. Tapping readme shows a section picker above the button; pick a section to read the full document.",
-        target: { kind:'group', ids:['sp-foot-tour','sp-foot-readme'] },
         onEnter: ['closeCoF','closeViewPanel','closePlayTray','openSettingsPanel'], onExit: 'closeSettingsPanel' },
     ]},
     // Section 7 -- View Panel  (v7.7.11, cleanup v7.7.13)
@@ -11098,7 +11259,7 @@ const TOUR_CONTENT = {
         body: "The labels cluster in the sidebar controls which segment's node labels are shown on the canvas: upper only, lower only, or both. Handy when the canvas gets dense.",
         target: { kind:'id', id:'capo-label-toggle' },
         tooltip: { preferSide:'left' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView'], onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView','openRuler'], onExit: null },
 
       // step 9.7  NEW -- tuning in capo mode
       { id: '9.7',
@@ -11106,7 +11267,7 @@ const TOUR_CONTENT = {
         body: "The tune-to cluster in the sidebar lets you choose whether the tune button targets the lower segment (default) or the upper segment as the home-key root. Changing this rebalances which segment's fundamental aligns to the key.",
         target: { kind:'id', id:'capo-root-toggle' },
         tooltip: { preferSide:'left' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView'], onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView','openRuler'], onExit: null },
 
       // step 9.8  NEW -- ruler in capo mode, pin upper seg deg 5
       { id: '9.8',
@@ -11114,7 +11275,7 @@ const TOUR_CONTENT = {
         body: "With the upper segment's 5th pinned, the ruler shows the interval from that node to the upper fundamental and to the tonic. The sidebar ruler, fan lines, and readout all track the pinned node together.",
         target: { kind:'id', id:'rrail' },
         tooltip: { preferSide:'left' },
-        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView','pinCapoUpperFracFive'], onExit: null },
+        onEnter: ['closeCoF','closeSettingsPanel','closeViewPanel','closePlayTray','setCapoView','openRuler','pinCapoUpperFracFive'], onExit: null },
 
       // step 9.9  (was 9.4)
       { id: '9.9',
@@ -11587,6 +11748,57 @@ const TOUR_CALLBACKS = {
       if(typeof updatePlayBtn === 'function') updatePlayBtn();
     }catch(e){}
   },
+  // v7.7.25: ruler open/close (sidebar collapse). Idempotent.
+  closeRuler: function(){
+    try{
+      if(typeof sidebarCollapsed!=='undefined' && !sidebarCollapsed){
+        if(typeof toggleSidebar==='function') toggleSidebar();
+      }
+    }catch(e){}
+  },
+  openRuler: function(){
+    try{
+      if(typeof sidebarCollapsed!=='undefined' && sidebarCollapsed){
+        if(typeof toggleSidebar==='function') toggleSidebar();
+      }
+    }catch(e){}
+  },
+  // v7.7.25: horizontal-fit and vertical-fit zoom callbacks.
+  fitHCanvas: function(){
+    try{ if(typeof fitH==='function') fitH(); }catch(e){}
+  },
+  fitVCanvas: function(){
+    try{ if(typeof fitV==='function') fitV(); }catch(e){}
+  },
+  // Zoom canvas so the tub area fills horizontally. Used in Section 2's
+  // opening step to give a detailed view of the washtub itself.
+  zoomTubFillH: function(){
+    try{
+      if(typeof canvas==='undefined' || !canvas) return;
+      const cw = canvas.clientWidth;
+      const leftOffset = (typeof _playPanelOpen!=='undefined' && _playPanelOpen && typeof _activeTrayW!=='undefined') ? _activeTrayW : 0;
+      const availW = cw - leftOffset;
+      const tubSpan = 380; // svg units, roughly tub silhouette width
+      let s = availW / tubSpan;
+      if(typeof scMn!=='undefined' && s<scMn) s=scMn;
+      if(typeof scMx!=='undefined' && s>scMx) s=scMx;
+      sc = s;
+      const tubCenterX = 480; // SX
+      const tubCenterY = 1335;
+      tx = leftOffset + availW/2 - tubCenterX*sc;
+      const ch = canvas.clientHeight;
+      ty = ch/2 - tubCenterY*sc;
+      if(typeof clamp==='function') clamp();
+      if(typeof applyT==='function') applyT();
+    }catch(e){}
+  },
+  // v7.7.25: Section 4 mode setters for the new G Aeolian step.
+  setModeAeolian: function(){
+    try{ if(typeof setModeByName==='function') setModeByName('aeolian'); }catch(e){}
+  },
+  setModeIonian: function(){
+    try{ if(typeof setModeByName==='function') setModeByName('ionian'); }catch(e){}
+  },
   // 1-3-5-7 arp up.
   playDemo1357Arp: function(){
     try{
@@ -11841,6 +12053,16 @@ function _tourResolveTarget(target){
     rect.width  += padX * 2;
     rect.height += padY * 2;
   }
+  // v7.7.25: offsetX/offsetY shift the rect after sizing without changing
+  // its dimensions. Useful for nudging a spotlight off-center of its
+  // anchor (e.g., shifting a canvas spotlight 15px right to fit the
+  // labels column more comfortably).
+  const offsetX = (typeof target.offsetX==='number') ? target.offsetX : 0;
+  const offsetY = (typeof target.offsetY==='number') ? target.offsetY : 0;
+  if(offsetX || offsetY){
+    rect.left += offsetX;
+    rect.top  += offsetY;
+  }
   return rect;
 }
 
@@ -11953,6 +12175,110 @@ function _tourPaintCrosshair(){
   ch.style.display='block';
 }
 
+// v7.7.26: pointing hand. Each step may declare a `pointAt` field:
+//   pointAt: 'element-id'                          -- center of element
+//   pointAt: { id:'element-id' }                   -- same
+//   pointAt: { id:'element-id', dir:'NE'|'NW'|...} -- override approach
+//   pointAt: { svgX:N, svgY:N }                    -- SVG coordinate
+// Engine picks an approach quadrant from where the target sits relative
+// to viewport center (unless dir overridden), positions the hand so its
+// fingertip touches the corner of the target rect facing open space,
+// and rotates the hand around the fingertip pivot. CSS transitions
+// handle travel between consecutive steps' positions.
+function _tourUpdateHand(step){
+  const hand = document.getElementById('tour-hand');
+  if(!hand) return;
+  const pa = step && step.pointAt;
+  if(!pa){ hand.classList.remove('visible','wiggle'); return; }
+  // Resolve pointAt to a target rect.
+  let rect=null, dirOverride=null;
+  if(typeof pa === 'string'){
+    const el = document.getElementById(pa);
+    if(el) rect = el.getBoundingClientRect();
+  } else if(pa && typeof pa === 'object'){
+    if(pa.dir) dirOverride = pa.dir;
+    if(typeof pa.id === 'string'){
+      const el = document.getElementById(pa.id);
+      if(el) rect = el.getBoundingClientRect();
+    } else if(typeof pa.svgX === 'number' && typeof pa.svgY === 'number'){
+      const svg = document.getElementById(pa.svgId || 'main-svg');
+      if(svg){
+        const bb = svg.getBoundingClientRect();
+        const vbAttr = svg.getAttribute('viewBox') || '';
+        const vb = vbAttr.split(/[\s,]+/).map(parseFloat);
+        if(vb.length === 4 && bb.width > 0 && bb.height > 0){
+          const vbX=vb[0], vbY=vb[1], vbW=vb[2], vbH=vb[3];
+          const scale = Math.min(bb.width/vbW, bb.height/vbH);
+          const renderedW = vbW*scale, renderedH = vbH*scale;
+          const offX = bb.left + (bb.width-renderedW)/2;
+          const offY = bb.top  + (bb.height-renderedH)/2;
+          const x = offX + (pa.svgX-vbX)*scale;
+          const y = offY + (pa.svgY-vbY)*scale;
+          rect = { left:x-3, top:y-3, right:x+3, bottom:y+3, width:6, height:6 };
+        }
+      }
+    }
+  }
+  if(!rect || (rect.width===0 && rect.height===0)){
+    hand.classList.remove('visible','wiggle');
+    return;
+  }
+  // Pick approach quadrant. Finger points TOWARD target. Hand body
+  // trails into open space (opposite quadrant).
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const tcx = rect.left + rect.width/2;
+  const tcy = rect.top  + rect.height/2;
+  let dir = dirOverride;
+  if(!dir){
+    const inRight  = tcx >= vw/2;
+    const inBottom = tcy >= vh/2;
+    if(inRight  && !inBottom) dir = 'NE';
+    else if(inRight  &&  inBottom) dir = 'SE';
+    else if(!inRight &&  inBottom) dir = 'SW';
+    else                            dir = 'NW';
+  }
+  // Fingertip lands on edge of target rect closest to the hand body.
+  // For NE: hand body is SW of target → fingertip = target's bottom-left corner.
+  let fx, fy, rot;
+  switch(dir){
+    case 'NE': fx = rect.left;  fy = rect.bottom; rot = 0;   break;
+    case 'SE': fx = rect.left;  fy = rect.top;    rot = 90;  break;
+    case 'SW': fx = rect.right; fy = rect.top;    rot = 180; break;
+    case 'NW': fx = rect.right; fy = rect.bottom; rot = 270; break;
+    default:   fx = rect.left;  fy = rect.bottom; rot = 0;
+  }
+  // Container left/top: place container so SVG fingertip (40,8) lands at (fx,fy).
+  // transform-origin in CSS is set to (40,8) via percentage so rotation pins
+  // the fingertip in place.
+  const left = fx - 40;
+  const top  = fy - 8;
+  const wasVisible = hand.classList.contains('visible');
+  if(!wasVisible){
+    // First show: place without travel transition, then fade in.
+    hand.classList.remove('wiggle');
+    hand.style.transition = 'none';
+    hand.style.left = left + 'px';
+    hand.style.top  = top  + 'px';
+    hand.style.transform = 'rotate(' + rot + 'deg)';
+    void hand.offsetHeight; // force reflow
+    hand.style.transition = '';
+    hand.classList.add('visible');
+    setTimeout(function(){
+      if(hand.classList.contains('visible')) hand.classList.add('wiggle');
+    }, 240);
+  } else {
+    // Already visible: travel via CSS transition. Pause wiggle during travel
+    // (the wiggle's translate fights the transform), restart after.
+    hand.classList.remove('wiggle');
+    hand.style.left = left + 'px';
+    hand.style.top  = top  + 'px';
+    hand.style.transform = 'rotate(' + rot + 'deg)';
+    setTimeout(function(){
+      if(hand.classList.contains('visible')) hand.classList.add('wiggle');
+    }, 380);
+  }
+}
+
 function _tourShowMenu(){
   _tourState.active=true;
   _tourState.sectionIdx=-1;
@@ -11960,6 +12286,9 @@ function _tourShowMenu(){
   _tourShowOverlay();
   _tourSetSpotlight(null);
   _tourLastDiag=null; _tourPaintCrosshair();
+  // v7.7.26: hide pointing hand on menu return
+  const hand=document.getElementById('tour-hand');
+  if(hand){ hand.classList.remove('visible','wiggle'); }
   const tip=document.getElementById('tour-tooltip');
   if(tip) tip.style.display='none';
   const menu=document.getElementById('tour-menu');
@@ -11988,6 +12317,16 @@ function _tourShowMenu(){
   const exitBtn=document.getElementById('tour-menu-exit-btn');
   if(exitBtn){
     exitBtn.onclick=_tourExit;
+  }
+  // v7.7.24: Full readme entry. Opens readme and exits the tour -- they're
+  // different modes of engagement; cleanest UX is to leave the tour rather
+  // than stack readme on top of the tour overlay.
+  const readmeBtn=document.getElementById('tour-menu-readme-btn');
+  if(readmeBtn){
+    readmeBtn.onclick=function(){
+      _tourExit();
+      try{ if(typeof openReadme==='function') openReadme('overview'); }catch(e){}
+    };
   }
   menu.classList.add('visible');
 }
@@ -12040,6 +12379,7 @@ function _tourShowStep(direction){
     }
     _tourSetSpotlight(rect);
     _tourPaintCrosshair();
+    _tourUpdateHand(step);
     _tourSetTooltip(step, rect);
   };
   if(typeof requestAnimationFrame==='function'){
@@ -12339,6 +12679,9 @@ function _tourExit(){
   if(menu) menu.classList.remove('visible');
   const tip=document.getElementById('tour-tooltip');
   if(tip) tip.style.display='none';
+  // v7.7.26: hide pointing hand
+  const hand=document.getElementById('tour-hand');
+  if(hand){ hand.classList.remove('visible','wiggle'); }
   _tourHideOverlay();
 }
 
